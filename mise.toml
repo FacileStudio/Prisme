@@ -21,12 +21,12 @@ depends = ["//apps/api:deps", "//apps/client:install"]
 run = "true"
 
 [tasks.db-up]
-description = "Start the repo-local Postgres dev database"
-run = "sh ./scripts/postgres-up.sh"
+description = "Start the dev Postgres and Synapse"
+run = "docker compose -p prisme-dev -f docker-compose.dev.yml up -d --build"
 
 [tasks.db-down]
-description = "Stop the repo-local Postgres dev database"
-run = "sh ./scripts/postgres-down.sh"
+description = "Stop the dev Postgres and Synapse"
+run = "docker compose -p prisme-dev -f docker-compose.dev.yml down"
 
 [tasks.build]
 description = "Build the API and client"

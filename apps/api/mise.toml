@@ -35,19 +35,22 @@ fi
 DATABASE_URL="${DATABASE_URL:-postgres://postgres:postgres@127.0.0.1:5557/prisme?sslmode=disable}"
 PORT="${PORT:-4000}"
 LOG_LEVEL="${LOG_LEVEL:-info}"
-CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173}"
+CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}"
 
 echo "starting api on :$PORT"
-echo "DATABASE_URL=$DATABASE_URL"
-echo "PORT=$PORT"
-echo "LOG_LEVEL=$LOG_LEVEL"
-echo "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS"
 
 exec env \
   DATABASE_URL="$DATABASE_URL" \
   PORT="$PORT" \
   LOG_LEVEL="$LOG_LEVEL" \
+  APP_ENV="${APP_ENV:-development}" \
   CORS_ALLOWED_ORIGINS="$CORS_ALLOWED_ORIGINS" \
+  MATRIX_INTERNAL_URL="${MATRIX_INTERNAL_URL:-http://127.0.0.1:18008}" \
+  MATRIX_PUBLIC_URL="${MATRIX_PUBLIC_URL:-http://localhost:18008}" \
+  MATRIX_SERVER_NAME="${MATRIX_SERVER_NAME:-localhost}" \
+  PRISME_AS_TOKEN="${PRISME_AS_TOKEN:-dev-as-token}" \
+  PRISME_SECRET_KEY="${PRISME_SECRET_KEY:-dev-secret-key-dev-secret-key-0123456789}" \
+  PRISME_SERVICE_KEY="${PRISME_SERVICE_KEY:-dev-service-key}" \
   "$GO_BIN" run .
 '''
 

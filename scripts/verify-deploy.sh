@@ -13,7 +13,7 @@ boot="${2:-/api/auth/config}"
 base="https://${app}.${3:-facile.studio}"
 fails=0
 
-check() { # libellé, attendu, obtenu
+check() {
   if [ "$2" = "$3" ]; then
     printf '  ok    %-46s %s\n' "$1" "$3"
   else
