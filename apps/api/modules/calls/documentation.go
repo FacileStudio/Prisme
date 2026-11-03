@@ -10,8 +10,9 @@ func Documentation() documentation.Module {
 		Routes: []documentation.Route{
 			{
 				Method: "POST", Path: "/calls", Summary: "Start or join the call of a room",
-				Description: "Gets or creates the Echo room, mints a LiveKit token and posts the call message unless join is true.",
-				Auth:        "porte session", RequestBody: Request{}, ResponseBody: Response{},
+				Description: "Gets or creates the Echo room, mints a LiveKit token and posts the call message unless join is true. " +
+					"e2ee_key is the room's call encryption key, given only to members and never sent to Echo.",
+				Auth: "porte session", RequestBody: Request{}, ResponseBody: Response{},
 				Errors: callErrors(),
 			},
 		},

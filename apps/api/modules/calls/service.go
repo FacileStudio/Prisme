@@ -22,15 +22,18 @@ type Service struct {
 	echo     *echo.Client
 	matrix   *matrix.Client
 	accounts *accounts.Service
+	keys     []byte
 }
 
-// NewService builds the call service.
-func NewService(echoClient *echo.Client, client *matrix.Client, accountService *accounts.Service) *Service {
-	return &Service{echo: echoClient, matrix: client, accounts: accountService}
+// NewService builds the call service. The secret is PRISME_SECRET_KEY, from
+// which every room's call encryption key derives.
+func NewService(echoClient *echo.Client, client *matrix.Client, accountService *accounts.Service, secret string) *Service {
+	return &Service{echo: echoClient, matrix: client, accounts: accountService, keys: keyMaterial(secret)}
 }
 
 // Start gets or creates the Echo room of a Matrix room the user is in, mints
-// the user a token and, unless joining, announces the call in the room.
+// the user a token and, unless joining, announces the call in the room. The
+// room's encryption key goes only to members and never to Echo.
 func (s *Service) Start(ctx context.Context, userID int64, req Request) (Response, error) {
 	if s.echo == nil {
 		return Response{}, errors.Unavailable(ErrNotConfigured)
@@ -58,7 +61,10 @@ func (s *Service) Start(ctx context.Context, userID int64, req Request) (Respons
 	if !req.Join {
 		s.announce(ctx, account.MatrixUserID, req.RoomID, name, room)
 	}
-	return Response{CallID: room.RoomID, LiveKitURL: token.LiveKitURL, Token: token.Token, JoinURL: room.JoinURL}, nil
+	return Response{
+		CallID: room.RoomID, LiveKitURL: token.LiveKitURL, Token: token.Token, JoinURL: room.JoinURL,
+		E2EEKey: roomKey(s.keys, req.RoomID),
+	}, nil
 }
 
 func (s *Service) title(ctx context.Context, userID, roomID string) string {

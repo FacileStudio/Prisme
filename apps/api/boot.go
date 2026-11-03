@@ -131,7 +131,7 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
 		}),
 		agents: agentService,
-		calls:  calls.NewService(newEcho(cfg), client, accountService),
+		calls:  calls.NewService(newEcho(cfg), client, accountService, cfg.SecretKey),
 		users:  users.NewService(db),
 	}
 	built.registre, built.syncer = newDirectory(cfg, built.spaces, appLogger)

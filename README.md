@@ -71,7 +71,7 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `POST /api/spaces`, `POST /api/spaces/{id}/channels` | session | Create a space (with `#general`) or a channel |
 | `GET /api/agents`, `POST /api/agents` | session or service | List, or create-or-return, the user's agents |
 | `PUT /api/agents/{user_id}/rooms`, `DELETE /api/agents/{user_id}` | session or service | Place or deactivate an agent |
-| `POST /api/calls` | session | Start or join the Echo call of a room |
+| `POST /api/calls` | session | Start or join the Echo call of a room; returns the LiveKit token and the room's `e2ee_key` |
 | `GET /api/users?q=` | session | People directory |
 
 Service callers send `Authorization: Bearer <PRISME_SERVICE_KEY>` and
@@ -113,6 +113,14 @@ the same way a first sign-in would.
 - **Matrix client.** The browser builds matrix-js-sdk with `createClient({baseUrl, accessToken,
   userId, deviceId})` from `/api/session` and starts it with thread support
   (https://matrix-org.github.io/matrix-js-sdk/interfaces/matrix.ICreateClientOpts.html).
+- **Call encryption.** Every call is end-to-end encrypted, always: media, screen shares and
+  in-call data. The key is per Matrix room, `base64url(HMAC-SHA256(SHA-256("prisme-call-e2ee:" +
+  PRISME_SECRET_KEY), "prisme-call-e2ee:" + room_id))`, so it needs no table and every member gets
+  the same one. The API derives it and returns it from `POST /api/calls` only after the
+  membership check; it never sends it to Echo and never logs it. Echo and LiveKit relay frames
+  they cannot decrypt, so captions, recording and Echo's own join link cannot work on a Prisme
+  call. Rotating `PRISME_SECRET_KEY` changes every room key. A browser without encoded-frame
+  transforms (`isE2EESupported()` false) is refused rather than joined in plaintext.
 - **Bulle access.** The plan's Registre token exchange (`prisme.read prisme.agents`) was replaced
   by the service key, at the suite lead's request, so a Bulle user's agent works before they ever
   open Prisme. porte's `OIDC_MACHINE_AUDIENCE` path still works if it is ever configured.

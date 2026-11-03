@@ -8,11 +8,14 @@ type Request struct {
 }
 
 // Response is what a LiveKit client needs to join, plus Echo's own link.
+// E2EEKey is the room's end-to-end encryption key: base64url of
+// HMAC-SHA256 over the room id, the same for every member of the room.
 type Response struct {
 	CallID     string `json:"call_id"`
 	LiveKitURL string `json:"livekit_url"`
 	Token      string `json:"token"`
 	JoinURL    string `json:"join_url"`
+	E2EEKey    string `json:"e2ee_key"`
 }
 
 // CallContent is the studio.facile.call block of a call message.
