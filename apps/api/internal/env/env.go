@@ -1,104 +1,91 @@
+// Package env reads Prisme's configuration from the environment once, at boot.
 package env
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
+
+	"github.com/FacileStudio/porte"
+	troncenv "github.com/FacileStudio/tronc/env"
 )
 
+// Matrix is how the API reaches Synapse and what it tells browsers.
+type Matrix struct {
+	InternalURL string
+	PublicURL   string
+	ServerName  string
+	ASToken     string
+}
+
+// Echo is the call integration. Both values empty turns calls off.
+type Echo struct {
+	URL string
+	Key string
+}
+
+// Config is the whole process configuration.
 type Config struct {
-	DatabaseURL        string
-	Port               string
-	CORSAllowedOrigins []string
-	LogLevel           string
-	JournalURL         string
-	JournalToken       string
+	troncenv.Core
+	Porte       porte.Config
+	Matrix      Matrix
+	Echo        Echo
+	SecretKey   string
+	ServiceKeys string
 }
 
+// Load reads and validates the environment.
 func Load() (Config, error) {
-	env := Config{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-		Port:        valueOrDefault("PORT", "4000"),
-		LogLevel:    valueOrDefault("LOG_LEVEL", "info"),
-		CORSAllowedOrigins: csvOrDefault("CORS_ALLOWED_ORIGINS", []string{
-			"http://localhost:3000",
-			"http://127.0.0.1:3000",
-			"http://localhost:5173",
-			"http://127.0.0.1:5173",
-		}),
-		JournalURL:   os.Getenv("JOURNAL_URL"),
-		JournalToken: os.Getenv("JOURNAL_TOKEN"),
-	}
-
-	if env.DatabaseURL == "" {
-		return Config{}, fmt.Errorf("DATABASE_URL is required")
-	}
-
-	port, err := strconv.Atoi(env.Port)
-	if err != nil || port < 1 || port > 65535 {
-		return Config{}, fmt.Errorf("PORT must be a valid TCP port")
-	}
-	if err := validateOrigins(env.CORSAllowedOrigins); err != nil {
+	core, err := troncenv.LoadCore()
+	if err != nil {
 		return Config{}, err
 	}
-	if err := validateLogLevel(env.LogLevel); err != nil {
+	cfg := Config{
+		Core:        core,
+		Matrix:      loadMatrix(),
+		Echo:        Echo{URL: strings.TrimRight(troncenv.String("ECHO_URL", ""), "/"), Key: troncenv.String("ECHO_INTEGRATION_KEY", "")},
+		SecretKey:   troncenv.String("PRISME_SECRET_KEY", ""),
+		ServiceKeys: troncenv.String("PRISME_SERVICE_KEY", ""),
+	}
+	if cfg.Porte, err = loadPorte(); err != nil {
 		return Config{}, err
 	}
-
-	return env, nil
+	return cfg, cfg.validate()
 }
 
-func valueOrDefault(key string, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+func loadMatrix() Matrix {
+	return Matrix{
+		InternalURL: strings.TrimRight(troncenv.String("MATRIX_INTERNAL_URL", "http://127.0.0.1:8008"), "/"),
+		PublicURL:   strings.TrimRight(troncenv.String("MATRIX_PUBLIC_URL", "http://localhost:8008"), "/"),
+		ServerName:  troncenv.String("MATRIX_SERVER_NAME", "localhost"),
+		ASToken:     troncenv.String("PRISME_AS_TOKEN", ""),
 	}
-	return fallback
 }
 
-func csvOrDefault(key string, fallback []string) []string {
-	value := os.Getenv(key)
-	if value == "" {
-		return fallback
+func loadPorte() (porte.Config, error) {
+	ssoOnly, err := troncenv.Bool("SSO_ONLY", true)
+	if err != nil {
+		return porte.Config{}, err
 	}
-
-	parts := strings.Split(value, ",")
-	out := make([]string, 0, len(parts))
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-		if part != "" {
-			out = append(out, part)
-		}
-	}
-	if len(out) == 0 {
-		return []string{}
-	}
-	return out
+	return porte.Config{
+		Issuer:          troncenv.String("OIDC_ISSUER", ""),
+		ClientID:        troncenv.String("OIDC_CLIENT_ID", ""),
+		ClientSecret:    troncenv.String("OIDC_CLIENT_SECRET", ""),
+		RedirectURL:     troncenv.String("OIDC_REDIRECT_URL", ""),
+		SuccessURL:      troncenv.String("OIDC_SUCCESS_URL", ""),
+		MachineAudience: troncenv.String("OIDC_MACHINE_AUDIENCE", ""),
+		SSOOnly:         ssoOnly,
+	}, nil
 }
 
-func validateOrigins(origins []string) error {
-	if len(origins) == 0 {
-		return fmt.Errorf("CORS_ALLOWED_ORIGINS must contain at least one origin")
+func (c Config) validate() error {
+	if c.Matrix.ASToken == "" {
+		return fmt.Errorf("PRISME_AS_TOKEN is required")
 	}
-
-	for _, origin := range origins {
-		if origin == "*" {
-			continue
-		}
-		if strings.HasPrefix(origin, "http://") || strings.HasPrefix(origin, "https://") {
-			continue
-		}
-		return fmt.Errorf("CORS_ALLOWED_ORIGINS contains invalid origin %q", origin)
+	if len(c.SecretKey) < 32 {
+		return fmt.Errorf("PRISME_SECRET_KEY must be at least 32 characters")
 	}
-
 	return nil
 }
 
-func validateLogLevel(level string) error {
-	switch strings.ToLower(level) {
-	case "debug", "info", "warn", "error":
-		return nil
-	default:
-		return fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error")
-	}
-}
+// CallsEnabled reports whether the Echo integration is configured.
+func (c Config) CallsEnabled() bool { return c.Echo.URL != "" && c.Echo.Key != "" }

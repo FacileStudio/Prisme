@@ -1,19 +1,15 @@
 package schemas
 
-import "gorm.io/gorm"
+import (
+	"github.com/FacileStudio/porte/pg"
+	"gorm.io/gorm"
+)
 
+// Migrate creates porte's identity tables, then Prisme's own. Both are
+// idempotent, and Prisme runs a single replica, so boot is the right place.
 func Migrate(db *gorm.DB) error {
-	if err := db.AutoMigrate(&User{}, &Session{}, &Event{}, &Ticket{}); err != nil {
+	if err := db.Exec(pg.Schema).Error; err != nil {
 		return err
 	}
-
-	return db.Exec(`
-		DO $$
-		BEGIN
-			ALTER TABLE tickets
-			ADD CONSTRAINT tickets_status_check CHECK (status IN ('valid', 'used', 'revoked'));
-		EXCEPTION
-			WHEN duplicate_object THEN NULL;
-		END $$;
-	`).Error
+	return db.AutoMigrate(&Account{}, &MatrixSession{}, &Space{}, &Channel{}, &Agent{})
 }

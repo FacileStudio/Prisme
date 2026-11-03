@@ -7,10 +7,17 @@ package docs
 
 import "github.com/FacileStudio/tronc/apiref"
 
-type (
-	Response = apiref.Registry
-	Module   = apiref.Module
-	Route    = apiref.Route
-	Field    = apiref.Field
-	Error    = apiref.Error
-)
+// Response is the whole route registry.
+type Response = apiref.Registry
+
+// Module is one module's routes.
+type Module = apiref.Module
+
+// Route is one documented route.
+type Route = apiref.Route
+
+// Field is one documented body field.
+type Field = apiref.Field
+
+// Error is one documented error answer.
+type Error = apiref.Error

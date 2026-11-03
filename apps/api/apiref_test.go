@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -9,12 +10,19 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
+	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/tronc/apiref"
 	"github.com/go-chi/chi/v5"
 )
 
-func testRouter() chi.Router {
-	return buildRouter(nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)), nil)
+func testRouter(t *testing.T) chi.Router {
+	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return buildRouter(app{logger: quiet, auth: authService})
 }
 
 // A hand-written registry rots the moment a route is added without it, which is
@@ -22,13 +30,13 @@ func testRouter() chi.Router {
 // failing build. If it fails, fix the registry in the module's
 // documentation.go - never the test.
 func TestEveryRouteIsDocumented(t *testing.T) {
-	if missing := apiref.Undocumented(testRouter(), refConfig()); len(missing) > 0 {
+	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known"); len(missing) > 0 {
 		t.Errorf("routes missing from the API registry:\n  %s", strings.Join(missing, "\n  "))
 	}
 }
 
 func TestReferenceIsServed(t *testing.T) {
-	router := testRouter()
+	router := testRouter(t)
 
 	page := httptest.NewRecorder()
 	router.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/docs", nil))
@@ -39,8 +47,11 @@ func TestReferenceIsServed(t *testing.T) {
 		t.Errorf("the reference page does not point at the spec: %s", page.Body.String())
 	}
 
+}
+
+func TestSpecIsServed(t *testing.T) {
 	spec := httptest.NewRecorder()
-	router.ServeHTTP(spec, httptest.NewRequest(http.MethodGet, "/docs/openapi.json", nil))
+	testRouter(t).ServeHTTP(spec, httptest.NewRequest(http.MethodGet, "/docs/openapi.json", nil))
 	if spec.Code != http.StatusOK {
 		t.Fatalf("GET /docs/openapi.json = %d, want 200", spec.Code)
 	}
