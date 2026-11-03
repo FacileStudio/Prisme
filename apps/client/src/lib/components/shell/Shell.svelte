@@ -17,7 +17,7 @@
 	let { children }: { children: Snippet } = $props();
 
 	const kindIcons: Record<NavKind, string> = {
-		browse: icons.compass,
+		browse: icons.home,
 		channel: glyphs.hashtag,
 		dm: glyphs.chat,
 		agent: icons.bolt

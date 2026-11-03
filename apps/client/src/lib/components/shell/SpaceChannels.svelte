@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Icon, IconButton, icons, toast } from '@facile/muse';
+	import { Button, Icon, IconButton, Section, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import type { SpaceNav } from '$lib/state/nav';
@@ -8,16 +8,21 @@
 	import { canRename } from '$lib/matrix/power';
 	import { ui } from '$lib/state/ui.svelte';
 	import RoomRow from './RoomRow.svelte';
-	import SectionTitle from './SectionTitle.svelte';
 
 	let { nav }: { nav: SpaceNav } = $props();
 	let joining = $state('');
 
-	const admin = $derived.by(() => {
+	const info = $derived.by(() => {
 		void app.version;
 		const room = app.client?.getRoom(nav.space.room_id);
-		return !!room && !!app.client && canRename(app.client, room);
+		return {
+			admin: !!room && !!app.client && canRename(app.client, room),
+			members: room?.getJoinedMemberCount() ?? 0
+		};
 	});
+
+	const total = $derived(nav.joined.length + nav.joinable.length);
+	const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 	async function join(roomId: string) {
 		joining = roomId;
@@ -32,41 +37,54 @@
 	}
 </script>
 
-<div class="flex min-h-11 items-center gap-1 py-1 pl-4 pr-1">
-	<h2 class="min-w-0 flex-1 truncate text-fc-xl font-semibold">{nav.name}</h2>
-	<IconButton variant="ghost" aria-label="Invite people to {nav.name}" title="Invite people" onclick={() => (ui.dialog = 'invite')}>
-		<Icon icon={glyphs.userPlus} size={18} />
-	</IconButton>
-	{#if admin}
-		<IconButton variant="ghost" aria-label="Rename {nav.name}" title="Rename the space" onclick={() => (ui.dialog = 'rename-space')}>
-			<Icon icon={icons.edit} size={18} />
-		</IconButton>
-	{/if}
-</div>
+<header class="flex flex-col gap-4 sm:flex-row sm:items-center">
+	<div class="flex min-w-0 flex-1 items-center gap-4">
+		<span
+			class="flex size-14 shrink-0 items-center justify-center rounded-fc-md bg-fc-accent text-fc-xl font-semibold text-fc-accent-fg"
+			aria-hidden="true">{nav.name.charAt(0).toUpperCase()}</span
+		>
+		<div class="flex min-w-0 flex-col gap-1">
+			<div class="flex min-w-0 items-center gap-1">
+				<h1 class="truncate text-fc-2xl font-semibold text-fc-fg">{nav.name}</h1>
+				{#if info.admin}
+					<IconButton variant="ghost" aria-label="Rename {nav.name}" title="Rename the space" onclick={() => (ui.dialog = 'rename-space')}>
+						<Icon icon={icons.edit} size={16} />
+					</IconButton>
+				{/if}
+			</div>
+			<p class="text-fc-sm text-fc-fg-muted">{plural(total, 'channel')} · {plural(info.members, 'member')}</p>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<Button size="lg" variant="outline" icon={glyphs.userPlus} onclick={() => (ui.dialog = 'invite')}>Invite</Button>
+		<Button size="lg" icon={icons.plus} onclick={() => (ui.dialog = 'create-channel')}>New channel</Button>
+	</div>
+</header>
 
-<SectionTitle title="Channels" action="Create a channel" onaction={() => (ui.dialog = 'create-channel')} />
-<ul class="flex flex-col px-2">
-	{#each nav.joined as row (row.roomId)}
-		<li><RoomRow href={roomHref(row.roomId)} name={row.name} badge={row.badge} muted={row.muted} icon={glyphs.hashtag} roomId={row.roomId} /></li>
-	{/each}
-</ul>
+<Section title="Your channels" card gap="tight" bodyClass="gap-0 p-2">
+	{#if nav.joined.length > 0}
+		<ul class="flex flex-col">
+			{#each nav.joined as row (row.roomId)}
+				<li><RoomRow href={roomHref(row.roomId)} name={row.name} badge={row.badge} muted={row.muted} icon={glyphs.hashtag} roomId={row.roomId} /></li>
+			{/each}
+		</ul>
+	{:else}
+		<p class="px-3 py-3 text-fc-sm text-fc-fg-muted">You have not joined a channel in {nav.name} yet.</p>
+	{/if}
+</Section>
 
 {#if nav.joinable.length > 0}
-	<SectionTitle title="More channels" />
-	<ul class="flex flex-col px-2">
-		{#each nav.joinable as row (row.roomId)}
-			<li>
-				<button
-					type="button"
-					class="flex min-h-11 w-full items-center gap-2 rounded-fc-md px-2 text-left text-fc-sm text-fc-fg-muted hover:bg-fc-surface disabled:opacity-50"
-					onclick={() => join(row.roomId)}
-					disabled={joining === row.roomId}
-				>
-					<Icon icon={glyphs.hashtag} size={16} />
+	<Section title="Browse channels" description="Channels in {nav.name} you have not joined yet." card gap="tight" bodyClass="gap-0 p-2">
+		<ul class="flex flex-col">
+			{#each nav.joinable as row (row.roomId)}
+				<li class="flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm text-fc-fg-muted hover:bg-fc-surface">
+					<Icon icon={glyphs.hashtag} size={16} class="shrink-0" />
 					<span class="min-w-0 flex-1 truncate">{row.name}</span>
-					<span class="text-fc-xs font-medium">{joining === row.roomId ? 'Joining…' : 'Join'}</span>
-				</button>
-			</li>
-		{/each}
-	</ul>
+					<Button size="sm" variant="ghost" icon={glyphs.login} disabled={joining === row.roomId} onclick={() => join(row.roomId)}>
+						{joining === row.roomId ? 'Joining…' : 'Join'}
+					</Button>
+				</li>
+			{/each}
+		</ul>
+	</Section>
 {/if}

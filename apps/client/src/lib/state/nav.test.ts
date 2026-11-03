@@ -23,7 +23,7 @@ describe('rail pages', () => {
 		} as unknown as Nav;
 		const pages = railPages(nav, current, '/room/%21a%3Ax', '!a:x');
 		expect(pages.map((p) => [p.label, p.kind, p.group, p.active])).toEqual([
-			['All channels · 1', 'browse', undefined, false],
+			['Overview · 1', 'browse', undefined, false],
 			['general', 'channel', 'Facile', true],
 			['Pixel', 'agent', 'Direct messages', false]
 		]);

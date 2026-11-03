@@ -71,7 +71,7 @@ export function countedLabel(name: string, badge: Badge): string {
 export function railPages(nav: Nav, current: SpaceNav | null, path: string, roomId: string | null): NavPage[] {
 	const invites = nav.invites.length;
 	const browse: NavPage = {
-		label: invites > 0 ? `All channels · ${invites}` : 'All channels',
+		label: invites > 0 ? `Overview · ${invites}` : 'Overview',
 		href: BROWSE_PATH,
 		active: path === BROWSE_PATH,
 		kind: 'browse'
