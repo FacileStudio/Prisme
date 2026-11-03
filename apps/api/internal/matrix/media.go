@@ -27,10 +27,12 @@ func (c *Client) UploadFromURL(ctx context.Context, asUser, source string) (stri
 	if !strings.HasPrefix(contentType, "image/") {
 		return "", fmt.Errorf("matrix: avatar %s is %q, not an image", source, contentType)
 	}
-	return c.upload(ctx, asUser, data, contentType)
+	return c.Upload(ctx, asUser, data, contentType)
 }
 
-func (c *Client) upload(ctx context.Context, asUser string, data []byte, contentType string) (string, error) {
+// Upload stores bytes of the given content type in the media repository as
+// the given user and returns the mxc URI.
+func (c *Client) Upload(ctx context.Context, asUser string, data []byte, contentType string) (string, error) {
 	query := url.Values{"user_id": {asUser}, "filename": {"avatar"}}
 	target := c.cfg.BaseURL + "/_matrix/media/v3/upload?" + query.Encode()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, target, bytes.NewReader(data))

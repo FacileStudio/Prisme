@@ -47,3 +47,21 @@ func (c *Client) IsJoined(ctx context.Context, userID, roomID string) bool {
 	}
 	return slices.Contains(rooms, roomID)
 }
+
+// JoinedMembers lists the users joined to a room, sorted, as asUser, who must
+// be a member of it.
+func (c *Client) JoinedMembers(ctx context.Context, asUser, roomID string) ([]string, error) {
+	var out struct {
+		Joined map[string]any `json:"joined"`
+	}
+	path := "/_matrix/client/v3/rooms/" + url.PathEscape(roomID) + "/joined_members"
+	if err := c.do(ctx, request{method: http.MethodGet, path: path, asUser: asUser}, &out); err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(out.Joined))
+	for id := range out.Joined {
+		ids = append(ids, id)
+	}
+	slices.Sort(ids)
+	return ids, nil
+}
