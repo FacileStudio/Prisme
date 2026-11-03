@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0] - 2026-11-03
+
+### Added
+
+- `POST /api/agents` returns `owner_user_id`, the Matrix id of the agent's owner, so Bulle can let only the owner use the agent's tools
+
 ## [0.7.0] - 2026-11-03
 
 ### Changed
