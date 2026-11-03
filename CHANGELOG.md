@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.0] - 2026-11-03
+
+### Added
+
+- Mention suggestions on `@` with keyboard and pointer, live highlighting in the composer, highlighted mentions in messages and a tint on rows that mention you
+- Live typing indicators with avatars
+- Agents drawn as Facile blobs, in the client and as their Matrix avatar (PNG rendered by the API)
+- Registre shared spaces mirrored into Prisme spaces with `#general`, members joining and leaving with the directory (`POST /api/registre/sync`)
+- Agents join their owner's new spaces and channels immediately
+- `GET /api/users/agents`; `GET /api/users` carries `avatar_url` and `agent`
+- `/settings` page with profile, appearance, notifications, agents and sign out
+
+### Changed
+
+- Client rebuilt on the modular chat client and muse 0.8.0 `SideBar`, `Topbar` and `MobileNav`
+- Agents are named after their name in lowercase per owner (`@pixel`), `<name>-<owner>` when taken
+- Message avatars and names update live from member state
+
+### Fixed
+
+- Legacy `@agent-<owner>-<name>` agents migrate to `@<name>` and the old account is deactivated
+
 ## [0.2.0] - 2026-11-03
 
 ### Changed
