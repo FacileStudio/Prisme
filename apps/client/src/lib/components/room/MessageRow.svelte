@@ -3,7 +3,8 @@
 	import { app } from '$lib/state/app.svelte';
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { replyTarget } from '$lib/matrix/timeline';
-	import MxcAvatar from '$lib/components/common/MxcAvatar.svelte';
+	import { mentionsUser } from '$lib/chat/mentions';
+	import Avatar from '$lib/components/common/Avatar.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
 	import MessageBody from './MessageBody.svelte';
 	import MessageActions from './MessageActions.svelte';
@@ -17,11 +18,13 @@
 	const view = $derived.by(() => {
 		void app.version;
 		const sender = event.getSender() ?? '';
-		const member = room.getMember(sender);
+		const member = room.getMember(sender) ?? event.sender;
+		const me = app.client?.getUserId() ?? '';
 		return {
 			sender,
 			name: member?.name ?? sender,
-			avatar: member?.getMxcAvatarUrl() ?? null,
+			avatar: member?.getMxcAvatarUrl() ?? event.sender?.getMxcAvatarUrl() ?? null,
+			forMe: sender !== me && !event.isRedacted() && mentionsMe(me),
 			time: new Date(event.getTs()).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
 			edited: !!event.replacingEventId(),
 			pending: event.isSending(),
@@ -29,15 +32,22 @@
 			deleted: event.isRedacted()
 		};
 	});
+
+	function mentionsMe(me: string): boolean {
+		if (mentionsUser(event.getContent(), me)) return true;
+		return !!app.client?.getPushActionsForEvent(event)?.tweaks?.highlight;
+	}
 </script>
 
 <div
-	class="group relative flex gap-3 px-4 hover:bg-fc-surface/60 focus-within:bg-fc-surface/60 {grouped ? 'py-0.5' : 'mt-2 pt-1.5 pb-0.5'}"
+	class="group relative flex gap-3 px-4 {view.forMe
+		? 'bg-fc-warning/10 shadow-[inset_2px_0_0_var(--color-fc-warning)]'
+		: 'hover:bg-fc-surface/60 focus-within:bg-fc-surface/60'} {grouped ? 'py-0.5' : 'mt-2 pt-1.5 pb-0.5'}"
 	data-event-id={event.getId()}
 >
 	<div class="w-9 shrink-0">
 		{#if !grouped}
-			<MxcAvatar mxc={view.avatar} name={view.name} class="size-9" />
+			<Avatar userId={view.sender} name={view.name} mxc={view.avatar} size={36} />
 		{/if}
 	</div>
 	<div class="min-w-0 flex-1" class:opacity-60={view.pending}>

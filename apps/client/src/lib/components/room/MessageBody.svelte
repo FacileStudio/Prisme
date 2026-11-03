@@ -38,3 +38,19 @@
 		{@html html}
 	</div>
 {/if}
+
+<style>
+	.prose-msg :global(a.mention-pill) {
+		text-decoration: none;
+		border-radius: var(--radius-fc-pill);
+		padding: 0 0.35rem;
+		font-weight: 500;
+		color: var(--color-fc-fg);
+		background: color-mix(in oklch, var(--color-fc-accent) 12%, transparent);
+	}
+
+	.prose-msg :global(a.mention-pill.mention-me) {
+		color: var(--color-fc-accent-fg);
+		background: var(--color-fc-accent);
+	}
+</style>
