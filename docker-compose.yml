@@ -29,17 +29,20 @@
 # with it. Declaring labels here therefore takes full ownership of this service's
 # routing, which is exactly what we want.
 #
-# If a fork needs a route that is neither /api nor the SPA (Nuage serves /webdav
-# that way), add another router with its own rule pointing at the same service.
-# Do not add a second service.
+# Prisme is the one fork with a second public service, and it is not a second
+# app container: Synapse, the Matrix homeserver, answers /_matrix and
+# /_synapse/client on the same hostname. Its router carries a higher priority
+# so those paths reach it; everything else still reaches the one app container.
+# Synapse is never published by port and federation is off.
 
 services:
   db:
-    image: postgres:16-alpine
+    build:
+      context: deploy/postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-prisme}
     expose:
       - "5432"
@@ -50,6 +53,54 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 5s
+
+  synapse:
+    build:
+      context: deploy/synapse
+    restart: unless-stopped
+    expose:
+      - "8008"
+    networks:
+      - default
+      - dokploy-network
+    environment:
+      MATRIX_SERVER_NAME: ${MATRIX_SERVER_NAME:-prisme.facile.studio}
+      MATRIX_PUBLIC_URL: ${MATRIX_PUBLIC_URL:-https://prisme.facile.studio}
+      SYNAPSE_DB_HOST: db
+      SYNAPSE_DB_USER: ${POSTGRES_USER:-postgres}
+      SYNAPSE_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SYNAPSE_DB_NAME: synapse
+      SYNAPSE_SIGNING_KEY: ${SYNAPSE_SIGNING_KEY:?SYNAPSE_SIGNING_KEY is required}
+      SYNAPSE_MACAROON_SECRET: ${SYNAPSE_MACAROON_SECRET:?SYNAPSE_MACAROON_SECRET is required}
+      SYNAPSE_FORM_SECRET: ${SYNAPSE_FORM_SECRET:?SYNAPSE_FORM_SECRET is required}
+      PRISME_AS_TOKEN: ${PRISME_AS_TOKEN:?PRISME_AS_TOKEN is required}
+      PRISME_HS_TOKEN: ${PRISME_HS_TOKEN:?PRISME_HS_TOKEN is required}
+    volumes:
+      - synapse_data:/data
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: dokploy-network
+      traefik.http.routers.prisme-matrix-web.rule: "Host(`prisme.facile.studio`) && (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse/client`))"
+      traefik.http.routers.prisme-matrix-web.priority: "100"
+      traefik.http.routers.prisme-matrix-web.entrypoints: web
+      traefik.http.routers.prisme-matrix-web.middlewares: redirect-to-https@file
+      traefik.http.routers.prisme-matrix-web.service: prisme-matrix-svc
+      traefik.http.routers.prisme-matrix-secure.rule: "Host(`prisme.facile.studio`) && (PathPrefix(`/_matrix`) || PathPrefix(`/_synapse/client`))"
+      traefik.http.routers.prisme-matrix-secure.priority: "100"
+      traefik.http.routers.prisme-matrix-secure.entrypoints: websecure
+      traefik.http.routers.prisme-matrix-secure.tls.certresolver: letsencrypt
+      traefik.http.routers.prisme-matrix-secure.service: prisme-matrix-svc
+      traefik.http.services.prisme-matrix-svc.loadbalancer.server.port: "8008"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8008/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
 
   api:
     restart: unless-stopped
@@ -74,18 +125,29 @@ services:
       traefik.http.routers.prisme-secure.service: prisme-svc
       traefik.http.services.prisme-svc.loadbalancer.server.port: "4000"
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-prisme}?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-prisme}?sslmode=disable
       PORT: "4000"
       APP_ENV: ${APP_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      # Same-origin in production, so this only matters for a cross-origin dev client.
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://prisme.facile.studio}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      SSO_ONLY: ${SSO_ONLY:-true}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_REDIRECT_URL: ${OIDC_REDIRECT_URL:-}
+      OIDC_SUCCESS_URL: ${OIDC_SUCCESS_URL:-}
+      OIDC_MACHINE_AUDIENCE: ${OIDC_MACHINE_AUDIENCE:-}
+      MATRIX_INTERNAL_URL: http://synapse:8008
+      MATRIX_PUBLIC_URL: ${MATRIX_PUBLIC_URL:-https://prisme.facile.studio}
+      MATRIX_SERVER_NAME: ${MATRIX_SERVER_NAME:-prisme.facile.studio}
+      PRISME_AS_TOKEN: ${PRISME_AS_TOKEN}
+      PRISME_SECRET_KEY: ${PRISME_SECRET_KEY:?PRISME_SECRET_KEY is required}
+      ECHO_URL: ${ECHO_URL:-}
+      ECHO_INTEGRATION_KEY: ${ECHO_INTEGRATION_KEY:-}
       JOURNAL_URL: ${JOURNAL_URL:-}
       JOURNAL_TOKEN: ${JOURNAL_TOKEN:-}
     healthcheck:
-      # The image is distroless: no shell, no wget, no curl. Re-executing the
-      # binary is the only probe available. Provided by tronc's healthcheck
-      # package, which answers before any configuration is read.
       test: ["CMD", "/api", "healthcheck"]
       interval: 10s
       timeout: 5s
@@ -102,3 +164,5 @@ networks:
 volumes:
   db_data:
     name: prisme_db_data
+  synapse_data:
+    name: prisme_synapse_data

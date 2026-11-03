@@ -1,0 +1,65 @@
+server_name: "${MATRIX_SERVER_NAME}"
+public_baseurl: "${MATRIX_PUBLIC_URL}/"
+pid_file: /data/homeserver.pid
+log_config: /data/log.config
+signing_key_path: /data/signing.key
+media_store_path: /data/media_store
+report_stats: false
+
+listeners:
+  - port: 8008
+    type: http
+    tls: false
+    x_forwarded: true
+    bind_addresses: ["0.0.0.0"]
+    resources:
+      - names: [client]
+        compress: false
+
+database:
+  name: psycopg2
+  args:
+    host: "${SYNAPSE_DB_HOST}"
+    user: "${SYNAPSE_DB_USER}"
+    password: "${SYNAPSE_DB_PASSWORD}"
+    dbname: "${SYNAPSE_DB_NAME}"
+    cp_min: 2
+    cp_max: 6
+
+macaroon_secret_key: "${SYNAPSE_MACAROON_SECRET}"
+form_secret: "${SYNAPSE_FORM_SECRET}"
+
+federation_domain_whitelist: []
+trusted_key_servers: []
+suppress_key_server_warning: true
+allow_public_rooms_over_federation: false
+
+enable_registration: false
+password_config:
+  enabled: false
+
+app_service_config_files:
+  - /data/appservice.yaml
+
+url_preview_enabled: false
+max_upload_size: 50M
+presence:
+  enabled: true
+
+caches:
+  global_factor: 0.5
+  cache_autotuning:
+    max_cache_memory_usage: 256M
+    target_cache_memory_usage: 192M
+    min_cache_ttl: 5m
+event_cache_size: 5K
+
+rc_message:
+  per_second: 5
+  burst_count: 30
+rc_joins:
+  local:
+    per_second: 2
+    burst_count: 20
+
+enable_metrics: false

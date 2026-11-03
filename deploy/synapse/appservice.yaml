@@ -1,0 +1,16 @@
+id: prisme
+url: null
+as_token: "${PRISME_AS_TOKEN}"
+hs_token: "${PRISME_HS_TOKEN}"
+sender_localpart: prisme
+rate_limited: false
+namespaces:
+  users:
+    - exclusive: true
+      regex: "@[a-z0-9._=-]+:${MATRIX_SERVER_NAME_REGEX}"
+    - exclusive: true
+      regex: "@agent-.*:${MATRIX_SERVER_NAME_REGEX}"
+  aliases:
+    - exclusive: true
+      regex: "#prisme-.*:${MATRIX_SERVER_NAME_REGEX}"
+  rooms: []
