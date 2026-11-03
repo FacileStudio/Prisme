@@ -45,7 +45,7 @@ func (s serviceKeys) serve(w http.ResponseWriter, r *http.Request, next http.Han
 		return
 	}
 	email := strings.ToLower(address.Address)
-	userID, err := s.userFor(r.Context(), email)
+	userID, err := UserFor(r.Context(), s.db, email)
 	if err != nil {
 		httpjson.WriteError(w, errors.Internal("failed to resolve the user", err))
 		return
@@ -54,12 +54,13 @@ func (s serviceKeys) serve(w http.ResponseWriter, r *http.Request, next http.Han
 	next.ServeHTTP(w, r.WithContext(porte.WithIdentity(r.Context(), identity)))
 }
 
-// userFor returns the porte user with this email, creating it as a first
-// sign-in would. The address counts as verified: the calling service vouches
-// for it, and porte links the Registre identity to it on first SSO sign-in.
-func (s serviceKeys) userFor(ctx context.Context, email string) (int64, error) {
+// UserFor returns the porte user with this email, creating it as a first
+// sign-in would. The address counts as verified: the caller (a service key or
+// the Registre directory) vouches for it, and porte links the Registre
+// identity to it on first SSO sign-in.
+func UserFor(ctx context.Context, db *sql.DB, email string) (int64, error) {
 	var userID int64
-	err := s.db.QueryRowContext(ctx, `
+	err := db.QueryRowContext(ctx, `
 		INSERT INTO porte_users (email, email_verified) VALUES ($1, true)
 		ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
 		RETURNING id`, email).Scan(&userID)

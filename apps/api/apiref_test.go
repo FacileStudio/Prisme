@@ -12,6 +12,7 @@ import (
 
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/porte"
+	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/apiref"
 	"github.com/go-chi/chi/v5"
 )
@@ -32,6 +33,21 @@ func testRouter(t *testing.T) chi.Router {
 func TestEveryRouteIsDocumented(t *testing.T) {
 	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known"); len(missing) > 0 {
 		t.Errorf("routes missing from the API registry:\n  %s", strings.Join(missing, "\n  "))
+	}
+}
+
+// Registre nudges anonymously, so the route must answer without a session.
+func TestTheRegistreNudgeNeedsNoCredentials(t *testing.T) {
+	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	router := buildRouter(app{logger: quiet, auth: authService, syncer: &directory.Syncer{}})
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, directory.SyncPath, nil))
+	if recorder.Code != http.StatusAccepted {
+		t.Fatalf("POST %s = %d, want 202", directory.SyncPath, recorder.Code)
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
 
+	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/apiref"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/healthcheck"
@@ -59,6 +60,8 @@ type app struct {
 	agents     *agents.Service
 	calls      *calls.Service
 	users      *users.Service
+	registre   *spaces.Registre
+	syncer     *directory.Syncer
 }
 
 func buildRouter(a app) chi.Router {
@@ -80,6 +83,9 @@ func buildRouter(a app) chi.Router {
 			agents.RegisterRoutes(r, a.agents, a.auth)
 			calls.RegisterRoutes(r, a.calls, a.auth)
 			users.RegisterRoutes(r, a.users, a.auth)
+			if a.syncer != nil {
+				spaces.RegisterSync(r, a.syncer)
+			}
 		})
 	}
 	clientDir := spa.DirFromEnv()

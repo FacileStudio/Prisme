@@ -26,6 +26,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/schemas"
 
 	"github.com/FacileStudio/Journal/sdk/journal"
+	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/logger"
 	"gorm.io/gorm"
@@ -59,7 +60,31 @@ func run() int {
 		appLogger.Error("failed to build the services", slog.Any("error", err))
 		return 1
 	}
-	return serve(":"+strconv.Itoa(cfg.Port), buildRouter(services), appLogger)
+	return start(services, ":"+strconv.Itoa(cfg.Port))
+}
+
+// start runs the Registre sync, when configured, beside the HTTP server until
+// a signal ends both.
+func start(services app, addr string) int {
+	shutdownSignal, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	if services.registre != nil {
+		go services.registre.Run(shutdownSignal, services.syncer)
+	}
+	return serve(shutdownSignal, addr, buildRouter(services), services.logger)
+}
+
+// newDirectory builds the Registre space sync when OIDC is configured, with
+// Prisme's own client credentials, and nils otherwise: without Registre there
+// is nothing to sync and no nudge route to mount.
+func newDirectory(cfg env.Config, spaceService *spaces.Service, appLogger *slog.Logger) (*spaces.Registre, *directory.Syncer) {
+	porteCfg := cfg.Porte
+	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
+		return nil, nil
+	}
+	registre := spaces.NewRegistre(spaceService, porteCfg.Issuer, appLogger)
+	client := directory.Client{Issuer: porteCfg.Issuer, ClientID: porteCfg.ClientID, ClientSecret: porteCfg.ClientSecret}
+	return registre, &directory.Syncer{Client: client, Apply: registre.Apply, Logger: appLogger}
 }
 
 func newLogger(cfg env.Config) (*slog.Logger, func()) {
@@ -95,7 +120,7 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 	agentService := agents.NewService(agents.Deps{
 		DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger,
 	})
-	return app{
+	built := app{
 		logger: appLogger, cors: cfg.CORSAllowedOrigins, dbCheck: health.DB(sqlDB), homeserver: cfg.Matrix.PublicURL,
 		auth: authService,
 		session: session.NewService(session.Deps{
@@ -108,7 +133,9 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		agents: agentService,
 		calls:  calls.NewService(newEcho(cfg), client, accountService),
 		users:  users.NewService(db),
-	}, nil
+	}
+	built.registre, built.syncer = newDirectory(cfg, built.spaces, appLogger)
+	return built, nil
 }
 
 func newEcho(cfg env.Config) *echo.Client {
@@ -118,7 +145,7 @@ func newEcho(cfg env.Config) *echo.Client {
 	return echo.New(cfg.Echo.URL, cfg.Echo.Key)
 }
 
-func serve(addr string, router http.Handler, appLogger *slog.Logger) int {
+func serve(shutdownSignal context.Context, addr string, router http.Handler, appLogger *slog.Logger) int {
 	server := &http.Server{
 		Addr: addr, Handler: router,
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
@@ -126,8 +153,6 @@ func serve(addr string, router http.Handler, appLogger *slog.Logger) int {
 	}
 	serverErr := make(chan error, 1)
 	go func() { serverErr <- server.ListenAndServe() }()
-	shutdownSignal, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 	appLogger.Info("server starting", slog.String("addr", addr))
 	select {
 	case err := <-serverErr:

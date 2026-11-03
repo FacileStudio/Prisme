@@ -3,9 +3,11 @@ package spaces
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/porte"
+	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/errors"
 	"github.com/FacileStudio/tronc/httpjson"
 
@@ -19,6 +21,14 @@ func RegisterRoutes(router chi.Router, service *Service, authService *auth.Servi
 	router.With(authService.Require(auth.ScopeRead)).Get("/spaces", h.list)
 	router.With(authService.Require("")).Post("/spaces", h.create)
 	router.With(authService.Require("")).Post("/spaces/{id}/channels", h.createChannel)
+}
+
+// RegisterSync mounts Registre's nudge on the /api group, so it answers at
+// directory.SyncPath. It sits outside every auth middleware on purpose: the
+// nudge is an anonymous POST that only makes the next authenticated pull
+// happen sooner.
+func RegisterSync(router chi.Router, syncer *directory.Syncer) {
+	router.Method(http.MethodPost, strings.TrimPrefix(directory.SyncPath, "/api"), syncer.Handler())
 }
 
 type handlers struct {
