@@ -77,7 +77,7 @@ func (s *Service) title(ctx context.Context, userID, roomID string) string {
 func (s *Service) announce(ctx context.Context, userID, roomID, name string, room echo.Room) {
 	content := map[string]any{
 		"msgtype":            "m.text",
-		"body":               name + " started a call: " + room.JoinURL,
+		"body":               name + " started an end-to-end encrypted call in Prisme",
 		"studio.facile.call": CallContent{CallID: room.RoomID, JoinURL: room.JoinURL, StartedBy: userID},
 	}
 	_, _ = s.matrix.SendMessage(ctx, userID, roomID, content)
