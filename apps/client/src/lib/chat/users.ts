@@ -12,3 +12,11 @@ export function isAgent(userId: string, known?: ReadonlyMap<string, unknown>): b
 export function isBot(userId: string): boolean {
 	return userId.startsWith('@prisme:');
 }
+
+/** The sentence under the composer for the given names. */
+export function typingSentence(names: string[]): string {
+	if (names.length === 0) return '';
+	if (names.length === 1) return `${names[0]} is typing…`;
+	if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
+	return `${names[0]}, ${names[1]} and ${names.length - 2} more are typing…`;
+}

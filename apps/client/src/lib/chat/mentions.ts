@@ -2,50 +2,61 @@ import { escapeHtml } from './markdown';
 
 export type Mentionable = { userId: string; name: string; agent: boolean };
 export type Mention = { userId: string; name: string };
-export type MentionQuery = { start: number; query: string };
+export type MentionRange = { start: number; end: number; mention: Mention };
+export type Segment = { text: string; mention: Mention | null };
 
-/** Finds the `@query` the caret sits in, if any. */
-export function activeMention(text: string, caret: number): MentionQuery | null {
-	const before = text.slice(0, caret);
-	const match = /(^|\s)@([^\s@]*)$/.exec(before);
-	if (!match) return null;
-	return { start: caret - match[2].length - 1, query: match[2] };
+const WORD = /[\p{L}\p{N}_]/u;
+
+function matchesAt(text: string, at: number, name: string): boolean {
+	if (!name || !text.startsWith(name, at + 1)) return false;
+	const next = text[at + 1 + name.length];
+	return next === undefined || !WORD.test(next);
 }
 
-function score(member: Mentionable, query: string): number {
-	const name = member.name.toLowerCase();
-	const local = member.userId.slice(1).toLowerCase();
-	if (name.startsWith(query) || local.startsWith(query)) return 0;
-	if (name.includes(query) || local.includes(query)) return 1;
-	return -1;
+/**
+ * Finds every `@name` of a known mention in the text. An `@` glued to a word
+ * (an email) never starts one, a name must end on a word boundary, and the
+ * longest name wins; on a tie the earlier entry in `known` wins.
+ */
+export function findMentions(text: string, known: Mention[]): MentionRange[] {
+	const byLength = [...known].sort((a, b) => b.name.length - a.name.length);
+	const ranges: MentionRange[] = [];
+	let at = text.indexOf('@');
+	while (at !== -1) {
+		const free = at === 0 || !WORD.test(text[at - 1]);
+		const hit = free ? byLength.find((m) => matchesAt(text, at, m.name)) : undefined;
+		const end = hit ? at + hit.name.length + 1 : at + 1;
+		if (hit) ranges.push({ start: at, end, mention: hit });
+		at = text.indexOf('@', end);
+	}
+	return ranges;
 }
 
-/** Ranks members for the completion menu: prefix matches first, then substrings. */
-export function filterMembers(members: Mentionable[], query: string, limit = 8): Mentionable[] {
-	const q = query.toLowerCase();
-	return members
-		.map((member) => ({ member, rank: score(member, q) }))
-		.filter((entry) => entry.rank >= 0)
-		.sort((a, b) => a.rank - b.rank || a.member.name.localeCompare(b.member.name))
-		.slice(0, limit)
-		.map((entry) => entry.member);
+/** Splits text into plain runs and `@name` mention runs, for the composer highlight. */
+export function segments(text: string, known: Mention[]): Segment[] {
+	const out: Segment[] = [];
+	let from = 0;
+	for (const range of findMentions(text, known)) {
+		if (range.start > from) out.push({ text: text.slice(from, range.start), mention: null });
+		out.push({ text: text.slice(range.start, range.end), mention: range.mention });
+		from = range.end;
+	}
+	if (from < text.length) out.push({ text: text.slice(from), mention: null });
+	return out;
 }
 
-/** Replaces the active `@query` with the chosen display name. */
-export function insertMention(text: string, at: MentionQuery, caret: number, name: string) {
-	const insert = `@${name} `;
-	const next = text.slice(0, at.start) + insert + text.slice(caret);
-	return { text: next, caret: at.start + insert.length };
-}
-
-/** Keeps only the mentions whose `@name` is still in the text, without duplicates. */
+/** The mentions whose `@name` is in the text, in order of first appearance, one per user. */
 export function presentMentions(text: string, mentions: Mention[]): Mention[] {
 	const seen = new Set<string>();
-	return mentions.filter((m) => {
-		if (seen.has(m.userId) || !text.includes(`@${m.name}`)) return false;
-		seen.add(m.userId);
-		return true;
-	});
+	return findMentions(text, mentions)
+		.map((range) => range.mention)
+		.filter((m) => !seen.has(m.userId) && seen.add(m.userId));
+}
+
+/** Reports whether a message's `m.mentions` names the given user. */
+export function mentionsUser(content: Record<string, unknown>, userId: string): boolean {
+	const block = content['m.mentions'] as { user_ids?: unknown } | undefined;
+	return Array.isArray(block?.user_ids) && block.user_ids.includes(userId);
 }
 
 /** The matrix.to permalink Matrix clients render as a user pill. */
