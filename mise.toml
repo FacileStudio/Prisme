@@ -1,0 +1,51 @@
+monorepo_root = true
+
+[settings]
+experimental = true
+lockfile = true
+
+[monorepo]
+config_roots = ["apps/api", "apps/client"]
+
+[tools]
+lefthook = "latest"
+go = "1.26"
+bun = "1.3.11"
+
+[hooks]
+postinstall = "lefthook install"
+
+[tasks.bootstrap]
+description = "Install monorepo dependencies"
+depends = ["//apps/api:deps", "//apps/client:install"]
+run = "true"
+
+[tasks.db-up]
+description = "Start the repo-local Postgres dev database"
+run = "sh ./scripts/postgres-up.sh"
+
+[tasks.db-down]
+description = "Stop the repo-local Postgres dev database"
+run = "sh ./scripts/postgres-down.sh"
+
+[tasks.build]
+description = "Build the API and client"
+depends = ["//apps/api:build", "//apps/client:build"]
+run = "true"
+
+[tasks.check]
+description = "Run the full quality gate: the Go module, then the client"
+run = "sh ./scripts/check.sh"
+
+[tasks.check-go]
+description = "Run the Go half of the quality gate"
+run = "sh ./scripts/check.sh --go-only"
+
+[tasks.format]
+description = "Format the Go sources in place"
+run = "sh ./scripts/check.sh --format"
+
+[tasks.dev]
+description = "Run the API and client development servers"
+depends = ["//apps/api:dev", "//apps/client:dev"]
+run = "true"
