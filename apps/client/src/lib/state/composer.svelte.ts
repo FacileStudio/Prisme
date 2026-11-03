@@ -1,6 +1,6 @@
 import type { MatrixClient, Room } from 'matrix-js-sdk';
 import { activeMention, filterMembers, insertMention } from '$lib/chat/complete';
-import type { Mention, Mentionable } from '$lib/chat/mentions';
+import { mentionFor, type Mention, type Mentionable } from '$lib/chat/mentions';
 import { isAgent, isBot } from '$lib/chat/users';
 import { TypingNotifier } from '$lib/matrix/typing';
 import { stripReplyFallback } from '$lib/chat/markdown';
@@ -13,7 +13,7 @@ export function mentionables(room: Room, me: string, agents?: ReadonlyMap<string
 	return room
 		.getJoinedMembers()
 		.filter((m) => m.userId !== me && !isBot(m.userId))
-		.map((m) => ({ userId: m.userId, name: m.name, agent: isAgent(m.userId, agents) }));
+		.map((m) => ({ userId: m.userId, name: m.rawDisplayName || m.name, agent: isAgent(m.userId, agents) }));
 }
 
 /** One composer's text, mentions, completion and attachments. */
@@ -37,7 +37,7 @@ export class ComposerState {
 
 	/** Everyone the text may name: the chosen mentions first, then the room members. */
 	known(members: Mentionable[]): Mention[] {
-		return [...this.mentions, ...members.map(({ userId, name }) => ({ userId, name }))];
+		return [...this.mentions, ...members.map(({ userId }) => mentionFor(userId))];
 	}
 
 	/** The completion candidates for the `@query` under the caret. */
@@ -50,8 +50,9 @@ export class ComposerState {
 	choose(member: Mentionable): number {
 		const at = activeMention(this.text, this.caret);
 		if (!at) return this.caret;
-		const next = insertMention(this.text, at, this.caret, member.name);
-		this.mentions = [...this.mentions, { userId: member.userId, name: member.name }];
+		const mention = mentionFor(member.userId);
+		const next = insertMention(this.text, at, this.caret, mention.name);
+		this.mentions = [...this.mentions, mention];
 		this.text = next.text;
 		this.caret = next.caret;
 		this.selected = 0;
@@ -70,7 +71,7 @@ export class ComposerState {
 		const content = event.getContent();
 		this.text = stripReplyFallback(String(content.body ?? ''));
 		const ids = (content['m.mentions'] as { user_ids?: string[] } | undefined)?.user_ids ?? [];
-		this.mentions = ids.map((id) => ({ userId: id, name: this.room.getMember(id)?.name ?? id }));
+		this.mentions = ids.map(mentionFor);
 	}
 
 	/** Sends the attachments and the text, or saves an edit. */

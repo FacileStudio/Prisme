@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { composeMessage } from './compose';
 import { escapeHtml, renderMarkdown, stripReplyFallback } from './markdown';
 import { activeMention, filterMembers, insertMention } from './complete';
-import { findMentions, mentionsUser, presentMentions, segments } from './mentions';
+import { findMentions, mentionFor, mentionsUser, presentMentions, segments } from './mentions';
 import { handle, isAgent, typingSentence } from './users';
 import { continues, formatCount, roomBadge, sumBadges } from './unread';
 
@@ -117,6 +117,12 @@ describe('composeMessage', () => {
 		expect(out.body).toBe('hi @Bulle_bot do it');
 		expect(out.html).toBe('hi <a href="https://matrix.to/#/@agent-x:localhost">@Bulle_bot</a> do it');
 		expect(out.userIds).toEqual(['@agent-x:localhost']);
+	});
+
+	it('mentions a user by username, never by display name', () => {
+		const pixel = mentionFor('@pixel:prisme.facile.studio');
+		expect(pixel).toEqual({ userId: '@pixel:prisme.facile.studio', name: 'pixel' });
+		expect(composeMessage('hey @pixel', [pixel]).html).toBe('hey <a href="https://matrix.to/#/@pixel:prisme.facile.studio">@pixel</a>');
 	});
 
 	it('resolves a typed name and prefers the chosen person on a tie', () => {

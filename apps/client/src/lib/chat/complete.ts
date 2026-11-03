@@ -29,7 +29,7 @@ export function filterMembers(members: Mentionable[], query: string, limit = 8):
 		.map((entry) => entry.member);
 }
 
-/** Replaces the active `@query` with the chosen display name. */
+/** Replaces the active `@query` with the chosen username. */
 export function insertMention(text: string, at: MentionQuery, caret: number, name: string) {
 	const insert = `@${name} `;
 	const next = text.slice(0, at.start) + insert + text.slice(caret);

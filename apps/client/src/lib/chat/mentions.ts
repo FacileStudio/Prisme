@@ -1,11 +1,17 @@
 import { escapeHtml } from './markdown';
+import { handle } from './users';
 
 export type Mentionable = { userId: string; name: string; agent: boolean };
 export type Mention = { userId: string; name: string };
 export type MentionRange = { start: number; end: number; mention: Mention };
 export type Segment = { text: string; mention: Mention | null };
 
-const WORD = /[\p{L}\p{N}_]/u;
+/** The mention of a user: their username, written `@pixel`, never their display name. */
+export function mentionFor(userId: string): Mention {
+	return { userId, name: handle(userId).replace(/^@/, '') };
+}
+
+const WORD =/[\p{L}\p{N}_]/u;
 
 function matchesAt(text: string, at: number, name: string): boolean {
 	if (!name || !text.startsWith(name, at + 1)) return false;

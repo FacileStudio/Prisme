@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { handle } from './users';
 
 const ALLOWED_TAGS = [
 	'a', 'b', 'blockquote', 'br', 'code', 'del', 'details', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -15,6 +16,7 @@ function decorateLink(node: Element, me: string) {
 		const userId = decodeURIComponent(pill[1]);
 		node.setAttribute('class', userId === me ? 'mention-pill mention-me' : 'mention-pill');
 		node.setAttribute('data-user', userId);
+		node.textContent = handle(userId);
 		return;
 	}
 	node.setAttribute('target', '_blank');
@@ -23,7 +25,7 @@ function decorateLink(node: Element, me: string) {
 
 /**
  * Sanitizes a received `formatted_body` to the Matrix-safe tag set, drops the
- * `mx-reply` fallback, and styles matrix.to user links as mention pills.
+ * `mx-reply` fallback, and shows matrix.to user links as `@username` mention pills.
  */
 export function sanitizeMessage(html: string, me: string): string {
 	const withoutReply = html.replace(/<mx-reply>[\s\S]*?<\/mx-reply>/gi, '');
