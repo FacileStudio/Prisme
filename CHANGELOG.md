@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0] - 2026-11-03
+
+### Changed
+
+- The rail entry "All channels" is now "Overview", with a home icon: it is the space's page and the phone home
+- The overview page is redesigned: a space header with its channel and member counts, Invite and New channel buttons, then cards for your channels, channels you can join, and direct messages
+- Space invites show as a card with a "Join the space" button at the top of the overview
+
 ## [0.5.0] - 2026-11-03
 
 ### Changed
