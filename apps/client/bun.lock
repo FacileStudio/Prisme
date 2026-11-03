@@ -5,6 +5,7 @@
     "": {
       "name": "frontend",
       "dependencies": {
+        "@facile/blob": "github:FacileStudio/blob#v0.1.1",
         "@facile/muse": "github:FacileStudio/muse#v0.7.3",
         "dompurify": "^3.4.17",
         "livekit-client": "^2.23.0",
@@ -81,6 +82,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.28.1", "", { "os": "win32", "cpu": "ia32" }, "sha512-zvb/mB2bSCoJOpoCBgYKKpX6YM6mJBlBUVUtVj41DlZJVEB6/0CKlRYxP5wWl1C1ILiCoAU5wZZ4q1P3qeS6Eg=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.1", "", { "os": "win32", "cpu": "x64" }, "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A=="],
+
+    "@facile/blob": ["@facile/blob@github:FacileStudio/blob#6fed49e", { "peerDependencies": { "svelte": "^5.29.0" } }, "FacileStudio-blob-6fed49e", "sha512-5DBX13Ip5FmxifEawqmnxvFkVEb33fESK+LJ43ouXSlVBF9N59DwXHBJcCuyQ6bz4PVFx7FXAFmhdPSq9VY+Ew=="],
 
     "@facile/muse": ["@facile/muse@github:FacileStudio/muse#955c08c", { "dependencies": { "gsap": "^3.13.0", "tailwind-merge": "^3.5.0" }, "peerDependencies": { "svelte": "^5.0.0", "tailwindcss": "^4.0.0" } }, "FacileStudio-muse-955c08c", "sha512-aBgSDTos6D7if5+2MgJZsS/EWphCnMoD607mDTeg11ZXQHKVc0qQgyR65F8WxpX38uPm16UfyhFSPywTnnBAkQ=="],
 

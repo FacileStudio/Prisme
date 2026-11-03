@@ -28,7 +28,9 @@ const WATCHED = [
 	ThreadEvent.New,
 	ThreadEvent.Update,
 	ThreadEvent.NewReply,
-	UserEvent.Presence
+	UserEvent.Presence,
+	UserEvent.AvatarUrl,
+	UserEvent.DisplayName
 ] as const;
 
 /**

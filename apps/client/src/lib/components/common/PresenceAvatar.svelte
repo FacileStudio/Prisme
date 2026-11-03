@@ -1,22 +1,10 @@
 <script lang="ts">
-	import { app } from '$lib/state/app.svelte';
-	import MxcAvatar from './MxcAvatar.svelte';
+	import Avatar from './Avatar.svelte';
 
 	type Props = { userId: string; name: string; src?: string; size?: 'sm' | 'md' | 'lg'; class?: string };
 	let { userId, name, src = '', size = 'sm', class: className = '' }: Props = $props();
 
-	const user = $derived.by(() => {
-		void app.version;
-		return userId ? (app.client?.getUser(userId) ?? null) : null;
-	});
-	const online = $derived(user?.presence === 'online');
+	const PX = { sm: 24, md: 40, lg: 56 } as const;
 </script>
 
-<span class="relative inline-flex shrink-0 {className}">
-	<MxcAvatar mxc={user?.avatarUrl ?? null} {src} {name} {size} class={size === 'sm' ? 'size-6 text-[10px]' : ''} />
-	<span
-		class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-fc-pill border-2 border-fc-component {online ? 'bg-fc-success' : 'bg-fc-border'}"
-		role="img"
-		aria-label={online ? 'Online' : 'Offline'}
-	></span>
-</span>
+<Avatar {userId} {name} {src} size={PX[size]} presence class={className} />

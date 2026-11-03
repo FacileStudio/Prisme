@@ -19,7 +19,8 @@ export type Session = { user: SessionUser; matrix: MatrixLogin; calls_enabled: b
 export type AuthConfig = { sso_only: boolean; oidc_enabled: boolean };
 export type Channel = { room_id: string; name: string; alias: string };
 export type Space = { id: number; room_id: string; name: string; slug: string; channels: Channel[] };
-export type DirectoryUser = { user_id: string; name: string };
+export type DirectoryUser = { user_id: string; name: string; avatar_url?: string; agent?: boolean };
+export type AgentUser = { user_id: string; name: string; owner_user_id: string };
 export type Agent = { user_id: string; name: string; room_ids: string[] };
 export type CallGrant = { call_id: string; livekit_url: string; token: string; join_url: string };
 
@@ -35,6 +36,7 @@ export const prisme = {
 	createChannel: (spaceId: number, name: string, topic = '') =>
 		send<Channel>(`/spaces/${spaceId}/channels`, 'POST', { name, topic }),
 	users: (q: string) => request<DirectoryUser[]>(`/users?q=${encodeURIComponent(q)}`),
+	usersAgents: () => request<AgentUser[]>('/users/agents'),
 	agents: () => request<Agent[]>('/agents'),
 	setAgentRooms: (userId: string, roomIds: string[]) =>
 		send<{ room_ids: string[] }>(`/agents/${encodeURIComponent(userId)}/rooms`, 'PUT', { room_ids: roomIds }),
