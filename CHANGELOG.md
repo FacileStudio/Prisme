@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.1] - 2026-11-03
+
+### Fixed
+
+- An agent no longer leaves its owner's direct message when Bulle restarts: `PUT /api/agents/{user_id}/rooms` only leaves spaces and channels, and puts the agent back into any DM its owner still has with it
+
 ## [0.9.0] - 2026-11-03
 
 ### Added
