@@ -2,72 +2,52 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Button } from '@facile/muse';
-	import { backend, ssoLoginUrl } from '$lib/backend';
+	import { Alert, Button, Icon, Spinner } from '@facile/muse';
+	import { glyphs } from '$lib/glyphs';
+	import { LOGIN_PATH, prisme, type AuthConfig } from '$lib/api/prisme';
 
-	let error = $state('');
-
-	$effect(() => {
-		error = page.url.searchParams.get('error') ?? '';
-	});
+	let config = $state<AuthConfig | null>(null);
+	let checking = $state(true);
+	const error = $derived(page.url.searchParams.get('error') ?? '');
 
 	onMount(async () => {
-		try {
-			await backend.getSession();
-			await goto('/');
-		} catch {
+		const signedIn = await prisme.session().then(() => true, () => false);
+		if (signedIn) {
+			await goto('/', { replaceState: true });
 			return;
 		}
+		config = await prisme.authConfig().catch(() => null);
+		checking = false;
 	});
 </script>
 
 <svelte:head>
-	<title>Log in — Prisme</title>
+	<title>Sign in · Prisme</title>
 </svelte:head>
 
-<div class="flex min-h-dvh">
-	<div class="hidden flex-col bg-black px-12 py-10 lg:flex lg:w-1/2">
-		<a href="/" class="mb-auto flex items-center gap-3 text-white" aria-label="Prisme home">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="stroke-white stroke-2">
-				<polygon points="12 2 2 22 22 22" />
-			</svg>
-			<span class="text-fc-xl font-semibold tracking-tight">Prisme</span>
-		</a>
-
-		<div class="mb-auto">
-			<h2 class="text-fc-3xl leading-tight font-semibold tracking-tight text-white">
-				Your team.<br />Your chat.
-			</h2>
-			<p class="mt-4 max-w-xs text-fc-sm leading-relaxed text-white/50">
-				Slack-shaped team chat built on Matrix with AI assistants as first-class teammates.
-			</p>
+<main class="flex min-h-dvh items-center justify-center bg-fc-page px-4 text-fc-fg">
+	<div class="flex w-full max-w-sm flex-col gap-6">
+		<div class="flex flex-col items-center gap-3 text-center">
+			<span class="flex size-14 items-center justify-center rounded-fc-lg bg-fc-accent text-fc-accent-fg">
+				<Icon icon={glyphs.chat} size={28} />
+			</span>
+			<h1 class="text-fc-2xl font-semibold">Prisme</h1>
+			<p class="text-fc-sm text-fc-fg-muted">The Facile team chat. Sign in with your Facile account.</p>
 		</div>
-
-		<p class="text-fc-xs text-white/30">
-			&copy; {new Date().getFullYear()} Prisme by Facile.
-		</p>
-	</div>
-
-	<div class="flex w-full flex-col items-center justify-center bg-fc-page px-8 py-12 lg:w-1/2">
-		<div class="w-full max-w-sm">
-			<div class="mb-8">
-				<h1 class="text-fc-2xl font-semibold tracking-tight text-fc-fg">
-					Welcome to Prisme
-				</h1>
-				<p class="mt-1.5 text-fc-sm text-fc-fg-muted">
-					Sign in with your Facile account to access your spaces and channels.
-				</p>
-			</div>
-
-			{#if error}
-				<div role="alert" class="mb-4 rounded-fc-md bg-fc-danger/10 px-3 py-2 text-fc-sm text-fc-danger">
-					{error}
-				</div>
-			{/if}
-
-			<Button href={ssoLoginUrl} data-sveltekit-reload size="lg" class="w-full">
+		{#if error}
+			<Alert tone="danger" title="Sign-in failed">{error}</Alert>
+		{/if}
+		{#if checking}
+			<div class="flex justify-center"><Spinner label="Checking your session" /></div>
+		{:else}
+			<Button href={LOGIN_PATH} size="lg" icon={glyphs.login} class="w-full" data-sveltekit-reload>
 				Sign in with Facile
 			</Button>
-		</div>
+			{#if config && !config.oidc_enabled}
+				<p class="text-center text-fc-xs text-fc-fg-muted">
+					Single sign-on is not configured on this server. Ask an administrator.
+				</p>
+			{/if}
+		{/if}
 	</div>
-</div>
+</main>

@@ -1,2 +1,71 @@
 @import '@facile/muse/styles';
 @source '../node_modules/@facile/muse/src';
+
+html,
+body {
+	height: 100%;
+	overflow: hidden;
+}
+
+.prose-msg {
+	overflow-wrap: anywhere;
+}
+
+.prose-msg p + p {
+	margin-top: 0.25rem;
+}
+
+.prose-msg a {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.prose-msg code {
+	font-family: var(--font-fc-mono);
+	font-size: 0.85em;
+	background: var(--color-fc-surface);
+	border-radius: var(--radius-fc-sm);
+	padding: 0.1rem 0.3rem;
+}
+
+.prose-msg pre {
+	margin: 0.25rem 0;
+	padding: 0.5rem 0.75rem;
+	background: var(--color-fc-surface);
+	border-radius: var(--radius-fc-md);
+	overflow-x: auto;
+}
+
+.prose-msg pre code {
+	background: transparent;
+	padding: 0;
+}
+
+.prose-msg blockquote {
+	border-left: 3px solid var(--color-fc-border);
+	padding-left: 0.75rem;
+	color: var(--color-fc-fg-muted);
+}
+
+.prose-msg ul {
+	list-style: disc;
+	padding-left: 1.25rem;
+}
+
+.prose-msg ol {
+	list-style: decimal;
+	padding-left: 1.25rem;
+}
+
+.prose-msg a.mention-pill {
+	text-decoration: none;
+	background: var(--color-fc-surface);
+	border-radius: var(--radius-fc-pill);
+	padding: 0 0.35rem;
+	font-weight: 500;
+}
+
+.prose-msg a.mention-pill.mention-me {
+	background: color-mix(in oklch, var(--color-fc-warning) 18%, transparent);
+	color: var(--color-fc-warning);
+}
