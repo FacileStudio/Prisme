@@ -14,7 +14,7 @@
 		if (!thread || thread.length === 0) return null;
 		const last = thread.replyToEvent ?? thread.lastReply();
 		const sender = last?.getSender() ?? '';
-		return { count: thread.length, last: room.getMember(sender)?.name ?? sender, ts: last?.getTs() ?? 0 };
+		return { count: thread.length, last: room.getMember(sender)?.rawDisplayName || sender, ts: last?.getTs() ?? 0 };
 	});
 </script>
 
