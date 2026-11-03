@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/FacileStudio/Prisme/apps/api/internal/accounts"
@@ -22,6 +23,7 @@ type Deps struct {
 	Accounts   *accounts.Service
 	Box        *seal.Box
 	Homeserver string
+	Logger     *slog.Logger
 }
 
 // Service manages agents.
@@ -44,52 +46,39 @@ func resolveSlug(name string) (string, string) {
 	return slug, ""
 }
 
-func (s *Service) checkTaken(ctx context.Context, slug string, ownerID int64) string {
-	var count int64
-	if s.deps.DB.WithContext(ctx).Model(&schemas.Account{}).Where("localpart = ?", slug).Count(&count).Error != nil {
-		return "failed to check account availability"
-	}
-	if count > 0 {
-		return fmt.Sprintf("the name %q is already taken", slug)
-	}
-	var existing schemas.Agent
-	err := s.deps.DB.WithContext(ctx).First(&existing, "slug = ?", slug).Error
-	if err == nil {
-		if existing.OwnerID != ownerID {
-			return fmt.Sprintf("the name %q is already taken", slug)
-		}
-		if existing.DeactivatedAt != nil {
-			return fmt.Sprintf("the name %q was deactivated and cannot be reused", slug)
-		}
-	}
-	return ""
-}
-
+// CheckAvailable reports whether the owner can create an agent with this name,
+// and the localpart Create would give it.
 func (s *Service) CheckAvailable(ctx context.Context, ownerID int64, name string) (AvailabilityResponse, error) {
 	slug, reason := resolveSlug(name)
 	if reason != "" {
 		return AvailabilityResponse{Name: name, Available: false, Reason: reason}, nil
 	}
-	if reason := s.checkTaken(ctx, slug, ownerID); reason != "" {
-		return AvailabilityResponse{Name: name, Slug: slug, Available: false, Reason: reason}, nil
+	who, err := s.identify(ctx, ownerID, name, slug)
+	if err != nil {
+		return AvailabilityResponse{}, err
 	}
-	return AvailabilityResponse{Name: name, Slug: slug, Available: true}, nil
+	if who.localpart == "" {
+		return AvailabilityResponse{Name: name, Slug: slug, Available: false, Reason: noFreeName}, nil
+	}
+	return AvailabilityResponse{Name: name, Slug: who.localpart, Available: true}, nil
 }
 
+// Create returns the owner's agent with this name, provisioning it on first
+// call and moving it onto its wanted Matrix id when it sits elsewhere.
 func (s *Service) Create(ctx context.Context, ownerID int64, req CreateRequest) (Login, error) {
 	slug, reason := resolveSlug(req.Name)
 	if reason != "" {
 		return Login{}, errors.Invalid(reason)
 	}
-	if reason := s.checkTaken(ctx, slug, ownerID); reason != "" {
-		return Login{}, errors.Conflict(reason)
-	}
-	owner, err := s.deps.Accounts.Ensure(ctx, ownerID)
+	who, err := s.identify(ctx, ownerID, req.Name, slug)
 	if err != nil {
 		return Login{}, err
 	}
-	row, err := s.resolveRow(ctx, owner, slug)
-	if err != nil {
+	if who.localpart == "" {
+		return Login{}, errors.Conflict(noFreeName)
+	}
+	row := who.row
+	if err := s.settle(ctx, who.owner, &row, who.localpart); err != nil {
 		return Login{}, err
 	}
 	row.Name = strings.TrimSpace(req.Name)
@@ -97,14 +86,16 @@ func (s *Service) Create(ctx context.Context, ownerID int64, req CreateRequest) 
 	if err != nil {
 		return Login{}, err
 	}
-	s.profile(ctx, row, req.AvatarURL)
+	s.profile(ctx, &row, req.AvatarURL)
 	return login, nil
 }
 
-func (s *Service) profile(ctx context.Context, row schemas.Agent, avatarURL string) {
-	avatar := ""
-	if avatarURL != "" {
-		avatar, _ = s.deps.Matrix.UploadFromURL(ctx, row.MatrixUserID, avatarURL)
+func (s *Service) settle(ctx context.Context, owner schemas.Account, row *schemas.Agent, localpart string) error {
+	if row.ID == 0 {
+		return s.provision(ctx, owner, row, localpart)
 	}
-	_ = s.deps.Matrix.SetProfile(ctx, row.MatrixUserID, row.Name, avatar)
+	if row.MatrixUserID != s.deps.Matrix.UserID(localpart) {
+		return s.migrate(ctx, owner, row, localpart)
+	}
+	return nil
 }

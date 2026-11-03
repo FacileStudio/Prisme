@@ -104,7 +104,7 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 			Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(),
 		}),
 		spaces: spaces.NewService(db, client, accountService),
-		agents: agents.NewService(agents.Deps{DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL}),
+		agents: agents.NewService(agents.Deps{DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger}),
 		calls:  calls.NewService(echoClient, client, accountService),
 		users:  users.NewService(db),
 	}, nil

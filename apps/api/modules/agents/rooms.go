@@ -15,10 +15,9 @@ import (
 
 // List returns the owner's active agents and the rooms each is joined to.
 func (s *Service) List(ctx context.Context, ownerID int64) ([]Agent, error) {
-	var rows []schemas.Agent
-	err := s.deps.DB.WithContext(ctx).Where("owner_id = ? AND deactivated_at IS NULL", ownerID).Order("name").Find(&rows).Error
+	rows, err := s.active(ctx, ownerID)
 	if err != nil {
-		return nil, errors.Internal("failed to list agents", err)
+		return nil, err
 	}
 	out := make([]Agent, 0, len(rows))
 	for _, row := range rows {

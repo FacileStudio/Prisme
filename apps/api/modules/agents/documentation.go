@@ -13,12 +13,16 @@ func Documentation() documentation.Module {
 			{Method: "GET", Path: "/agents", Summary: "List the caller's agents and their rooms", Auth: agentAuth, ResponseBody: []Agent{}},
 			{
 				Method: "POST", Path: "/agents", Summary: "Create or return the caller's agent with this name",
-				Description: "Idempotent per (owner, name). Sets the display name and avatar every call.",
-				Auth:        agentAuth, RequestBody: CreateRequest{}, ResponseBody: Login{},
+				Description: "Idempotent per (owner, name), case-insensitive. The agent is @<slug>, or @<slug>-<owner localpart> " +
+					"when another owner or a person holds the slug. A legacy @agent-<owner>-<slug> agent moves to that id: " +
+					"the new account joins the old one's rooms and the old account is deactivated. Sets the display name " +
+					"every call; an empty avatar_url gives the agent the blob its name draws.",
+				Auth: agentAuth, RequestBody: CreateRequest{}, ResponseBody: Login{},
 			},
 			{
 				Method: "GET", Path: "/agents/check", Summary: "Check whether an agent name is available",
-				Auth: agentAuth, ResponseBody: AvailabilityResponse{},
+				Description: "slug is the Matrix localpart POST /agents would give the agent.",
+				Auth:        agentAuth, ResponseBody: AvailabilityResponse{},
 			},
 			{
 				Method: "PUT", Path: "/agents/{user_id}/rooms", Summary: "Set the rooms the agent is joined to",
