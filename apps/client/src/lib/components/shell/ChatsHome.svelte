@@ -57,7 +57,7 @@
 			<SpaceChannels nav={current} />
 		{:else if nav.spaces.length === 0}
 			<EmptyState
-				icon={glyphs.chat}
+				icon={icons.space}
 				title="No space yet"
 				description="A space groups the channels of a project or a team."
 			/>
@@ -68,7 +68,7 @@
 		<div class="flex flex-col gap-3 border-t border-fc-border pt-6 sm:flex-row sm:items-center">
 			<p class="min-w-0 flex-1 text-fc-sm text-fc-fg-muted">Spaces group the channels of a team or a project.</p>
 			<div class="flex flex-wrap gap-2">
-				<Button size="lg" variant="ghost" icon={icons.usersGroup} href={MANAGE_SPACES_HREF}>{MANAGE_SPACES_LABEL}</Button>
+				<Button size="lg" variant="ghost" icon={icons.space} href={MANAGE_SPACES_HREF}>{MANAGE_SPACES_LABEL}</Button>
 				<Button size="lg" variant="outline" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>Create a space</Button>
 			</div>
 		</div>
