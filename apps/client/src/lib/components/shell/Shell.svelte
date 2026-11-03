@@ -7,7 +7,7 @@
 	import { app } from '$lib/state/app.svelte';
 	import { notify } from '$lib/state/notify.svelte';
 	import { roomHref } from '$lib/state/actions';
-	import { BROWSE_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
+	import { BROWSE_PATH, MESSAGES_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
 	import { HOME, MANAGE_SPACES_HREF, MANAGE_SPACES_LABEL, ui } from '$lib/state/ui.svelte';
 	import { call } from '$lib/call/call.svelte';
 	import Dialogs from '$lib/components/dialogs/Dialogs.svelte';
@@ -17,10 +17,9 @@
 	let { children }: { children: Snippet } = $props();
 
 	const kindIcons: Record<NavKind, string> = {
+		messages: glyphs.chat,
 		browse: icons.home,
-		channel: glyphs.hashtag,
-		dm: glyphs.chat,
-		agent: icons.bolt
+		channel: glyphs.hashtag
 	};
 
 	const joinedSpaces = $derived.by(() => {
@@ -55,7 +54,10 @@
 		return { name: me.name || me.email.split('@')[0], avatar: me.avatar_url || undefined };
 	});
 
-	const mobileItems = $derived([{ href: BROWSE_PATH, label: 'Chats', icon: glyphs.chat, active: path === BROWSE_PATH }]);
+	const mobileItems = $derived([
+		{ href: MESSAGES_PATH, label: 'Messages', icon: glyphs.chat, active: path === MESSAGES_PATH },
+		{ href: BROWSE_PATH, label: 'Spaces', icon: icons.home, active: path === BROWSE_PATH }
+	]);
 
 	function selectSpace(id: string | null) {
 		if (id) ui.spaceId = id;
@@ -69,7 +71,8 @@
 	$effect(() => {
 		if (!ui.drawer) return;
 		ui.drawer = false;
-		void goto(BROWSE_PATH);
+		const inDm = !!roomId && !!nav?.dms.some((row) => row.roomId === roomId);
+		void goto(inDm ? MESSAGES_PATH : BROWSE_PATH);
 	});
 
 	$effect(() => {

@@ -10,7 +10,7 @@ describe('rail pages', () => {
 		expect(countedLabel('general', { count: 120, strong: true, bold: true })).toBe('general · 99+');
 	});
 
-	it('lists browse, the current space channels, then DMs, and marks the open room', () => {
+	it('lists messages, browse, then the current space channels, and marks the open room', () => {
 		const current = {
 			name: 'Facile',
 			joined: [{ roomId: '!a:x', name: 'general', badge: quiet, muted: false }]
@@ -18,15 +18,16 @@ describe('rail pages', () => {
 		const nav = {
 			spaces: [current],
 			dms: [{ roomId: '!d:x', name: 'Pixel', userId: '@pixel:x', invite: false, agent: true, badge: quiet }],
-			dmBadge: quiet,
+			dmBadge: { count: 2, strong: true, bold: true },
 			invites: [{}]
 		} as unknown as Nav;
 		const pages = railPages(nav, current, '/room/%21a%3Ax', '!a:x');
 		expect(pages.map((p) => [p.label, p.kind, p.group, p.active])).toEqual([
+			['Messages · 2', 'messages', undefined, false],
 			['Overview · 1', 'browse', undefined, false],
-			['general', 'channel', 'Facile', true],
-			['Pixel', 'agent', 'Direct messages', false]
+			['general', 'channel', 'Facile', true]
 		]);
-		expect(pages[1].href).toBe('/room/!a%3Ax');
+		expect(pages[2].href).toBe('/room/!a%3Ax');
+		expect(railPages(nav, current, '/room/%21d%3Ax', '!d:x')[0].active).toBe(true);
 	});
 });

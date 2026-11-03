@@ -3,7 +3,6 @@ export type Dialog =
 	| 'create-space'
 	| 'create-channel'
 	| 'invite'
-	| 'new-dm'
 	| 'add-agent'
 	| 'rename-room'
 	| 'rename-space'

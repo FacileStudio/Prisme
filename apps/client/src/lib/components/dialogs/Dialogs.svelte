@@ -5,7 +5,6 @@
 	import CreateSpaceDialog from './CreateSpaceDialog.svelte';
 	import CreateChannelDialog from './CreateChannelDialog.svelte';
 	import InviteDialog from './InviteDialog.svelte';
-	import NewDmDialog from './NewDmDialog.svelte';
 	import AddAgentDialog from './AddAgentDialog.svelte';
 	import RenameDialog from './RenameDialog.svelte';
 
@@ -20,8 +19,6 @@
 	<CreateChannelDialog {space} onclose={close} />
 {:else if ui.dialog === 'invite' && space}
 	<InviteDialog {space} onclose={close} />
-{:else if ui.dialog === 'new-dm'}
-	<NewDmDialog onclose={close} />
 {:else if ui.dialog === 'add-agent' && roomId}
 	<AddAgentDialog {roomId} onclose={close} />
 {:else if ui.dialog === 'rename-room' && roomId}

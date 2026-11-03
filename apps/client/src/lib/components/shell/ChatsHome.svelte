@@ -8,7 +8,6 @@
 	import { buildNav } from '$lib/state/nav';
 	import { MANAGE_SPACES_HREF, MANAGE_SPACES_LABEL, ui } from '$lib/state/ui.svelte';
 	import SpaceChannels from './SpaceChannels.svelte';
-	import DmSection from './DmSection.svelte';
 
 	let accepting = $state('');
 
@@ -62,8 +61,6 @@
 				description="A space groups the channels of a project or a team."
 			/>
 		{/if}
-
-		<DmSection rows={nav.dms} />
 
 		<div class="flex flex-col gap-3 border-t border-fc-border pt-6 sm:flex-row sm:items-center">
 			<p class="min-w-0 flex-1 text-fc-sm text-fc-fg-muted">Spaces group the channels of a team or a project.</p>
