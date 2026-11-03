@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const maxResults = 20
+const maxResults = 200
 
 const searchQuery = `SELECT user_id, name, avatar_url, agent FROM (
 	SELECT a.matrix_user_id AS user_id, COALESCE(NULLIF(u.name, ''), a.localpart) AS name,

@@ -55,6 +55,7 @@ throwaway secrets. Run the API with `MATRIX_INTERNAL_URL=http://127.0.0.1:18008`
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URL`, `OIDC_SUCCESS_URL` | api | porte SSO against Registre, client id `prisme` |
 | `SSO_ONLY` | api | Defaults to `true`. Prisme has no password login |
 | `ECHO_URL`, `ECHO_INTEGRATION_KEY` | api | Echo's integration API. Either empty turns calls off with a clear message |
+| `PRISME_PUBLIC_URL` | api | Where Echo posts call events (`/api/echo/events`). Defaults to `MATRIX_PUBLIC_URL` |
 | `TRUSTED_PROXIES`, `JOURNAL_URL`, `JOURNAL_TOKEN` | api | Suite defaults |
 
 Every variable is forwarded explicitly in `docker-compose.yml`: one set in Dokploy but missing
@@ -72,6 +73,7 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `GET /api/agents`, `POST /api/agents` | session or service | List, or create-or-return, the user's agents |
 | `PUT /api/agents/{user_id}/rooms`, `DELETE /api/agents/{user_id}` | session or service | Place or deactivate an agent |
 | `POST /api/calls` | session | Start or join the Echo call of a room; returns the LiveKit token and the room's `e2ee_key` |
+| `POST /api/echo/events` | Echo signature | Call events: the call message turns into "Call ended" when the last person leaves |
 | `GET /api/users?q=` | session | People directory |
 
 Service callers send `Authorization: Bearer <PRISME_SERVICE_KEY>` and

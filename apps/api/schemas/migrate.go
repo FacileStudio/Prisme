@@ -11,5 +11,5 @@ func Migrate(db *gorm.DB) error {
 	if err := db.Exec(pg.Schema).Error; err != nil {
 		return err
 	}
-	return db.AutoMigrate(&Account{}, &MatrixSession{}, &Space{}, &Channel{}, &Agent{})
+	return db.AutoMigrate(&Account{}, &MatrixSession{}, &Space{}, &Channel{}, &Agent{}, &Call{})
 }

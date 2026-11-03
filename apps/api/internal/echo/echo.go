@@ -5,6 +5,9 @@ package echo
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,6 +35,22 @@ type Token struct {
 	Token      string `json:"token"`
 }
 
+// State is who is connected to a room's latest call. Participants is empty
+// when no call is running.
+type State struct {
+	RoomID       string        `json:"room_id"`
+	Participants []Participant `json:"participants"`
+}
+
+// Event is one call event Echo forwards to the room's callback URL.
+type Event struct {
+	ID         string `json:"id"`
+	Event      string `json:"event"`
+	RoomID     string `json:"room_id"`
+	ExternalID string `json:"external_id"`
+	At         string `json:"at"`
+}
+
 // Participant is who asks for a token.
 type Participant struct {
 	Identity  string `json:"identity"`
@@ -44,27 +63,50 @@ func New(baseURL, key string) *Client {
 	return &Client{baseURL: baseURL, key: key, http: &http.Client{Timeout: 15 * time.Second}}
 }
 
-// Room gets or creates the Echo room for an external id.
-func (c *Client) Room(ctx context.Context, externalID, title string) (Room, error) {
+// Room gets or creates the Echo room for an external id. A non-empty
+// callback URL receives the room's call events.
+func (c *Client) Room(ctx context.Context, externalID, title, callbackURL string) (Room, error) {
 	var room Room
 	body := map[string]string{"external_id": externalID, "title": title}
-	err := c.post(ctx, "/api/integrations/rooms", body, &room)
+	if callbackURL != "" {
+		body["callback_url"] = callbackURL
+	}
+	err := c.send(ctx, http.MethodPost, "/api/integrations/rooms", body, &room)
 	return room, err
+}
+
+// State reads who is connected to an Echo room's call.
+func (c *Client) State(ctx context.Context, roomID string) (State, error) {
+	var state State
+	err := c.send(ctx, http.MethodGet, "/api/integrations/rooms/"+url.PathEscape(roomID), nil, &state)
+	return state, err
+}
+
+// Verify reports whether signature is Echo's hex HMAC-SHA256 of body, keyed
+// with this app's integration secret.
+func (c *Client) Verify(body []byte, signature string) bool {
+	mac := hmac.New(sha256.New, []byte(c.key))
+	mac.Write(body)
+	return hmac.Equal([]byte(hex.EncodeToString(mac.Sum(nil))), []byte(signature))
 }
 
 // Token mints a join token for a participant of an Echo room.
 func (c *Client) Token(ctx context.Context, roomID string, who Participant) (Token, error) {
 	var token Token
-	err := c.post(ctx, "/api/integrations/rooms/"+url.PathEscape(roomID)+"/tokens", who, &token)
+	err := c.send(ctx, http.MethodPost, "/api/integrations/rooms/"+url.PathEscape(roomID)+"/tokens", who, &token)
 	return token, err
 }
 
-func (c *Client) post(ctx context.Context, path string, body, out any) error {
-	encoded, err := json.Marshal(body)
-	if err != nil {
-		return err
+func (c *Client) send(ctx context.Context, method, path string, body, out any) error {
+	var payload io.Reader
+	if body != nil {
+		encoded, err := json.Marshal(body)
+		if err != nil {
+			return err
+		}
+		payload = bytes.NewReader(encoded)
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+path, bytes.NewReader(encoded))
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, payload)
 	if err != nil {
 		return err
 	}

@@ -23,12 +23,15 @@ type Echo struct {
 	Key string
 }
 
-// Config is the whole process configuration.
+// Config is the whole process configuration. PublicURL is where browsers and
+// Echo reach Prisme; it defaults to the Matrix public URL, which shares the
+// host.
 type Config struct {
 	troncenv.Core
 	Porte       porte.Config
 	Matrix      Matrix
 	Echo        Echo
+	PublicURL   string
 	SecretKey   string
 	ServiceKeys string
 }
@@ -46,6 +49,7 @@ func Load() (Config, error) {
 		SecretKey:   troncenv.String("PRISME_SECRET_KEY", ""),
 		ServiceKeys: troncenv.String("PRISME_SERVICE_KEY", ""),
 	}
+	cfg.PublicURL = strings.TrimRight(troncenv.String("PRISME_PUBLIC_URL", cfg.Matrix.PublicURL), "/")
 	if cfg.Porte, err = loadPorte(); err != nil {
 		return Config{}, err
 	}

@@ -131,11 +131,18 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
 		}),
 		agents: agentService,
-		calls:  calls.NewService(newEcho(cfg), client, accountService, cfg.SecretKey),
+		calls:  newCalls(cfg, db, client, accountService, appLogger),
 		users:  users.NewService(db),
 	}
 	built.registre, built.syncer = newDirectory(cfg, built.spaces, appLogger)
 	return built, nil
+}
+
+func newCalls(cfg env.Config, db *gorm.DB, client *matrix.Client, accountService *accounts.Service, appLogger *slog.Logger) *calls.Service {
+	return calls.NewService(calls.Deps{
+		DB: db, Echo: newEcho(cfg), Matrix: client, Accounts: accountService,
+		Secret: cfg.SecretKey, PublicURL: cfg.PublicURL, Logger: appLogger,
+	})
 }
 
 func newEcho(cfg env.Config) *echo.Client {

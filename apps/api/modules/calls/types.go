@@ -18,9 +18,12 @@ type Response struct {
 	E2EEKey    string `json:"e2ee_key"`
 }
 
-// CallContent is the studio.facile.call block of a call message.
+// CallContent is the studio.facile.call block of a call message. EndedAt
+// (Unix milliseconds) and DurationMS are set once the call is over.
 type CallContent struct {
-	CallID    string `json:"call_id"`
-	JoinURL   string `json:"join_url"`
-	StartedBy string `json:"started_by"`
+	CallID     string `json:"call_id"`
+	JoinURL    string `json:"join_url,omitempty"`
+	StartedBy  string `json:"started_by"`
+	EndedAt    int64  `json:"ended_at,omitempty"`
+	DurationMS int64  `json:"duration_ms,omitempty"`
 }

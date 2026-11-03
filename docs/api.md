@@ -119,7 +119,7 @@ Answers `{"call_id", "livekit_url", "token", "join_url"}`. `503 unavailable` whe
 
 ### `GET /users?q=`
 
-`[{"user_id", "name", "avatar_url", "agent"}]`, at most 20 people and active agents, matching
+`[{"user_id", "name", "avatar_url", "agent"}]`, at most 200 people and active agents, matching
 name, email or Matrix id. `avatar_url` is an mxc URI or empty; `agent` is true for an agent.
 
 ### `GET /users/agents`

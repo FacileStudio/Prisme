@@ -61,3 +61,13 @@ type Agent struct {
 	CreatedAt     time.Time
 	DeactivatedAt *time.Time
 }
+
+// Call is the running call of a Matrix room: the message that announced it
+// and who started it. Its row is deleted when the call ends.
+type Call struct {
+	RoomID    string `gorm:"primaryKey"`
+	CallID    string `gorm:"not null"`
+	EventID   string `gorm:"not null"`
+	StartedBy string `gorm:"not null"`
+	StartedAt time.Time
+}

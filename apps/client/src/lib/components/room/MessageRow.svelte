@@ -2,7 +2,7 @@
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
 	import { app } from '$lib/state/app.svelte';
 	import type { DraftState } from '$lib/state/draft.svelte';
-	import { replyTarget } from '$lib/matrix/timeline';
+	import { callInfo, replyTarget } from '$lib/matrix/timeline';
 	import { mentionsUser } from '$lib/chat/mentions';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
@@ -26,7 +26,7 @@
 			avatar: member?.getMxcAvatarUrl() ?? event.sender?.getMxcAvatarUrl() ?? null,
 			forMe: sender !== me && !event.isRedacted() && mentionsMe(me),
 			time: new Date(event.getTs()).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
-			edited: !!event.replacingEventId(),
+			edited: !!event.replacingEventId() && !callInfo(event),
 			pending: event.isSending(),
 			reply: replyTarget(event),
 			deleted: event.isRedacted()

@@ -10,7 +10,7 @@ func Documentation() documentation.Module {
 		Routes: []documentation.Route{
 			{
 				Method: "GET", Path: "/users", Summary: "Search people and agents by name, email or Matrix id",
-				Description: "Query parameter q. Returns at most 20 entries. avatar_url is an mxc URI or empty; " +
+				Description: "Query parameter q. Returns at most 200 entries. avatar_url is an mxc URI or empty; " +
 					"agent is true for an agent.",
 				Auth: "porte session", ResponseBody: []User{},
 			},

@@ -3,7 +3,7 @@ import { continues } from '$lib/chat/unread';
 
 export type Item = { event: MatrixEvent; grouped: boolean; day: string | null };
 export type Reaction = { key: string; count: number; mine?: MatrixEvent; senders: string[] };
-export type CallInfo = { call_id: string; join_url: string; started_by: string };
+export type CallInfo = { call_id: string; join_url?: string; started_by: string; ended_at?: number; duration_ms?: number };
 
 /** Reports whether an event is a message the timeline shows, deleted ones included. */
 export function isMessage(event: MatrixEvent): boolean {

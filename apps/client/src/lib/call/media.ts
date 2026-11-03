@@ -48,3 +48,12 @@ export function shareError(err: unknown): string | null {
 	if (name === 'NotAllowedError' || name === 'AbortError') return null;
 	return message || 'Could not share the screen';
 }
+
+/** How long a finished call lasted, the way the call card says it. */
+export function callLength(ms: number): string {
+	const minutes = Math.floor(ms / 60_000);
+	if (minutes < 1) return 'Under a minute';
+	if (minutes < 60) return `${minutes} min`;
+	const rest = minutes % 60;
+	return rest ? `${Math.floor(minutes / 60)} h ${rest} min` : `${minutes / 60} h`;
+}
