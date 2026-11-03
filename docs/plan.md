@@ -132,3 +132,23 @@ Prisme, Echo and Bulle.
 - Appservice tokens are root over the namespace: they live only in Dokploy env and never reach the
   browser.
 - Another session may be editing Bulle at the same time. Stage explicit paths only.
+
+## Decisions taken while building track P
+
+- **Bulle reaches Prisme with a service key, not token exchange.** At the suite lead's request,
+  Bulle sends `Authorization: Bearer <PRISME_SERVICE_KEY>` and `X-Prisme-Acting-For: <email>` on
+  `GET /api/spaces` and every `/api/agents` route. Prisme creates the user for an unknown email,
+  so an agent works before its owner ever opens Prisme. Registre carries only the `prisme` OIDC
+  client; no `prisme` exchange audience was added.
+- **Additive routes.** `GET /api/agents` (the "Add an agent" picker), `GET /api/users?q=` (Synapse's
+  user directory never lists appservice users), `calls_enabled` in `GET /api/session`, and
+  `join: true` on `POST /api/calls` to join without posting a second call message.
+- **Echo auth.** Prisme calls Echo's integration API with `Authorization: Bearer
+  <ECHO_INTEGRATION_KEY>` and passes LiveKit identities as `<matrix id>#<8 hex>` so one person on
+  two devices does not kick themselves out.
+- **Tokens.** One Matrix device per porte session and one per agent, stored sealed with
+  `PRISME_SECRET_KEY` and reused while `/account/whoami` accepts them.
+- **Rooms.** Room version 12 (Synapse default): creators are not listed in power levels; the
+  bot `@prisme` is the listed admin of every space and channel. Channels are `restricted` to
+  their space.
+- **Archive** of spaces and channels is not in v1; rename goes through Matrix directly.
