@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.0] - 2026-11-03
+
+### Added
+
+- A call message turns into "Call ended" with its duration once the last person leaves; Prisme hears it from Echo's call events at `POST /api/echo/events`
+- A Messages page lists every conversation with avatars (agents show their blob), the last message, its time and the unread count, plus everyone you can message, searchable and filtered by people or agents
+- `PRISME_PUBLIC_URL` sets where Echo sends call events; it defaults to `MATRIX_PUBLIC_URL`
+
+### Changed
+
+- Direct messages leave the sidebar: one Messages entry sits above Overview
+- Starting a call in a room that already has one running joins it instead of posting a second call message
+- `GET /api/users` returns up to 200 entries instead of 20
+
+### Removed
+
+- The "New message" dialog; the Messages page replaces it
+
 ## [0.8.1] - 2026-11-03
 
 ### Changed
