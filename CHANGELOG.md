@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.1] - 2026-11-03
+
+### Changed
+
+- The send button uses Bulle's up arrow instead of the paper plane
+
 ## [0.8.0] - 2026-11-03
 
 ### Added
