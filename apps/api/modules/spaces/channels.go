@@ -20,7 +20,12 @@ func (s *Service) CreateChannel(ctx context.Context, userID, spaceID int64, req 
 	if err != nil {
 		return Channel{}, err
 	}
-	return s.addChannel(ctx, space, account.MatrixUserID, req)
+	channel, err := s.addChannel(ctx, space, account.MatrixUserID, req)
+	if err != nil {
+		return Channel{}, err
+	}
+	s.follow(ctx, userID, []string{channel.RoomID})
+	return channel, nil
 }
 
 func (s *Service) addChannel(ctx context.Context, space schemas.Space, creator string, req CreateChannelRequest) (Channel, error) {

@@ -92,10 +92,9 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 	}
 	client := matrix.New(matrix.Config{BaseURL: cfg.Matrix.InternalURL, ServerName: cfg.Matrix.ServerName, ASToken: cfg.Matrix.ASToken})
 	accountService := accounts.NewService(db, client, appLogger)
-	var echoClient *echo.Client
-	if cfg.CallsEnabled() {
-		echoClient = echo.New(cfg.Echo.URL, cfg.Echo.Key)
-	}
+	agentService := agents.NewService(agents.Deps{
+		DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger,
+	})
 	return app{
 		logger: appLogger, cors: cfg.CORSAllowedOrigins, dbCheck: health.DB(sqlDB), homeserver: cfg.Matrix.PublicURL,
 		auth: authService,
@@ -103,11 +102,20 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 			DB: db, Matrix: client, Accounts: accountService, Box: box,
 			Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(),
 		}),
-		spaces: spaces.NewService(db, client, accountService),
-		agents: agents.NewService(agents.Deps{DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger}),
-		calls:  calls.NewService(echoClient, client, accountService),
+		spaces: spaces.NewService(spaces.Deps{
+			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
+		}),
+		agents: agentService,
+		calls:  calls.NewService(newEcho(cfg), client, accountService),
 		users:  users.NewService(db),
 	}, nil
+}
+
+func newEcho(cfg env.Config) *echo.Client {
+	if !cfg.CallsEnabled() {
+		return nil
+	}
+	return echo.New(cfg.Echo.URL, cfg.Echo.Key)
 }
 
 func serve(addr string, router http.Handler, appLogger *slog.Logger) int {

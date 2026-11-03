@@ -6,6 +6,7 @@ package spaces
 import (
 	"context"
 	stderrors "errors"
+	"log/slog"
 	"strings"
 
 	"github.com/FacileStudio/Prisme/apps/api/internal/accounts"
@@ -18,16 +19,34 @@ import (
 
 const botLocalpart = "prisme"
 
+// Followers moves a user's agents along with the user. The agents module
+// implements it; spaces cannot import agents, which imports spaces.
+type Followers interface {
+	Follow(ctx context.Context, ownerID int64, roomIDs []string) error
+	Unfollow(ctx context.Context, ownerID int64, roomIDs []string) error
+}
+
+// Deps holds the services spaces rely on. Followers may be nil.
+type Deps struct {
+	DB        *gorm.DB
+	Matrix    *matrix.Client
+	Accounts  *accounts.Service
+	Followers Followers
+	Logger    *slog.Logger
+}
+
 // Service lists and creates spaces and channels.
 type Service struct {
-	db       *gorm.DB
-	matrix   *matrix.Client
-	accounts *accounts.Service
+	db        *gorm.DB
+	matrix    *matrix.Client
+	accounts  *accounts.Service
+	followers Followers
+	logger    *slog.Logger
 }
 
 // NewService builds the spaces service.
-func NewService(db *gorm.DB, client *matrix.Client, accountService *accounts.Service) *Service {
-	return &Service{db: db, matrix: client, accounts: accountService}
+func NewService(deps Deps) *Service {
+	return &Service{db: deps.DB, matrix: deps.Matrix, accounts: deps.Accounts, followers: deps.Followers, logger: deps.Logger}
 }
 
 // List returns the spaces the user is joined to, with their channels.
@@ -50,12 +69,13 @@ func (s *Service) List(ctx context.Context, userID int64) ([]Space, error) {
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, Space{ID: row.ID, RoomID: row.RoomID, Name: row.Name, Slug: row.Slug, Channels: channels})
+		out = append(out, toSpace(row, channels))
 	}
 	return out, nil
 }
 
-// Create makes a space owned by the user, with a #general channel.
+// Create makes a space owned by the user, with a #general channel, and brings
+// the user's agents into both.
 func (s *Service) Create(ctx context.Context, userID int64, req CreateSpaceRequest) (Space, error) {
 	name := strings.TrimSpace(req.Name)
 	if name == "" || len(name) > 80 {
@@ -65,19 +85,12 @@ func (s *Service) Create(ctx context.Context, userID int64, req CreateSpaceReque
 	if err != nil {
 		return Space{}, err
 	}
-	row := schemas.Space{Name: name, CreatedBy: userID, Slug: s.freeSlug(ctx, Slugify(name, "space"))}
-	row.RoomID, err = s.createRoom(ctx, account.MatrixUserID, spaceRoom(name, s.bot()))
+	space, err := s.provision(ctx, account, name, nil)
 	if err != nil {
 		return Space{}, err
 	}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
-		return Space{}, errors.Internal("failed to store the space", err)
-	}
-	general, err := s.addChannel(ctx, row, account.MatrixUserID, CreateChannelRequest{Name: "general"})
-	if err != nil {
-		return Space{}, err
-	}
-	return Space{ID: row.ID, RoomID: row.RoomID, Name: row.Name, Slug: row.Slug, Channels: []Channel{general}}, nil
+	s.follow(ctx, userID, roomsOf(space))
+	return space, nil
 }
 
 // Get returns one space the user is joined to.
