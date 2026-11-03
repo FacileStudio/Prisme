@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { composeMessage } from './compose';
 import { escapeHtml, renderMarkdown, stripReplyFallback } from './markdown';
-import { activeMention, filterMembers, insertMention, presentMentions } from './mentions';
-import { isAgent } from './users';
+import { activeMention, filterMembers, insertMention } from './complete';
+import { findMentions, mentionsUser, presentMentions, segments } from './mentions';
+import { isAgent, typingSentence } from './users';
 import { continues, formatCount, roomBadge, sumBadges } from './unread';
 
 describe('markdown', () => {
@@ -42,9 +43,10 @@ describe('mentions', () => {
 		{ userId: '@bob:localhost', name: 'Bob', agent: false }
 	];
 
-	it('detects agents by localpart', () => {
+	it('detects agents by localpart or from the agent list', () => {
 		expect(isAgent('@agent-alice-bulle:localhost')).toBe(true);
 		expect(isAgent('@alice:localhost')).toBe(false);
+		expect(isAgent('@pixel:localhost', new Map([['@pixel:localhost', {}]]))).toBe(true);
 	});
 
 	it('finds the query under the caret', () => {
@@ -72,6 +74,32 @@ describe('mentions', () => {
 		];
 		expect(presentMentions('hey @Bob', chosen)).toEqual([{ userId: '@bob:localhost', name: 'Bob' }]);
 	});
+
+	it('matches whole names only, longest first, never inside an email', () => {
+		const known = [
+			{ userId: '@bob:x', name: 'Bob' },
+			{ userId: '@bobs:x', name: 'Bob Smith' }
+		];
+		expect(findMentions('@Bobby and a@Bob', known)).toEqual([]);
+		expect(findMentions('hi @Bob Smith!', known)).toEqual([{ start: 3, end: 13, mention: known[1] }]);
+		expect(findMentions('(@Bob)', known).map((r) => r.mention.userId)).toEqual(['@bob:x']);
+	});
+
+	it('splits text into highlight segments', () => {
+		const bob = { userId: '@bob:x', name: 'Bob' };
+		expect(segments('hi @Bob, ok', [bob])).toEqual([
+			{ text: 'hi ', mention: null },
+			{ text: '@Bob', mention: bob },
+			{ text: ', ok', mention: null }
+		]);
+		expect(segments('', [bob])).toEqual([]);
+	});
+
+	it('reads m.mentions for the current user', () => {
+		expect(mentionsUser({ 'm.mentions': { user_ids: ['@me:x'] } }, '@me:x')).toBe(true);
+		expect(mentionsUser({ 'm.mentions': { user_ids: 'nope' } }, '@me:x')).toBe(false);
+		expect(mentionsUser({}, '@me:x')).toBe(false);
+	});
 });
 
 describe('composeMessage', () => {
@@ -86,9 +114,28 @@ describe('composeMessage', () => {
 		expect(out.userIds).toEqual(['@agent-x:localhost']);
 	});
 
+	it('resolves a typed name and prefers the chosen person on a tie', () => {
+		const known = [
+			{ userId: '@bob2:x', name: 'Bob' },
+			{ userId: '@bob:x', name: 'Bob' }
+		];
+		const out = composeMessage('@Bob and @Bob', known);
+		expect(out.userIds).toEqual(['@bob2:x']);
+		expect(out.html).toBe('<a href="https://matrix.to/#/@bob2:x">@Bob</a> and <a href="https://matrix.to/#/@bob2:x">@Bob</a>');
+	});
+
 	it('keeps markdown around mentions', () => {
 		const out = composeMessage('**@Bob** look', [{ userId: '@bob:localhost', name: 'Bob' }]);
 		expect(out.html).toBe('<strong><a href="https://matrix.to/#/@bob:localhost">@Bob</a></strong> look');
+	});
+});
+
+describe('typingSentence', () => {
+	it('names up to two people, then counts', () => {
+		expect(typingSentence([])).toBe('');
+		expect(typingSentence(['Ann'])).toBe('Ann is typing…');
+		expect(typingSentence(['Ann', 'Bob'])).toBe('Ann and Bob are typing…');
+		expect(typingSentence(['Ann', 'Bob', 'Cy', 'Di'])).toBe('Ann, Bob and 2 more are typing…');
 	});
 });
 

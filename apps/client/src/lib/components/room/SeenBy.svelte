@@ -2,7 +2,7 @@
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
 	import { app } from '$lib/state/app.svelte';
 	import { seenBy } from '$lib/matrix/timeline';
-	import MxcAvatar from '$lib/components/common/MxcAvatar.svelte';
+	import Avatar from '$lib/components/common/Avatar.svelte';
 
 	let { room, event }: { room: Room; event: MatrixEvent } = $props();
 
@@ -20,7 +20,7 @@
 	<div class="flex items-center justify-end gap-1 px-4 pt-1" title={label} aria-label={label} role="img">
 		<span class="text-fc-xs text-fc-fg-muted">Seen by</span>
 		{#each readers.slice(0, 5) as reader (reader.id)}
-			<MxcAvatar mxc={reader.avatar} name={reader.name} class="size-5 text-[9px]" />
+			<Avatar userId={reader.id} mxc={reader.avatar} name={reader.name} size={20} />
 		{/each}
 		{#if readers.length > 5}<span class="text-fc-xs text-fc-fg-muted">+{readers.length - 5}</span>{/if}
 	</div>

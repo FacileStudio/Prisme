@@ -1,5 +1,6 @@
 const auth = { base: '', token: '' };
 const cache = new Map<string, Promise<string>>();
+const ready = new Map<string, string>();
 const LIMIT = 150;
 
 /** Stores the homeserver and token the authenticated media routes need. */
@@ -21,6 +22,7 @@ function evict() {
 	while (cache.size > LIMIT) {
 		const [key, url] = cache.entries().next().value as [string, Promise<string>];
 		cache.delete(key);
+		ready.delete(key);
 		void url.then((blob) => URL.revokeObjectURL(blob)).catch(() => undefined);
 	}
 }
@@ -45,8 +47,17 @@ export function loadMedia(mxc: string, size?: number): Promise<string> {
 		return hit;
 	}
 	const pending = fetchBlob(url);
-	pending.catch(() => cache.delete(url));
+	pending.then(
+		(blob) => cache.has(url) && ready.set(url, blob),
+		() => cache.delete(url)
+	);
 	cache.set(url, pending);
 	evict();
 	return pending;
+}
+
+/** The blob URL of media already fetched, so a remount draws it without waiting a tick. */
+export function cachedMedia(mxc: string, size?: number): string | undefined {
+	const url = mediaUrl(mxc, size);
+	return url ? ready.get(url) : undefined;
 }

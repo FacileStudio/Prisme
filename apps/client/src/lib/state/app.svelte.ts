@@ -1,6 +1,7 @@
 import { createClient, ClientEvent, HttpApiEvent, SyncState, type MatrixClient } from 'matrix-js-sdk';
 import { ApiError } from '$lib/api/http';
-import { prisme, type Session, type Space } from '$lib/api/prisme';
+import { prisme, type AgentUser, type Session, type Space } from '$lib/api/prisme';
+import { isAgent } from '$lib/chat/users';
 import { watchClient } from '$lib/matrix/events';
 import { setMediaToken } from '$lib/matrix/media';
 
@@ -27,6 +28,7 @@ class AppState {
 	session = $state<Session | null>(null);
 	spaces = $state<Space[]>([]);
 	client = $state.raw<MatrixClient | null>(null);
+	agents = $state.raw<Map<string, AgentUser>>(new Map());
 	version = $state(0);
 	private unwatch: (() => void) | null = null;
 	private retried = false;
@@ -39,6 +41,7 @@ class AppState {
 			this.fail(err);
 			return;
 		}
+		void this.refreshAgents();
 		await this.start(this.session);
 		void this.refreshSpaces();
 	}
@@ -81,6 +84,17 @@ class AppState {
 	/** Reloads the spaces the user belongs to from the Prisme API. */
 	async refreshSpaces() {
 		this.spaces = await prisme.spaces().catch(() => this.spaces);
+	}
+
+	/** Reloads the agent accounts; keeps the last list when the route is missing or fails. */
+	async refreshAgents() {
+		const list = await prisme.usersAgents().catch(() => null);
+		if (list) this.agents = new Map(list.map((agent) => [agent.user_id, agent]));
+	}
+
+	/** Reports whether a Matrix user is an agent, from the API list or the legacy localpart. */
+	isAgent(userId: string): boolean {
+		return isAgent(userId, this.agents);
 	}
 
 	/** Stops the Matrix client and drops its listeners. */
