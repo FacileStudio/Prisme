@@ -1,7 +1,7 @@
 import { KnownMembership, type MatrixClient, type Room } from 'matrix-js-sdk';
 import type { Channel, Space } from '$lib/api/prisme';
 import { isAgent } from '$lib/chat/users';
-import { roomBadge, sumBadges, type Badge, type RoomCounts } from '$lib/chat/unread';
+import { formatCount, roomBadge, sumBadges, type Badge, type RoomCounts } from '$lib/chat/unread';
 import { dmPartner, dmRooms, isMuted, roomCounts, spaceInvites } from '$lib/matrix/rooms';
 
 export type ChannelRow = { roomId: string; name: string; badge: Badge; muted: boolean };
@@ -52,6 +52,45 @@ export function buildNav(client: MatrixClient, spaces: Space[]): Nav {
 		dmBadge: sumBadges(dms.map((d) => d.counts)),
 		invites: spaceInvites(client)
 	};
+}
+
+export type NavKind = 'browse' | 'channel' | 'dm' | 'agent';
+export type NavPage = { label: string; href: string; active: boolean; group?: string; kind: NavKind };
+
+export const BROWSE_PATH = '/chats';
+
+const roomPath = (roomId: string) => `/room/${encodeURIComponent(roomId)}`;
+
+/** A row label carrying its unread state, the way the suite's rails show counters. */
+export function countedLabel(name: string, badge: Badge): string {
+	if (badge.count > 0) return `${name} · ${formatCount(badge.count)}`;
+	return badge.bold ? `${name} ·` : name;
+}
+
+/** The rail entries: the browse page, the current space's joined channels, then DMs. */
+export function railPages(nav: Nav, current: SpaceNav | null, path: string, roomId: string | null): NavPage[] {
+	const invites = nav.invites.length;
+	const browse: NavPage = {
+		label: invites > 0 ? `All channels · ${invites}` : 'All channels',
+		href: BROWSE_PATH,
+		active: path === BROWSE_PATH,
+		kind: 'browse'
+	};
+	const channels: NavPage[] = (current?.joined ?? []).map((row) => ({
+		label: countedLabel(row.name, row.badge),
+		href: roomPath(row.roomId),
+		active: row.roomId === roomId,
+		group: current?.name ?? 'Channels',
+		kind: 'channel'
+	}));
+	const dms: NavPage[] = nav.dms.map((row) => ({
+		label: countedLabel(row.invite ? `${row.name} (invite)` : row.name, row.badge),
+		href: roomPath(row.roomId),
+		active: row.roomId === roomId,
+		group: 'Direct messages',
+		kind: row.agent ? 'agent' : 'dm'
+	}));
+	return [browse, ...channels, ...dms];
 }
 
 /** The space that lists a room as one of its channels. */

@@ -32,8 +32,8 @@
 	}
 </script>
 
-<div class="flex items-center gap-1 border-b border-fc-border py-1 pl-4 pr-1">
-	<h2 class="min-w-0 flex-1 truncate text-fc-md font-semibold">{nav.name}</h2>
+<div class="flex min-h-11 items-center gap-1 py-1 pl-4 pr-1">
+	<h2 class="min-w-0 flex-1 truncate text-fc-xl font-semibold">{nav.name}</h2>
 	<IconButton variant="ghost" aria-label="Invite people to {nav.name}" title="Invite people" onclick={() => (ui.dialog = 'invite')}>
 		<Icon icon={glyphs.userPlus} size={18} />
 	</IconButton>
