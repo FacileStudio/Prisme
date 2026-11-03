@@ -30,15 +30,17 @@ func (s *Service) List(ctx context.Context, ownerID int64) ([]Agent, error) {
 	return out, nil
 }
 
-// SetRooms makes the agent a member of exactly the listed rooms. Every room
-// must be one the owner is joined to; the owner invites the agent, and the
-// agent joins through the appservice.
+// SetRooms makes the agent a member of exactly the listed channels. Every
+// room must be one the owner is joined to; the owner invites the agent, and
+// the agent joins through the appservice. Only Prisme's spaces and channels
+// are ever left: the owner's direct messages with the agent are kept, and
+// rejoined when the agent is missing from one.
 func (s *Service) SetRooms(ctx context.Context, ownerID int64, userID string, roomIDs []string) (RoomsResponse, error) {
 	row, err := s.owned(ctx, ownerID, userID)
 	if err != nil {
 		return RoomsResponse{}, err
 	}
-	owner, err := s.ownerOf(ctx, ownerID, roomIDs)
+	owner, ownerRooms, err := s.ownerOf(ctx, ownerID, roomIDs)
 	if err != nil {
 		return RoomsResponse{}, err
 	}
@@ -46,12 +48,17 @@ func (s *Service) SetRooms(ctx context.Context, ownerID int64, userID string, ro
 	if err != nil {
 		return RoomsResponse{}, errors.Internal("failed to list the agent's rooms", err)
 	}
-	for _, roomID := range missing(roomIDs, current) {
+	wanted := append(unique(roomIDs), s.directs(ctx, owner.MatrixUserID, row.MatrixUserID, ownerRooms)...)
+	for _, roomID := range missing(wanted, current) {
 		if err := s.place(ctx, owner.MatrixUserID, row.MatrixUserID, roomID); err != nil {
 			return RoomsResponse{}, err
 		}
 	}
-	for _, roomID := range missing(current, roomIDs) {
+	leaving, err := s.managed(ctx, missing(current, wanted))
+	if err != nil {
+		return RoomsResponse{}, err
+	}
+	for _, roomID := range leaving {
 		if err := s.deps.Matrix.Leave(ctx, row.MatrixUserID, roomID); err != nil {
 			return RoomsResponse{}, errors.Internal("the agent could not leave "+roomID, err)
 		}
@@ -59,19 +66,19 @@ func (s *Service) SetRooms(ctx context.Context, ownerID int64, userID string, ro
 	return RoomsResponse{RoomIDs: unique(roomIDs)}, nil
 }
 
-func (s *Service) ownerOf(ctx context.Context, ownerID int64, roomIDs []string) (schemas.Account, error) {
+func (s *Service) ownerOf(ctx context.Context, ownerID int64, roomIDs []string) (schemas.Account, []string, error) {
 	owner, err := s.deps.Accounts.Ensure(ctx, ownerID)
 	if err != nil {
-		return owner, err
+		return owner, nil, err
 	}
 	ownerRooms, err := s.deps.Matrix.JoinedRooms(ctx, owner.MatrixUserID)
 	if err != nil {
-		return owner, errors.Internal("failed to list the owner's rooms", err)
+		return owner, nil, errors.Internal("failed to list the owner's rooms", err)
 	}
 	if outside := missing(roomIDs, ownerRooms); len(outside) > 0 {
-		return owner, errors.Forbidden("not a member of: " + strings.Join(outside, ", "))
+		return owner, nil, errors.Forbidden("not a member of: " + strings.Join(outside, ", "))
 	}
-	return owner, nil
+	return owner, ownerRooms, nil
 }
 
 func (s *Service) place(ctx context.Context, owner, agent, roomID string) error {

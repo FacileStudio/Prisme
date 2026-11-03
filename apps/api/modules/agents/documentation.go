@@ -26,8 +26,9 @@ func Documentation() documentation.Module {
 			},
 			{
 				Method: "PUT", Path: "/agents/{user_id}/rooms", Summary: "Set the rooms the agent is joined to",
-				Description: "Invites and joins the listed rooms, leaves the others. Only rooms the owner is joined to.",
-				Auth:        agentAuth, RequestBody: RoomsRequest{}, ResponseBody: RoomsResponse{},
+				Description: "Invites and joins the listed rooms and leaves the other spaces and channels. Only rooms the owner is joined to. " +
+					"Direct messages are never left: the owner's direct messages with the agent are kept, and rejoined when the agent left one.",
+				Auth: agentAuth, RequestBody: RoomsRequest{}, ResponseBody: RoomsResponse{},
 				Errors: []documentation.Error{{Status: 403, Code: "permission_denied", Description: "A room the owner is not in."}},
 			},
 			{Method: "DELETE", Path: "/agents/{user_id}", Summary: "Deactivate the agent", Auth: agentAuth},

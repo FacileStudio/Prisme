@@ -79,3 +79,16 @@ func (c *Client) SetProfile(ctx context.Context, userID, displayName, avatarMXC 
 	body := map[string]string{"avatar_url": avatarMXC}
 	return c.do(ctx, request{method: http.MethodPut, path: base + "/avatar_url", asUser: userID, body: body}, nil)
 }
+
+// DirectRooms reads a user's m.direct account data: each partner's user id
+// to the rooms of their direct messages. A user who never had one answers
+// an empty map.
+func (c *Client) DirectRooms(ctx context.Context, userID string) (map[string][]string, error) {
+	out := map[string][]string{}
+	path := "/_matrix/client/v3/user/" + url.PathEscape(userID) + "/account_data/m.direct"
+	err := c.do(ctx, request{method: http.MethodGet, path: path, asUser: userID}, &out)
+	if IsCode(err, "M_NOT_FOUND") {
+		return map[string][]string{}, nil
+	}
+	return out, err
+}
