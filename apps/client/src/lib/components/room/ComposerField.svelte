@@ -11,7 +11,7 @@
 	let mirror: HTMLDivElement | undefined = $state();
 
 	const FIELD =
-		'col-start-1 row-start-1 max-h-48 min-h-11 w-full px-1 py-2.5 text-fc-md leading-normal [scrollbar-gutter:stable] md:text-fc-sm';
+		'col-start-1 row-start-1 max-h-48 min-h-11 w-full py-2.5 text-fc-md leading-normal [scrollbar-gutter:stable]';
 
 	function sync() {
 		if (mirror && input) mirror.scrollTop = input.scrollTop;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import type { Room } from 'matrix-js-sdk';
-	import { Icon, IconButton, toast } from '@facile/muse';
+	import { Icon, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { segments } from '$lib/chat/mentions';
 	import { activeMention } from '$lib/chat/complete';
@@ -30,6 +30,9 @@
 	const parts = $derived(segments(composer.text, composer.known(members)));
 	const hint = $derived(placeholder ?? `Message ${room.name}`);
 	const open = $derived(options.length > 0);
+	const canSend = $derived(!composer.sending && (!!composer.text.trim() || composer.files.length > 0));
+	const ROUND =
+		'inline-flex size-11 shrink-0 items-center justify-center rounded-fc-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring disabled:cursor-not-allowed disabled:opacity-40';
 
 	$effect(() => {
 		void room.loadMembersIfNeeded();
@@ -49,7 +52,7 @@
 	}
 
 	async function submit() {
-		if (composer.sending || (!composer.text.trim() && composer.files.length === 0)) return;
+		if (!canSend) return;
 		composer.sending = true;
 		try {
 			await composer.submit(draft, members);
@@ -94,13 +97,20 @@
 	{#if open}
 		<MentionMenu id={menuId} {options} selected={composer.selected} onpick={pick} onhover={(i) => (composer.selected = i)} />
 	{/if}
-	<div class="flex flex-col rounded-fc-lg border border-fc-border bg-fc-bg focus-within:border-fc-ring">
+	<div class="flex flex-col gap-2 rounded-[31px] border border-fc-border bg-fc-bg p-2 focus-within:border-fc-ring">
 		<DraftBanner {room} {draft} />
 		<PendingFiles files={composer.files} onremove={(f) => (composer.files = composer.files.filter((x) => x !== f))} />
-		<div class="flex items-end gap-1 p-1">
-			<IconButton variant="ghost" aria-label="Attach a file" title="Attach a file" disabled={!!draft.editing} onclick={() => picker?.click()}>
-				<Icon icon={glyphs.paperclip} size={18} />
-			</IconButton>
+		<div class="flex items-end gap-2">
+			<button
+				type="button"
+				aria-label="Attach a file"
+				title="Attach a file"
+				disabled={!!draft.editing}
+				class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
+				onclick={() => picker?.click()}
+			>
+				<Icon icon={icons.plus} size={20} />
+			</button>
 			<ComposerField
 				bind:input
 				bind:value={composer.text}
@@ -118,9 +128,16 @@
 				aria-controls={open ? menuId : undefined}
 				aria-activedescendant={open ? `${menuId}-${composer.selected}` : undefined}
 			/>
-			<IconButton variant="ghost" aria-label={draft.editing ? 'Save the edit' : 'Send'} title="Send" disabled={composer.sending} onclick={submit}>
+			<button
+				type="button"
+				aria-label={draft.editing ? 'Save the edit' : 'Send'}
+				title="Send"
+				disabled={!canSend}
+				class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
+				onclick={submit}
+			>
 				<Icon icon={glyphs.send} size={18} />
-			</IconButton>
+			</button>
 		</div>
 	</div>
 	<input bind:this={picker} type="file" multiple hidden onchange={(e) => {

@@ -14,7 +14,7 @@
 </script>
 
 {#if previews.length > 0}
-	<ul class="flex gap-2 overflow-x-auto border-b border-fc-border p-2" aria-label="Attachments to send">
+	<ul class="flex gap-2 overflow-x-auto px-1 pt-1" aria-label="Attachments to send">
 		{#each previews as preview (preview.file)}
 			<li class="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-fc-md border border-fc-border bg-fc-surface">
 				{#if preview.url}

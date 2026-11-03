@@ -11,7 +11,7 @@
 </script>
 
 {#if target}
-	<div class="flex items-center gap-2 border-b border-fc-border py-1 pl-3 pr-1 text-fc-xs text-fc-fg-muted">
+	<div class="flex items-center gap-2 rounded-fc-pill bg-fc-surface py-1 pl-3 pr-1 text-fc-xs text-fc-fg-muted">
 		<Icon icon={draft.editing ? glyphs.pen : glyphs.reply} size={14} />
 		<span class="min-w-0 flex-1 truncate">
 			{#if draft.editing}Editing your message{:else}Replying to <strong class="font-semibold text-fc-fg">{who}</strong>: {target.getContent().body}{/if}
