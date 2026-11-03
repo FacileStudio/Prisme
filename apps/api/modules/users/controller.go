@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/internal/authcontext"
+	"github.com/FacileStudio/Prisme/apps/api/internal/authcontext"
 	"github.com/FacileStudio/tronc/errors"
 )
 

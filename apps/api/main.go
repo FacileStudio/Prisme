@@ -11,14 +11,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/internal/database"
-	documentation "github.com/FacileStudio/GoSvelteBoilerplate/apps/api/internal/documentation"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/internal/env"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/modules/auth"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/modules/events"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/modules/tickets"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/modules/users"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/schemas"
+	"github.com/FacileStudio/Prisme/apps/api/internal/database"
+	documentation "github.com/FacileStudio/Prisme/apps/api/internal/documentation"
+	"github.com/FacileStudio/Prisme/apps/api/internal/env"
+	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
+	"github.com/FacileStudio/Prisme/apps/api/modules/events"
+	"github.com/FacileStudio/Prisme/apps/api/modules/tickets"
+	"github.com/FacileStudio/Prisme/apps/api/modules/users"
+	"github.com/FacileStudio/Prisme/apps/api/schemas"
 
 	"github.com/FacileStudio/Journal/sdk/journal"
 	"github.com/FacileStudio/tronc/apiref"
@@ -35,7 +35,7 @@ import (
 // apiTitle names this API in the reference page and the OpenAPI document.
 // scripts/rename.sh rewrites this line when a fork is retargeted, so keep it a
 // single const on one line.
-const apiTitle = "GoSvelteBoilerplate API"
+const apiTitle = "Prisme API"
 
 const apiDescription = "Authentication, users, and a demo ticketing domain."
 

@@ -40,7 +40,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-gosvelteboilerplate}
+      POSTGRES_DB: ${POSTGRES_DB:-prisme}
     expose:
       - "5432"
     volumes:
@@ -64,17 +64,17 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: dokploy-network
-      traefik.http.routers.gosvelteboilerplate-web.rule: "Host(`gosvelteboilerplate.facile.studio`)"
-      traefik.http.routers.gosvelteboilerplate-web.entrypoints: web
-      traefik.http.routers.gosvelteboilerplate-web.middlewares: redirect-to-https@file
-      traefik.http.routers.gosvelteboilerplate-web.service: gosvelteboilerplate-svc
-      traefik.http.routers.gosvelteboilerplate-secure.rule: "Host(`gosvelteboilerplate.facile.studio`)"
-      traefik.http.routers.gosvelteboilerplate-secure.entrypoints: websecure
-      traefik.http.routers.gosvelteboilerplate-secure.tls.certresolver: letsencrypt
-      traefik.http.routers.gosvelteboilerplate-secure.service: gosvelteboilerplate-svc
-      traefik.http.services.gosvelteboilerplate-svc.loadbalancer.server.port: "4000"
+      traefik.http.routers.prisme-web.rule: "Host(`prisme.facile.studio`)"
+      traefik.http.routers.prisme-web.entrypoints: web
+      traefik.http.routers.prisme-web.middlewares: redirect-to-https@file
+      traefik.http.routers.prisme-web.service: prisme-svc
+      traefik.http.routers.prisme-secure.rule: "Host(`prisme.facile.studio`)"
+      traefik.http.routers.prisme-secure.entrypoints: websecure
+      traefik.http.routers.prisme-secure.tls.certresolver: letsencrypt
+      traefik.http.routers.prisme-secure.service: prisme-svc
+      traefik.http.services.prisme-svc.loadbalancer.server.port: "4000"
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-gosvelteboilerplate}?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-prisme}?sslmode=disable
       PORT: "4000"
       APP_ENV: ${APP_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -101,4 +101,4 @@ networks:
 
 volumes:
   db_data:
-    name: gosvelteboilerplate_db_data
+    name: prisme_db_data

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/internal/authcrypto"
-	"github.com/FacileStudio/GoSvelteBoilerplate/apps/api/schemas"
+	"github.com/FacileStudio/Prisme/apps/api/internal/authcrypto"
+	"github.com/FacileStudio/Prisme/apps/api/schemas"
 	"github.com/FacileStudio/tronc/errors"
 
 	"gorm.io/gorm"

@@ -1,4 +1,4 @@
-# GoSvelteBoilerplate — Documentation
+# Prisme — Documentation
 
 | Page | What's in it |
 |---|---|
