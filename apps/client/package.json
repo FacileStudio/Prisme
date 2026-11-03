@@ -25,7 +25,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@facile/muse": "github:FacileStudio/muse#v0.7.3",
+		"@facile/muse": "github:FacileStudio/muse#v0.8.0",
 		"dompurify": "^3.4.17",
 		"livekit-client": "^2.23.0",
 		"marked": "^18.1.3",
