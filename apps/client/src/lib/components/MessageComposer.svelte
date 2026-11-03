@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Button, IconButton } from '@facile/muse';
+
 	let {
 		roomName,
 		typingUsers,
@@ -43,7 +45,7 @@
 	}
 </script>
 
-<div class="border-t border-fc-border bg-fc-page p-4 select-none shrink-0">
+<div class="p-4 select-none shrink-0">
 	{#if typingUsers.length > 0}
 		<div class="mb-1.5 flex items-center gap-1.5 text-fc-xs text-fc-fg-muted italic">
 			<span class="inline-block size-1.5 animate-pulse rounded-full bg-fc-accent"></span>
@@ -51,42 +53,47 @@
 		</div>
 	{/if}
 
-	<form onsubmit={handleSubmit} class="flex flex-col rounded-fc-md border border-fc-border bg-fc-surface focus-within:border-fc-accent focus-within:ring-1 focus-within:ring-fc-accent">
+	<form
+		onsubmit={handleSubmit}
+		class="flex flex-col bg-fc-surface rounded-fc-lg p-3 focus-within:ring-2 focus-within:ring-fc-ring transition-shadow"
+	>
 		<textarea
 			bind:value={text}
 			onkeydown={handleKeydown}
 			placeholder={`Message ${roomName}…`}
 			rows={2}
-			class="w-full resize-none bg-transparent p-3 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:outline-none"
+			class="w-full resize-none bg-transparent text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:outline-none"
 		></textarea>
 
-		<div class="flex items-center justify-between border-t border-fc-border/40 px-3 py-2">
-			<div class="flex items-center gap-1 text-fc-fg-muted text-fc-xs">
-				<button
-					type="button"
-					class="rounded p-1 hover:bg-fc-surface-hover hover:text-fc-fg"
+		<div class="flex items-center justify-between pt-2">
+			<div class="flex items-center gap-1">
+				<IconButton
+					variant="ghost"
 					title="Code block"
+					aria-label="Code block"
+					class="size-7 rounded-fc-md [&_svg]:size-3.5 text-fc-xs font-mono"
 					onclick={() => (text += '```\n\n```')}
 				>
-					&lt;/&gt;
-				</button>
-				<button
-					type="button"
-					class="rounded p-1 hover:bg-fc-surface-hover hover:text-fc-fg font-bold"
+					<span>&lt;/&gt;</span>
+				</IconButton>
+				<IconButton
+					variant="ghost"
 					title="Bold"
+					aria-label="Bold"
+					class="size-7 rounded-fc-md font-bold text-fc-xs"
 					onclick={() => (text += '**bold**')}
 				>
-					B
-				</button>
+					<span>B</span>
+				</IconButton>
 			</div>
 
-			<button
+			<Button
 				type="submit"
+				size="sm"
 				disabled={!text.trim() || sending}
-				class="inline-flex items-center justify-center rounded-fc-md bg-fc-accent px-3 py-1.5 text-fc-xs font-semibold text-fc-accent-fg shadow-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
 			>
 				{sending ? 'Sending…' : 'Send'}
-			</button>
+			</Button>
 		</div>
 	</form>
 </div>

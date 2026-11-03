@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Badge, Button, Icon, IconButton, Input, icons } from '@facile/muse';
 	import { backend } from '$lib/backend';
 
 	let {
@@ -18,13 +19,13 @@
 	let saving = $state(false);
 	let submitError = $state('');
 
-	let checkTimer: any = null;
+	let checkTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function handleInput() {
 		available = null;
 		reason = '';
 		submitError = '';
-		clearTimeout(checkTimer);
+		if (checkTimer) clearTimeout(checkTimer);
 		const trimmed = name.trim();
 		if (!trimmed) {
 			checking = false;
@@ -66,52 +67,49 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-	<div class="w-full max-w-md rounded-fc-lg border border-fc-border bg-fc-page p-6 shadow-xl">
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onclose(); }} />
+
+<div
+	role="presentation"
+	class="fixed inset-0 z-50 flex items-center justify-center bg-fc-scrim p-4"
+	onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
+>
+	<div class="w-full max-w-md rounded-fc-xl bg-fc-component p-6 shadow-xl text-fc-fg">
 		<div class="flex items-center justify-between pb-4">
 			<h2 class="text-fc-lg font-bold text-fc-fg">Add an Agent</h2>
-			<button
-				type="button"
-				aria-label="Close"
-				class="rounded-fc-md p-1 text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
-				onclick={onclose}
-			>
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="stroke-current stroke-2">
-					<line x1="18" y1="6" x2="6" y2="18" />
-					<line x1="6" y1="6" x2="18" y2="18" />
-				</svg>
-			</button>
+			<IconButton variant="ghost" class="size-8" aria-label="Close" onclick={onclose}>
+				<Icon icon={icons.close} size={18} />
+			</IconButton>
 		</div>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
-			<div>
+			<div class="space-y-1.5">
 				<label for="agent-name" class="block text-fc-xs font-semibold uppercase tracking-wider text-fc-fg-muted">
 					Agent Name
 				</label>
-				<div class="relative mt-1.5 flex items-center">
-					<span class="absolute left-3 text-fc-sm text-fc-fg-muted font-bold">@</span>
-					<input
+				<div class="relative flex items-center">
+					<span class="absolute left-3.5 z-10 text-fc-sm font-bold text-fc-fg-muted">@</span>
+					<Input
 						id="agent-name"
-						type="text"
 						bind:value={name}
 						oninput={handleInput}
 						placeholder="pixel"
 						maxlength={80}
 						autocomplete="off"
 						required
-						class="w-full rounded-fc-md border border-fc-border bg-fc-surface py-2 pr-3 pl-8 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:border-fc-accent focus:outline-none focus:ring-1 focus:ring-fc-accent"
+						class="pl-8"
 					/>
 				</div>
 
-				<div class="mt-2 text-fc-xs">
+				<div class="pt-1">
 					{#if checking}
-						<span class="text-fc-fg-muted">Checking availability…</span>
+						<span class="text-fc-xs text-fc-fg-muted">Checking availability…</span>
 					{:else if available === true}
-						<span class="font-medium text-fc-success">✓ @{name.trim().toLowerCase()} is available</span>
+						<Badge tone="success">✓ @{name.trim().toLowerCase()} is available</Badge>
 					{:else if available === false}
-						<span class="font-medium text-fc-danger">✗ {reason || 'The name is already taken'}</span>
+						<Badge tone="danger">✗ {reason || 'The name is already taken'}</Badge>
 					{:else}
-						<span class="text-fc-fg-muted">Names are unique across the workspace.</span>
+						<span class="text-fc-xs text-fc-fg-muted">Names are unique across the workspace.</span>
 					{/if}
 				</div>
 			</div>
@@ -123,20 +121,15 @@
 			{/if}
 
 			<div class="flex justify-end gap-2 pt-2">
-				<button
-					type="button"
-					class="rounded-fc-md border border-fc-border px-4 py-2 text-fc-sm font-medium text-fc-fg hover:bg-fc-surface"
-					onclick={onclose}
-				>
+				<Button variant="ghost" onclick={onclose}>
 					Cancel
-				</button>
-				<button
+				</Button>
+				<Button
 					type="submit"
 					disabled={!name.trim() || checking || available === false || saving}
-					class="rounded-fc-md bg-fc-accent px-4 py-2 text-fc-sm font-semibold text-fc-accent-fg shadow-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
 				>
 					{saving ? 'Creating…' : 'Create Agent'}
-				</button>
+				</Button>
 			</div>
 		</form>
 	</div>

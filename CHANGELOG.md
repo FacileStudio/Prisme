@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2026-11-03
+
+### Changed
+
+- feat(client): redesign app shell with muse SideBar, space switcher, and collapsible rail
+- feat(client): adopt muse components across chat, thread, member panels and dialogs
+- style(client): remove all decorative borders in accordance with Facile design charte
+
 ## [0.1.0] - 2026-11-03
 
 ### Added

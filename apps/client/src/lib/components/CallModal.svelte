@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Badge, Button, Icon, IconButton, icons } from '@facile/muse';
+
 	let {
 		joinUrl,
 		onclose
@@ -8,33 +10,48 @@
 	} = $props();
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-	<div class="flex h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-fc-lg border border-fc-border bg-black shadow-2xl">
-		<div class="flex h-12 items-center justify-between border-b border-white/10 bg-black px-4 text-white">
-			<div class="flex items-center gap-2">
-				<span class="inline-block size-2 rounded-full bg-fc-success animate-pulse"></span>
-				<span class="text-fc-sm font-bold">Echo Call</span>
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onclose(); }} />
+
+<div
+	role="presentation"
+	class="fixed inset-0 z-50 flex items-center justify-center bg-fc-scrim p-4"
+	onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
+>
+	<div class="flex h-[80vh] w-full max-w-4xl flex-col rounded-fc-xl bg-fc-component p-6 shadow-xl text-fc-fg">
+		<div class="flex items-center justify-between pb-4">
+			<div class="flex items-center gap-2.5">
+				<Badge tone="success">Live</Badge>
+				<h2 class="text-fc-md font-bold text-fc-fg">Echo Call</h2>
 			</div>
 			<div class="flex items-center gap-2">
-				<a
+				<Button
 					href={joinUrl}
 					target="_blank"
 					rel="noreferrer"
-					class="rounded-fc-md bg-white/10 px-3 py-1 text-fc-xs font-semibold text-white hover:bg-white/20"
+					variant="ghost"
+					size="sm"
 				>
 					Open in Tab
-				</a>
-				<button
-					type="button"
-					class="rounded-fc-md bg-fc-danger px-3 py-1 text-fc-xs font-semibold text-white hover:opacity-90"
+				</Button>
+				<Button
+					variant="danger"
+					size="sm"
 					onclick={onclose}
 				>
 					Leave
-				</button>
+				</Button>
+				<IconButton
+					variant="ghost"
+					class="size-8 ml-1"
+					aria-label="Close"
+					onclick={onclose}
+				>
+					<Icon icon={icons.close} size={18} />
+				</IconButton>
 			</div>
 		</div>
 
-		<div class="flex-1 bg-black">
+		<div class="flex-1 min-h-0 overflow-hidden rounded-fc-lg bg-black">
 			<iframe
 				src={joinUrl}
 				title="Echo Call"

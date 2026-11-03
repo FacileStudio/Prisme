@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button, Icon, IconButton, Input, icons } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import type { ChannelRecord } from '$lib/types';
 
@@ -35,53 +36,48 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-	<div class="w-full max-w-md rounded-fc-lg border border-fc-border bg-fc-page p-6 shadow-xl">
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onclose(); }} />
+
+<div
+	role="presentation"
+	class="fixed inset-0 z-50 flex items-center justify-center bg-fc-scrim p-4"
+	onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
+>
+	<div class="w-full max-w-md rounded-fc-xl bg-fc-component p-6 shadow-xl text-fc-fg">
 		<div class="flex items-center justify-between pb-4">
 			<h2 class="text-fc-lg font-bold text-fc-fg">Create a Channel</h2>
-			<button
-				type="button"
-				aria-label="Close"
-				class="rounded-fc-md p-1 text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
-				onclick={onclose}
-			>
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="stroke-current stroke-2">
-					<line x1="18" y1="6" x2="6" y2="18" />
-					<line x1="6" y1="6" x2="18" y2="18" />
-				</svg>
-			</button>
+			<IconButton variant="ghost" class="size-8" aria-label="Close" onclick={onclose}>
+				<Icon icon={icons.close} size={18} />
+			</IconButton>
 		</div>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
-			<div>
+			<div class="space-y-1.5">
 				<label for="channel-name" class="block text-fc-xs font-semibold uppercase tracking-wider text-fc-fg-muted">
 					Channel Name
 				</label>
-				<div class="relative mt-1.5 flex items-center">
-					<span class="absolute left-3 text-fc-sm text-fc-fg-muted font-bold">#</span>
-					<input
+				<div class="relative flex items-center">
+					<span class="absolute left-3.5 z-10 text-fc-sm font-bold text-fc-fg-muted">#</span>
+					<Input
 						id="channel-name"
-						type="text"
 						bind:value={name}
 						placeholder="design"
 						maxlength={80}
 						required
-						class="w-full rounded-fc-md border border-fc-border bg-fc-surface py-2 pr-3 pl-7 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:border-fc-accent focus:outline-none focus:ring-1 focus:ring-fc-accent"
+						class="pl-8"
 					/>
 				</div>
 			</div>
 
-			<div>
+			<div class="space-y-1.5">
 				<label for="channel-topic" class="block text-fc-xs font-semibold uppercase tracking-wider text-fc-fg-muted">
 					Topic (optional)
 				</label>
-				<input
+				<Input
 					id="channel-topic"
-					type="text"
 					bind:value={topic}
 					placeholder="What is this channel about?"
 					maxlength={160}
-					class="mt-1.5 w-full rounded-fc-md border border-fc-border bg-fc-surface px-3 py-2 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:border-fc-accent focus:outline-none focus:ring-1 focus:ring-fc-accent"
 				/>
 			</div>
 
@@ -92,20 +88,15 @@
 			{/if}
 
 			<div class="flex justify-end gap-2 pt-2">
-				<button
-					type="button"
-					class="rounded-fc-md border border-fc-border px-4 py-2 text-fc-sm font-medium text-fc-fg hover:bg-fc-surface"
-					onclick={onclose}
-				>
+				<Button variant="ghost" onclick={onclose}>
 					Cancel
-				</button>
-				<button
+				</Button>
+				<Button
 					type="submit"
 					disabled={!name.trim() || saving}
-					class="rounded-fc-md bg-fc-accent px-4 py-2 text-fc-sm font-semibold text-fc-accent-fg shadow-sm hover:opacity-90 disabled:opacity-40"
 				>
 					{saving ? 'Creating…' : 'Create Channel'}
-				</button>
+				</Button>
 			</div>
 		</form>
 	</div>

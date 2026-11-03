@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { Button } from '@facile/muse';
 	import { backend, ssoLoginUrl } from '$lib/backend';
 
 	let error = $state('');
@@ -15,12 +16,9 @@
 			await backend.getSession();
 			await goto('/');
 		} catch {
-			// not signed in
+			return;
 		}
 	});
-
-	const primaryButtonClass =
-		'inline-flex h-11 w-full items-center justify-center rounded-fc-md bg-fc-accent px-4 text-fc-sm font-medium text-fc-accent-fg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring';
 </script>
 
 <svelte:head>
@@ -28,7 +26,7 @@
 </svelte:head>
 
 <div class="flex min-h-dvh">
-	<div class="hidden flex-col border-r border-fc-border bg-black px-12 py-10 lg:flex lg:w-1/2">
+	<div class="hidden flex-col bg-black px-12 py-10 lg:flex lg:w-1/2">
 		<a href="/" class="mb-auto flex items-center gap-3 text-white" aria-label="Prisme home">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="stroke-white stroke-2">
 				<polygon points="12 2 2 22 22 22" />
@@ -67,9 +65,9 @@
 				</div>
 			{/if}
 
-			<a href={ssoLoginUrl} data-sveltekit-reload class={primaryButtonClass}>
+			<Button href={ssoLoginUrl} data-sveltekit-reload size="lg" class="w-full">
 				Sign in with Facile
-			</a>
+			</Button>
 		</div>
 	</div>
 </div>

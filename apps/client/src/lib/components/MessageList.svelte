@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { Avatar, Button } from '@facile/muse';
 	import type { ChatMessage } from '$lib/types';
 
 	let {
@@ -51,15 +52,12 @@
 
 	{#each messages as msg (msg.id)}
 		<div class="group relative flex gap-3 rounded-fc-md p-2 transition-colors hover:bg-fc-surface/50">
-			<div class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-fc-surface text-fc-fg font-semibold border border-fc-border">
-				{#if msg.senderAvatar}
-					<img src={msg.senderAvatar} alt={msg.senderName} class="size-full object-cover" />
-				{:else if msg.isAgent}
-					🤖
-				{:else}
-					{msg.senderName.slice(0, 2).toUpperCase()}
-				{/if}
-			</div>
+			<Avatar
+				src={msg.senderAvatar}
+				name={msg.senderName}
+				size="sm"
+				class="size-9"
+			/>
 
 			<div class="flex-1 min-w-0">
 				<div class="flex items-center gap-2">
@@ -73,7 +71,7 @@
 				</div>
 
 				{#if msg.call}
-					<div class="mt-2 flex max-w-md items-center justify-between gap-4 rounded-fc-md border border-fc-border bg-fc-surface p-3">
+					<div class="mt-2 flex max-w-md items-center justify-between gap-4 rounded-fc-lg bg-fc-surface p-4">
 						<div class="flex items-center gap-3">
 							<div class="flex size-8 items-center justify-center rounded-full bg-fc-success/20 text-fc-success">
 								📞
@@ -83,13 +81,13 @@
 								<p class="text-fc-xs text-fc-fg-muted">By {msg.senderName}</p>
 							</div>
 						</div>
-						<button
-							type="button"
-							class="rounded-fc-md bg-fc-success px-3 py-1.5 text-fc-xs font-semibold text-white shadow-sm hover:opacity-90"
+						<Button
+							size="sm"
+							class="bg-fc-success text-white hover:opacity-90"
 							onclick={() => onjoincall(msg.call!.call_id, msg.call!.join_url)}
 						>
 							Join
-						</button>
+						</Button>
 					</div>
 				{:else}
 					<div class="mt-1 text-fc-sm text-fc-fg break-words whitespace-pre-wrap leading-relaxed font-sans">
@@ -98,14 +96,14 @@
 				{/if}
 
 				{#if Object.keys(msg.reactions).length > 0}
-					<div class="mt-2 flex flex-wrap gap-1">
+					<div class="mt-2 flex flex-wrap gap-1.5">
 						{#each Object.entries(msg.reactions) as [emoji, users]}
 							<button
 								type="button"
-								class={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-fc-xs transition-colors ${
+								class={`inline-flex items-center gap-1.5 rounded-fc-pill px-2.5 py-1 text-fc-xs transition-colors ${
 									users.includes(currentUserId)
-										? 'border-fc-accent bg-fc-accent/10 text-fc-accent'
-										: 'border-fc-border bg-fc-surface text-fc-fg hover:bg-fc-surface-hover'
+										? 'bg-fc-accent text-fc-accent-fg'
+										: 'bg-fc-surface text-fc-fg hover:bg-fc-surface-hover'
 								}`}
 								onclick={() => onreact(msg.id, emoji)}
 								title={users.join(', ')}
@@ -118,10 +116,10 @@
 				{/if}
 			</div>
 
-			<div class="absolute right-2 top-2 hidden items-center rounded-fc-md border border-fc-border bg-fc-page p-0.5 shadow-sm group-hover:flex">
+			<div class="absolute right-2 top-2 hidden items-center gap-0.5 rounded-fc-lg bg-fc-component p-1 shadow-lg group-hover:flex">
 				<button
 					type="button"
-					class="p-1 text-fc-xs hover:bg-fc-surface-hover rounded"
+					class="flex size-7 items-center justify-center rounded-fc-md text-fc-xs transition-colors hover:bg-fc-surface"
 					title="Thumbs up"
 					onclick={() => onreact(msg.id, '👍')}
 				>
@@ -129,7 +127,7 @@
 				</button>
 				<button
 					type="button"
-					class="p-1 text-fc-xs hover:bg-fc-surface-hover rounded"
+					class="flex size-7 items-center justify-center rounded-fc-md text-fc-xs transition-colors hover:bg-fc-surface"
 					title="Heart"
 					onclick={() => onreact(msg.id, '❤️')}
 				>
@@ -137,16 +135,15 @@
 				</button>
 				<button
 					type="button"
-					class="p-1 text-fc-xs hover:bg-fc-surface-hover rounded"
+					class="flex size-7 items-center justify-center rounded-fc-md text-fc-xs transition-colors hover:bg-fc-surface"
 					title="Rocket"
 					onclick={() => onreact(msg.id, '🚀')}
 				>
 					🚀
 				</button>
-				<div class="mx-0.5 h-3 w-px bg-fc-border"></div>
 				<button
 					type="button"
-					class="p-1 text-fc-fg-muted hover:bg-fc-surface-hover hover:text-fc-fg rounded text-fc-xs"
+					class="flex size-7 items-center justify-center rounded-fc-md text-fc-fg-muted transition-colors hover:bg-fc-surface hover:text-fc-fg"
 					title="Reply in thread"
 					onclick={() => onreplyinthread(msg)}
 				>

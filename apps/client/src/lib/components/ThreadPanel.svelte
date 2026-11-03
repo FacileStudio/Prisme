@@ -36,13 +36,13 @@
 	}
 </script>
 
-<aside class="flex h-full w-80 flex-col border-l border-fc-border bg-fc-surface select-none shrink-0">
-	<div class="flex h-14 items-center justify-between border-b border-fc-border px-4 font-bold text-fc-fg">
+<aside class="flex h-full w-80 flex-col overflow-hidden rounded-fc-lg bg-fc-component select-none shrink-0">
+	<div class="flex h-14 items-center justify-between px-4 font-bold text-fc-fg">
 		<span class="text-fc-sm">Thread</span>
 		<button
 			type="button"
 			aria-label="Close"
-			class="flex size-7 items-center justify-center rounded-fc-md text-fc-fg-muted hover:bg-fc-surface-hover hover:text-fc-fg"
+			class="flex size-7 items-center justify-center rounded-fc-md text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
 			onclick={onclose}
 		>
 			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="stroke-current stroke-2">
@@ -53,7 +53,7 @@
 	</div>
 
 	<div class="flex-1 overflow-y-auto p-4 space-y-4">
-		<div class="rounded-fc-md border border-fc-border bg-fc-page p-3">
+		<div class="rounded-fc-md bg-fc-surface p-3">
 			<div class="flex items-center gap-2">
 				<span class="text-fc-xs font-bold text-fc-fg">{rootMessage.senderName}</span>
 				{#if rootMessage.isAgent}
@@ -71,7 +71,7 @@
 		<div class="space-y-3">
 			{#each replies as reply (reply.id)}
 				<div class="flex gap-2">
-					<div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-fc-surface text-[11px] font-bold border border-fc-border">
+					<div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-fc-surface text-[11px] font-bold">
 						{reply.senderName.slice(0, 2).toUpperCase()}
 					</div>
 					<div class="flex-1 min-w-0">
@@ -93,13 +93,13 @@
 		</div>
 	</div>
 
-	<form onsubmit={handleSend} class="border-t border-fc-border p-3">
+	<form onsubmit={handleSend} class="p-3">
 		<div class="flex gap-2">
 			<input
 				type="text"
 				bind:value={replyText}
 				placeholder="Reply in thread…"
-				class="flex-1 rounded-fc-md border border-fc-border bg-fc-page px-3 py-1.5 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:outline-none focus:border-fc-accent"
+				class="flex-1 rounded-fc-md bg-fc-surface px-3 py-1.5 text-fc-sm text-fc-fg placeholder:text-fc-fg-muted focus:outline-none focus:ring-1 focus:ring-fc-ring"
 			/>
 			<button
 				type="submit"
