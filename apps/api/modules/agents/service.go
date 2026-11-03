@@ -87,6 +87,7 @@ func (s *Service) Create(ctx context.Context, ownerID int64, req CreateRequest) 
 		return Login{}, err
 	}
 	s.profile(ctx, &row, req.AvatarURL)
+	login.OwnerUserID = who.owner.MatrixUserID
 	return login, nil
 }
 

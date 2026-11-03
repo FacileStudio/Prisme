@@ -6,10 +6,13 @@ type CreateRequest struct {
 	AvatarURL string `json:"avatar_url,omitempty"`
 }
 
-// Login is the agent's Matrix login, returned by POST /agents.
+// Login is the agent's Matrix login, returned by POST /agents. OwnerUserID is
+// the Matrix id of the person the agent works for: the one sender its runtime
+// may let act through it.
 type Login struct {
 	Homeserver  string `json:"homeserver"`
 	UserID      string `json:"user_id"`
+	OwnerUserID string `json:"owner_user_id"`
 	AccessToken string `json:"access_token"`
 	DeviceID    string `json:"device_id"`
 }
