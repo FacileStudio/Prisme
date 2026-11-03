@@ -29,7 +29,7 @@
 	<div class="flex w-full max-w-sm flex-col gap-6">
 		<div class="flex flex-col items-center gap-3 text-center">
 			<span class="flex size-14 items-center justify-center rounded-fc-lg bg-fc-accent text-fc-accent-fg">
-				<Icon icon={glyphs.chat} size={28} />
+				<Icon icon={glyphs.logo} size={28} />
 			</span>
 			<h1 class="text-fc-2xl font-semibold">Prisme</h1>
 			<p class="text-fc-sm text-fc-fg-muted">The Facile team chat. Sign in with your Facile account.</p>

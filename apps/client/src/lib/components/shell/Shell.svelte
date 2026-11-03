@@ -89,7 +89,7 @@
 	<div class="hidden h-full shrink-0 p-3 md:block">
 		<SideBar
 			class="h-full"
-			icon={glyphs.chat}
+			icon={glyphs.logo}
 			title="Prisme"
 			bind:collapsed={ui.railCollapsed}
 			{pages}

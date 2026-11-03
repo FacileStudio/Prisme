@@ -1,7 +1,7 @@
 {
-  "name": "GoSvelteBoilerplate",
-  "short_name": "GoSvelteBoilerplate",
-  "description": "A Facile Studio app.",
+  "name": "Prisme",
+  "short_name": "Prisme",
+  "description": "The Facile team chat.",
   "icons": [
     {
       "src": "/icon-192.png",
