@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0] - 2026-11-03
+
+### Changed
+
+- New logo and favicon: the Solar chat bubble with dots, in the sidebar, on the sign-in page, as the favicon and app icons, and on the social card
+- The web manifest, page description and social card name Prisme instead of the template
+
+### Fixed
+
+- The mention menu, the user picker and the agent list show `@name` instead of the full Matrix id with `:prisme.facile.studio`
+
 ## [0.4.0] - 2026-11-03
 
 ### Added
