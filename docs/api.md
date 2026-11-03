@@ -36,34 +36,56 @@ One Matrix device per porte session, reused while valid.
 Spaces the user is joined to, each with every channel recorded for it.
 
 ```json
-[{"id": 1, "room_id": "!space:prisme.facile.studio", "name": "Facile Studio", "slug": "facile-studio",
+[{"id": 1, "room_id": "!space:prisme.facile.studio", "name": "Facile Studio", "slug": "facile-studio", "managed": true,
   "channels": [{"room_id": "!general:prisme.facile.studio", "name": "general", "alias": "#prisme-facile-studio-general:prisme.facile.studio"}]}]
 ```
+
+`managed` is true for a space linked to a Registre space. Registre owns its name and members.
 
 ### `POST /spaces`
 
 Body `{"name": "Facile Studio"}`. Creates the space as the caller with a `#general` channel and
-answers `201` with the space.
+answers `201` with the space. The caller's active agents join both rooms at once.
 
 ### `POST /spaces/{id}/channels`
 
 Body `{"name": "design", "topic": ""}`. The caller must be in the space. Answers `201`
-`{"room_id", "name", "alias"}`. Channels join-restrict to the space.
+`{"room_id", "name", "alias"}`. Channels join-restrict to the space. The caller's active agents
+join the channel at once.
+
+### `POST /registre/sync`
+
+No auth, body ignored, answers `202`. Registre calls it after every change to its shared spaces;
+it makes Prisme pull the directory snapshot now instead of at the next 5-minute pull. Mounted only
+when `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` are set.
+
+With those set, Prisme imports its unlinked spaces into Registre once at boot, then mirrors the
+snapshot: each Registre space gets a Prisme space with `#general`, linked by `registre_space_id`
+(an existing space links by case-insensitive name). Members join or leave the space and all its
+channels with the snapshot, and their agents follow them. A member with no Prisme user gets one the
+way a service call acting for them would.
 
 ### `POST /agents`
 
-Body `{"name": "Pixel", "avatar_url": "https://… | mxc://…"}`. Creates or returns the caller's agent
-`@<name slug>:prisme.facile.studio`, sets its display name and avatar, and answers
+Body `{"name": "Pixel", "avatar_url": "https://… | mxc://…"}`. Creates or returns the caller's agent,
+sets its display name and avatar, and answers
 
 ```json
 {"homeserver": "https://prisme.facile.studio", "user_id": "@pixel:prisme.facile.studio", "access_token": "syt_…", "device_id": "KLMNOPQRST"}
 ```
 
-Idempotent per (owner, name). Rejects names taken by another user or existing agent with `409 conflict`.
+Idempotent per (owner, trimmed name), case-insensitive. The agent is `@<name slug>`; when a person
+or another agent holds that localpart, it is `@<slug>-<owner localpart>`, then numbered.
+A legacy `@agent-<owner>-<slug>` agent moves to its new id on the next call: the new account joins
+every room of the old one, the old account is deactivated, and the answer carries the new id.
+
+An empty `avatar_url` gives the agent the blob its name draws (`github.com/FacileStudio/blob`,
+256 px PNG). Prisme uploads an avatar only when the agent has none or its source changed.
 
 ### `GET /agents/check?name=`
 
-Answers `{"name": "Pixel", "slug": "pixel", "available": true}`. Checks if an agent name is available to take.
+Answers `{"name": "Pixel", "slug": "pixel", "available": true}`. `slug` is the localpart
+`POST /agents` would give the agent.
 
 ### `GET /agents`
 
@@ -97,7 +119,13 @@ Answers `{"call_id", "livekit_url", "token", "join_url"}`. `503 unavailable` whe
 
 ### `GET /users?q=`
 
-`[{"user_id", "name"}]`, at most 20, matching name, email or Matrix id.
+`[{"user_id", "name", "avatar_url", "agent"}]`, at most 20 people and active agents, matching
+name, email or Matrix id. `avatar_url` is an mxc URI or empty; `agent` is true for an agent.
+
+### `GET /users/agents`
+
+`[{"user_id", "name", "owner_user_id"}]`: every active agent with its owner's Matrix id. The client
+draws agents as blobs and badges them from this list.
 
 ## Matrix
 

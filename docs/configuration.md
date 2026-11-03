@@ -12,6 +12,15 @@ The full variable table lives in the README. This page covers what the table can
 - `deploy/postgres/init-synapse.sql` creates the `synapse` database (C collation, as Synapse
   requires) the first time the Postgres volume is initialised. An existing volume is not touched.
 
+## Registre shared spaces
+
+The same `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` that sign people in also turn on
+the Registre space sync: Prisme calls Registre's directory API with HTTP Basic on its own client
+id and secret. Without all three, spaces stay local and `POST /api/registre/sync` is not mounted.
+For Registre to nudge Prisme, its seed entry for `prisme` needs
+`directory_sync_uri: https://prisme.facile.studio/api/registre/sync`; without it the 5-minute pull
+is the only trigger.
+
 ## Secrets
 
 Production secrets live in the Dokploy compose `Prisme` (project Facile, environment
