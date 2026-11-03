@@ -34,7 +34,7 @@
 
 	const nav = $derived.by(() => {
 		void app.version;
-		return app.client ? buildNav(app.client, app.spaces) : null;
+		return app.client ? buildNav(app.client, app.spaces, app.agents) : null;
 	});
 
 	const current = $derived(nav?.spaces.find((s) => s.space.room_id === ui.spaceId) ?? null);

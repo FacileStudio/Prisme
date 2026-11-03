@@ -33,19 +33,19 @@ function spaceNav(client: MatrixClient, space: Space): SpaceNav {
 	};
 }
 
-function dmRow(client: MatrixClient, room: Room): { row: DmRow; counts: RoomCounts } {
+function dmRow(client: MatrixClient, room: Room, agents?: ReadonlyMap<string, unknown>): { row: DmRow; counts: RoomCounts } {
 	const userId = dmPartner(client, room);
 	const invite = room.getMyMembership() === KnownMembership.Invite;
 	const member = userId ? room.getMember(userId) : null;
 	const name = member?.name ?? client.getUser(userId ?? '')?.displayName ?? room.name;
 	const counts = roomCounts(client, room, true);
 	const badge = invite ? { count: 1, strong: true, bold: true } : roomBadge(counts);
-	return { row: { roomId: room.roomId, name, userId, invite, agent: !!userId && isAgent(userId), badge }, counts };
+	return { row: { roomId: room.roomId, name, userId, invite, agent: !!userId && isAgent(userId, agents), badge }, counts };
 }
 
 /** Builds the sidebar model: spaces with their channels, DMs, and pending space invites. */
-export function buildNav(client: MatrixClient, spaces: Space[]): Nav {
-	const dms = dmRooms(client).map((room) => dmRow(client, room));
+export function buildNav(client: MatrixClient, spaces: Space[], agents?: ReadonlyMap<string, unknown>): Nav {
+	const dms = dmRooms(client).map((room) => dmRow(client, room, agents));
 	return {
 		spaces: spaces.map((space) => spaceNav(client, space)),
 		dms: dms.map((d) => d.row),

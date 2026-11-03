@@ -4,7 +4,7 @@
 	import { isBot } from '$lib/chat/users';
 	import { app } from '$lib/state/app.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
-	import MxcAvatar from '$lib/components/common/MxcAvatar.svelte';
+	import Avatar from '$lib/components/common/Avatar.svelte';
 
 	type Props = { onpick: (user: DirectoryUser) => void; busyId?: string; exclude?: string[] };
 	let { onpick, busyId = '', exclude = [] }: Props = $props();
@@ -36,7 +36,7 @@
 				onclick={() => onpick(user)}
 				class="flex min-h-11 w-full items-center gap-3 rounded-fc-md px-2 text-left text-fc-sm hover:bg-fc-surface disabled:opacity-50"
 			>
-				<MxcAvatar name={user.name} class="size-7 text-fc-xs" />
+				<Avatar userId={user.user_id} name={user.name} mxc={user.avatar_url || null} size={28} />
 				<span class="flex min-w-0 flex-1 flex-col">
 					<UserName userId={user.user_id} name={user.name} class="font-medium" />
 					<span class="truncate text-fc-xs text-fc-fg-muted">{user.user_id}</span>

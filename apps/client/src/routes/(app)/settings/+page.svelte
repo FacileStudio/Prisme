@@ -5,7 +5,7 @@
 	import { app } from '$lib/state/app.svelte';
 	import { notify } from '$lib/state/notify.svelte';
 	import { theme, type ThemePreference } from '$lib/state/theme.svelte';
-	import MxcAvatar from '$lib/components/common/MxcAvatar.svelte';
+	import Avatar from '$lib/components/common/Avatar.svelte';
 
 	const modes = [
 		{ value: 'system', label: 'System', icon: icons.monitor },
@@ -97,7 +97,7 @@
 			<ul class="flex flex-col gap-4">
 				{#each agents as agent (agent.user_id)}
 					<li class="flex min-h-11 items-center gap-3">
-						<MxcAvatar name={agent.name} size="md" />
+						<Avatar userId={agent.user_id} name={agent.name} size={40} />
 						<div class="flex min-w-0 flex-1 flex-col">
 							<span class="truncate text-fc-sm font-medium text-fc-fg">{agent.name}</span>
 							<span class="truncate font-fc-mono text-fc-xs text-fc-fg-muted">{agent.user_id}</span>

@@ -57,15 +57,3 @@ body {
 	padding-left: 1.25rem;
 }
 
-.prose-msg a.mention-pill {
-	text-decoration: none;
-	background: var(--color-fc-surface);
-	border-radius: var(--radius-fc-pill);
-	padding: 0 0.35rem;
-	font-weight: 500;
-}
-
-.prose-msg a.mention-pill.mention-me {
-	background: color-mix(in oklch, var(--color-fc-warning) 18%, transparent);
-	color: var(--color-fc-warning);
-}
