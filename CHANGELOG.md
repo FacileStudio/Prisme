@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0] - 2026-11-03
+
+### Changed
+
+- The message input matches Bulle: a rounded pill with a round + button to attach files and a filled send button that dims until there is something to send
+- Thread summaries read "last from Pixel" instead of "last from Pixel (@pixel:prisme.facile.studio)"
+
 ## [0.6.2] - 2026-11-03
 
 ### Changed
