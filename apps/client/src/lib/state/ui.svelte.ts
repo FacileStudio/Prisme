@@ -7,16 +7,18 @@ export type Dialog =
 	| 'add-agent'
 	| 'rename-room'
 	| 'rename-space'
-	| 'settings'
 	| null;
 
 export const HOME = 'home';
+export const MANAGE_SPACES_HREF = 'https://sso.facile.studio/spaces';
+export const MANAGE_SPACES_LABEL = 'Manage shared spaces';
 
 class UiState {
 	spaceId = $state<string>(HOME);
 	panel = $state<Panel>(null);
 	threadId = $state<string | null>(null);
 	drawer = $state(false);
+	railCollapsed = $state(false);
 	dialog = $state<Dialog>(null);
 
 	/** Opens a thread in the side panel. */

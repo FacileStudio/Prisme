@@ -8,7 +8,6 @@
 	import NewDmDialog from './NewDmDialog.svelte';
 	import AddAgentDialog from './AddAgentDialog.svelte';
 	import RenameDialog from './RenameDialog.svelte';
-	import SettingsDialog from './SettingsDialog.svelte';
 
 	const roomId = $derived(page.params.id ? decodeURIComponent(page.params.id) : '');
 	const space = $derived(app.spaces.find((s) => s.room_id === ui.spaceId) ?? null);
@@ -29,6 +28,4 @@
 	<RenameDialog {roomId} kind="channel" onclose={close} />
 {:else if ui.dialog === 'rename-space' && space}
 	<RenameDialog roomId={space.room_id} kind="space" onclose={close} />
-{:else if ui.dialog === 'settings'}
-	<SettingsDialog onclose={close} />
 {/if}
