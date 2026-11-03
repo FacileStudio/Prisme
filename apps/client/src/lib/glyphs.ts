@@ -24,6 +24,8 @@ const data: Record<string, IconData> = {
 	'solar:mention-circle-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path stroke-linecap=\"round\" d=\"M12 18a6 6 0 1 1 5.64-3.946a1.54 1.54 0 0 1-.413.599l-.08.074a1.637 1.637 0 0 1-2.747-1.203V12m0 0a2.4 2.4 0 1 1-4.8 0a2.4 2.4 0 0 1 4.8 0Z\"/><path d=\"M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12Z\"/></g>" },
 	'solar:menu-dots-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><circle cx=\"5\" cy=\"12\" r=\"2\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"19\" cy=\"12\" r=\"2\"/></g>" },
 	'solar:exit-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M9 4.5H8c-2.357 0-3.536 0-4.268.732S3 7.143 3 9.5v5c0 2.357 0 3.535.732 4.268S5.643 19.5 8 19.5h1M9 6.476c0-2.293 0-3.44.707-4.067s1.788-.439 3.95-.062l2.33.407c2.394.417 3.591.626 4.302 1.504c.711.879.711 2.149.711 4.69v6.105c0 2.54 0 3.81-.71 4.689c-.712.878-1.91 1.087-4.304 1.505l-2.328.406c-2.162.377-3.243.565-3.95-.062S9 19.817 9 17.524z\"/><path stroke-linecap=\"round\" d=\"M12 11v2\"/></g>" },
+	'solar:lock-keyhole-minimalistic-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"><path d=\"M2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.75736 10 5.17157 10 8 10H16C18.8284 10 20.2426 10 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16Z\"/><path d=\"M12 14V18\"/><path d=\"M6 10V8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8V10\"/></g>" },
+	'solar:screen-share-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"><path d=\"M8 8C8 5.17157 8 3.75736 8.87868 2.87868C9.75736 2 11.1716 2 14 2H15C17.8284 2 19.2426 2 20.1213 2.87868C21 3.75736 21 5.17157 21 8V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H14C11.1716 22 9.75736 22 8.87868 21.1213C8 20.2426 8 18.8284 8 16V8Z\"/><path d=\"M8.14114 4.5H8C5.64298 4.5 4.46447 4.5 3.73223 5.23223C3 5.96447 3 7.14298 3 9.5V14.5C3 16.857 3 18.0355 3.73223 18.7678C4.46447 19.5 5.64298 19.5 8 19.5H8.14114\"/><path stroke-linejoin=\"round\" d=\"M14.5 16V8M12 10.5L14.5 8L17 10.5\"/></g>" },
 };
 
 /** Prisme glyphs that muse does not bundle, keyed like muse `icons`. */
@@ -50,7 +52,9 @@ export const glyphs = {
 	login: 'solar:login-2-linear',
 	mention: 'solar:mention-circle-linear',
 	dots: 'solar:menu-dots-linear',
-	exit: 'solar:exit-linear'
+	exit: 'solar:exit-linear',
+	lock: 'solar:lock-keyhole-minimalistic-linear',
+	screenShare: 'solar:screen-share-linear'
 } as const;
 
 /** Registers the Prisme glyphs with muse so `Icon` inlines them. */

@@ -22,7 +22,7 @@ export type Space = { id: number; room_id: string; name: string; slug: string; c
 export type DirectoryUser = { user_id: string; name: string; avatar_url?: string; agent?: boolean };
 export type AgentUser = { user_id: string; name: string; owner_user_id: string };
 export type Agent = { user_id: string; name: string; room_ids: string[] };
-export type CallGrant = { call_id: string; livekit_url: string; token: string; join_url: string };
+export type CallGrant = { call_id: string; livekit_url: string; token: string; join_url: string; e2ee_key: string };
 
 export const LOGIN_PATH = '/api/auth/oidc';
 
