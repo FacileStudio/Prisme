@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] - 2026-11-03
+
+### Added
+
+- Screen sharing in calls, with a full-width uncropped tile for each shared screen and its audio
+- Every call is end-to-end encrypted with LiveKit E2EE (media and in-call data). `POST /api/calls` returns `e2ee_key`, derived per room from `PRISME_SECRET_KEY` and given only to room members; Echo and LiveKit never see it
+- A lock in the call header shows the call is encrypted; a browser that cannot encrypt is refused with an explanation
+
+### Changed
+
+- The call message no longer carries the Echo link in its body
+
 ## [0.3.0] - 2026-11-03
 
 ### Added
