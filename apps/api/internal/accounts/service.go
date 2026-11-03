@@ -85,30 +85,53 @@ func (s *Service) SyncProfile(ctx context.Context, account schemas.Account, prof
 	}
 	if err := s.matrix.SetProfile(ctx, account.MatrixUserID, name, avatar); err != nil {
 		s.logger.Warn("profile sync failed", slog.String("user", account.MatrixUserID), slog.Any("error", err))
+		return
+	}
+	if avatar != "" {
+		s.db.WithContext(ctx).Model(&schemas.Account{}).Where("user_id = ?", account.UserID).Update("avatar_url", avatar)
 	}
 }
 
 func (s *Service) create(ctx context.Context, userID int64, base string) (schemas.Account, error) {
 	for n := 1; n <= maxCandidates; n++ {
 		localpart := Candidate(base, n)
-		account := schemas.Account{UserID: userID, Localpart: localpart, MatrixUserID: s.matrix.UserID(localpart)}
-		err := s.db.WithContext(ctx).Create(&account).Error
-		if stderrors.Is(err, gorm.ErrDuplicatedKey) {
-			if existing, found := s.existing(ctx, userID); found {
-				return existing, nil
-			}
+		if s.heldByAgent(ctx, localpart) {
 			continue
 		}
-		if err != nil {
-			return account, errors.Internal("failed to store the account", err)
+		if account, claimed, err := s.claim(ctx, userID, localpart); claimed || err != nil {
+			return account, err
 		}
-		if err := s.matrix.Register(ctx, localpart); err != nil {
-			s.db.WithContext(ctx).Delete(&account)
-			return account, errors.Internal("failed to register the Matrix account", err)
-		}
-		return account, nil
 	}
 	return schemas.Account{}, errors.Conflict("no free Matrix name for this user")
+}
+
+// claim stores the account under localpart and registers it. It reports false
+// when another user holds the localpart; when the user already has an account,
+// that one is returned instead.
+func (s *Service) claim(ctx context.Context, userID int64, localpart string) (schemas.Account, bool, error) {
+	account := schemas.Account{UserID: userID, Localpart: localpart, MatrixUserID: s.matrix.UserID(localpart)}
+	err := s.db.WithContext(ctx).Create(&account).Error
+	if stderrors.Is(err, gorm.ErrDuplicatedKey) {
+		existing, found := s.existing(ctx, userID)
+		return existing, found, nil
+	}
+	if err != nil {
+		return account, false, errors.Internal("failed to store the account", err)
+	}
+	if err := s.matrix.Register(ctx, localpart); err != nil {
+		s.db.WithContext(ctx).Delete(&account)
+		return account, false, errors.Internal("failed to register the Matrix account", err)
+	}
+	return account, true, nil
+}
+
+// heldByAgent reports whether an agent already owns the localpart, so a human
+// never registers onto an agent's Matrix account.
+func (s *Service) heldByAgent(ctx context.Context, localpart string) bool {
+	var count int64
+	err := s.db.WithContext(ctx).Model(&schemas.Agent{}).
+		Where("slug = ? OR matrix_user_id = ?", localpart, s.matrix.UserID(localpart)).Count(&count).Error
+	return err != nil || count > 0
 }
 
 func (s *Service) existing(ctx context.Context, userID int64) (schemas.Account, bool) {
