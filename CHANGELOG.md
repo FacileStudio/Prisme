@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1] - 2026-11-03
+
+### Fixed
+
+- Mentions use the username: picking Pixel inserts `@pixel`, not `@Pixel (@pixel:prisme.facile.studio)`, which appeared when two members shared a display name
+- Received mention pills, including older messages, show `@username` instead of the sender's text
+
 ## [0.6.0] - 2026-11-03
 
 ### Changed
