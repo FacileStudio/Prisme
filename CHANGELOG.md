@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.2] - 2026-11-03
+
+### Changed
+
+- Spaces use the share-circle icon
+
 ## [0.6.1] - 2026-11-03
 
 ### Fixed
