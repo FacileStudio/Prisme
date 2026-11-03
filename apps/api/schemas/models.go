@@ -41,11 +41,11 @@ type Channel struct {
 	CreatedAt time.Time
 }
 
-// Agent is a bot account owned by a user, one per (owner, slug).
+// Agent is a bot account owned by a user, with a unique slug.
 type Agent struct {
 	ID            int64  `gorm:"primaryKey"`
-	OwnerID       int64  `gorm:"uniqueIndex:agents_owner_slug;not null"`
-	Slug          string `gorm:"uniqueIndex:agents_owner_slug;not null"`
+	OwnerID       int64  `gorm:"index;not null"`
+	Slug          string `gorm:"uniqueIndex;not null"`
 	Name          string `gorm:"not null"`
 	MatrixUserID  string `gorm:"uniqueIndex;not null"`
 	DeviceID      string

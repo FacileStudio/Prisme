@@ -13,7 +13,7 @@ teammates you `@mention`. Calls start from any channel or DM and run on Echo.
   and no account ever has a password
 - Hands the browser a Matrix token for its session; the client then talks Matrix directly with
   matrix-js-sdk
-- Gives Bulle zero-config agent accounts (`@agent-<owner>-<name>`) already joined to the right rooms
+- Gives Bulle zero-config agent accounts (`@<name>`) already joined to the right rooms
 - Starts Echo calls from a room and posts a call message other members can join from
 
 ## Stack

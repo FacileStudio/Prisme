@@ -19,6 +19,7 @@ func RegisterRoutes(router chi.Router, service *Service, authService *auth.Servi
 		r.Use(authService.Require(auth.ScopeAgents))
 		r.Get("/", h.list)
 		r.Post("/", h.create)
+		r.Get("/check", h.check)
 		r.Put("/{user_id}/rooms", h.rooms)
 		r.Delete("/{user_id}", h.deactivate)
 	})
@@ -42,6 +43,13 @@ func (h handlers) create(w http.ResponseWriter, r *http.Request) {
 	}
 	identity, _ := porte.From(r.Context())
 	resp, err := h.service.Create(r.Context(), identity.UserID, req)
+	respond(w, http.StatusOK, resp, err)
+}
+
+func (h handlers) check(w http.ResponseWriter, r *http.Request) {
+	identity, _ := porte.From(r.Context())
+	name := r.URL.Query().Get("name")
+	resp, err := h.service.CheckAvailable(r.Context(), identity.UserID, name)
 	respond(w, http.StatusOK, resp, err)
 }
 

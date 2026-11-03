@@ -52,15 +52,18 @@ Body `{"name": "design", "topic": ""}`. The caller must be in the space. Answers
 
 ### `POST /agents`
 
-Body `{"name": "Bulle", "avatar_url": "https://… | mxc://…"}`. Creates or returns the caller's agent
-`@agent-<owner localpart>-<name slug>`, sets its display name and avatar, and answers
+Body `{"name": "Pixel", "avatar_url": "https://… | mxc://…"}`. Creates or returns the caller's agent
+`@<name slug>:prisme.facile.studio`, sets its display name and avatar, and answers
 
 ```json
-{"homeserver": "https://prisme.facile.studio", "user_id": "@agent-ada-bulle:prisme.facile.studio", "access_token": "syt_…", "device_id": "KLMNOPQRST"}
+{"homeserver": "https://prisme.facile.studio", "user_id": "@pixel:prisme.facile.studio", "access_token": "syt_…", "device_id": "KLMNOPQRST"}
 ```
 
-Idempotent per (owner, name). The token is stored sealed and returned again on later calls; a new
-one is minted only when the old one was revoked.
+Idempotent per (owner, name). Rejects names taken by another user or existing agent with `409 conflict`.
+
+### `GET /agents/check?name=`
+
+Answers `{"name": "Pixel", "slug": "pixel", "available": true}`. Checks if an agent name is available to take.
 
 ### `GET /agents`
 

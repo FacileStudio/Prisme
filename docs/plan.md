@@ -28,7 +28,7 @@ Prisme API (Go) ── application service ──▶ Synapse (federation off)
   under `prisme.facile.studio/_matrix` by the same Traefik router as the app. Synapse is chosen for
   its mature application-service and admin APIs, which the whole provisioning story rests on.
 - **Prisme API is a Matrix application service** with an exclusive user namespace
-  (`@[a-z0-9._=-]+:prisme.facile.studio` for humans, `@agent-.*` for agents) and alias namespace
+  (`@[a-z0-9._=-]+:prisme.facile.studio` for humans and agents) and alias namespace
   (`#prisme-.*`). It creates accounts with `POST /register` (`m.login.application_service`) and
   mints access tokens with `POST /login` (`m.login.application_service`). No password exists for
   any account.

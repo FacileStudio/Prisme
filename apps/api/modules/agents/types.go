@@ -21,6 +21,14 @@ type Agent struct {
 	RoomIDs []string `json:"room_ids"`
 }
 
+// AvailabilityResponse is the response of GET /agents/check.
+type AvailabilityResponse struct {
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Available bool   `json:"available"`
+	Reason    string `json:"reason,omitempty"`
+}
+
 // RoomsRequest is the body of PUT /agents/{user_id}/rooms.
 type RoomsRequest struct {
 	RoomIDs []string `json:"room_ids"`

@@ -22,7 +22,7 @@ api container (Go + SPA) ── appservice ──▶ synapse container (federati
 - **Spaces and channels.** Created as the user through identity assertion, with the bot
   `@prisme:prisme.facile.studio` invited and joined as admin. The bot writes `m.space.child`.
   Channels are `restricted` to their space.
-- **Agents.** `@agent-<owner>-<name>` accounts, created and placed by the API; the owner
+- **Agents.** `@<name>` accounts, created and placed by the API; the owner
   invites, the agent joins. Bulle reaches these routes with the service key.
 - **Calls.** The API asks Echo for the room bound to the Matrix room id, mints a LiveKit token and
   posts a `studio.facile.call` message.

@@ -1,121 +1,128 @@
+import type {
+	AgentAvailabilityResponse,
+	AgentRecord,
+	CallResponse,
+	ChannelRecord,
+	MatrixCredentials,
+	SessionResponse,
+	SpaceRecord,
+	UserRecord
+} from './types';
+
 const backendBaseUrl = '/api';
 
-export const tokenStorageKey = 'prisme.token';
-
-export type AuthResponse = {
-	user_id: string;
-	token: string;
-};
-
-export type MeResponse = {
-	user: {
-		id: string;
-		email: string;
-	};
-};
-
-export type EventRecord = {
-	id: number;
-	name: string;
-	starts: string;
-	ends?: string;
-	owner_id: string;
-};
-
-export type ListEventsResponse = {
-	events: EventRecord[];
-};
-
-export type GenerateTicketResponse = {
-	code: string;
-	ticket: {
-		id: number;
-		event_id: number;
-		status: string;
-		used_at?: string;
-	};
-};
-
-export type ValidateTicketResponse = {
-	valid: boolean;
-	status: string;
-	ticket: {
-		id: number;
-		event_id: number;
-		status: string;
-		used_at?: string;
-	};
-};
+export const ssoLoginUrl = `${backendBaseUrl}/auth/oidc`;
 
 type ApiErrorPayload = {
 	error?: {
+		code?: string;
 		message?: string;
 	};
 };
 
-async function apiFetch<T>(path: string, options: RequestInit = {}, token?: string) {
+export class ApiError extends Error {
+	status: number;
+	code?: string;
+
+	constructor(message: string, status: number, code?: string) {
+		super(message);
+		this.status = status;
+		this.code = code;
+	}
+}
+
+async function authedInit(options: RequestInit = {}): Promise<RequestInit> {
 	const headers = new Headers(options.headers);
-	if (!headers.has('Content-Type') && options.body) {
+	if (options.body && !headers.has('Content-Type')) {
 		headers.set('Content-Type', 'application/json');
 	}
-	if (token) {
-		headers.set('Authorization', `Bearer ${token}`);
+	if (options.method && options.method !== 'GET') {
+		headers.set('X-Facile-CSRF', '1');
 	}
+	return { ...options, headers, credentials: 'same-origin' };
+}
 
-	const response = await fetch(`${backendBaseUrl}${path}`, { ...options, headers });
+export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+	const response = await fetch(`${backendBaseUrl}${path}`, await authedInit(options));
 	if (!response.ok) {
-		let payload: ApiErrorPayload | undefined;
-		try {
-			payload = (await response.json()) as ApiErrorPayload;
-		} catch {
-			payload = undefined;
-		}
-		throw new Error(payload?.error?.message || `Request failed with status ${response.status}`);
+		const payload = (await response.json().catch(() => undefined)) as ApiErrorPayload | undefined;
+		throw new ApiError(
+			payload?.error?.message || `Request failed with status ${response.status}`,
+			response.status,
+			payload?.error?.code
+		);
+	}
+	if (response.status === 204) {
+		return undefined as T;
 	}
 	return (await response.json()) as T;
 }
 
 export const backend = {
 	baseUrl: backendBaseUrl,
-	register(email: string, password: string) {
-		return apiFetch<AuthResponse>('/auth/register', {
+
+	getSession(): Promise<SessionResponse> {
+		return apiFetch<SessionResponse>('/session');
+	},
+
+	logout(): Promise<void> {
+		return apiFetch<void>('/auth/logout', { method: 'POST' });
+	},
+
+	listSpaces(): Promise<SpaceRecord[]> {
+		return apiFetch<SpaceRecord[]>('/spaces');
+	},
+
+	createSpace(name: string): Promise<SpaceRecord> {
+		return apiFetch<SpaceRecord>('/spaces', {
 			method: 'POST',
-			body: JSON.stringify({ email, password })
+			body: JSON.stringify({ name })
 		});
 	},
-	login(email: string, password: string) {
-		return apiFetch<AuthResponse>('/auth/login', {
+
+	createChannel(spaceId: number, name: string, topic?: string): Promise<ChannelRecord> {
+		return apiFetch<ChannelRecord>(`/spaces/${spaceId}/channels`, {
 			method: 'POST',
-			body: JSON.stringify({ email, password })
+			body: JSON.stringify({ name, topic: topic || '' })
 		});
 	},
-	me(token: string) {
-		return apiFetch<MeResponse>('/users/me', {}, token);
+
+	listAgents(): Promise<AgentRecord[]> {
+		return apiFetch<AgentRecord[]>('/agents');
 	},
-	listEvents() {
-		return apiFetch<ListEventsResponse>('/events');
+
+	checkAgentName(name: string): Promise<AgentAvailabilityResponse> {
+		return apiFetch<AgentAvailabilityResponse>(`/agents/check?name=${encodeURIComponent(name)}`);
 	},
-	createEvent(token: string, payload: { name: string; starts: string; ends?: string }) {
-		return apiFetch<{ id: number }>(
-			'/events',
-			{ method: 'POST', body: JSON.stringify(payload) },
-			token
-		);
-	},
-	generateTicket(token: string, eventId: number) {
-		return apiFetch<GenerateTicketResponse>(`/events/${eventId}/tickets`, { method: 'POST' }, token);
-	},
-	validateTicket(code: string) {
-		return apiFetch<ValidateTicketResponse>('/tickets/validate', {
+
+	createAgent(name: string, avatarUrl?: string): Promise<MatrixCredentials> {
+		return apiFetch<MatrixCredentials>('/agents', {
 			method: 'POST',
-			body: JSON.stringify({ code })
+			body: JSON.stringify({ name, avatar_url: avatarUrl || '' })
 		});
 	},
-	checkInTicket(token: string, code: string) {
-		return apiFetch<{ ticket: ValidateTicketResponse['ticket'] }>(
-			'/tickets/checkin',
-			{ method: 'POST', body: JSON.stringify({ code }) },
-			token
-		);
+
+	setAgentRooms(userId: string, roomIds: string[]): Promise<{ room_ids: string[] }> {
+		return apiFetch<{ room_ids: string[] }>(`/agents/${encodeURIComponent(userId)}/rooms`, {
+			method: 'PUT',
+			body: JSON.stringify({ room_ids: roomIds })
+		});
+	},
+
+	deactivateAgent(userId: string): Promise<void> {
+		return apiFetch<void>(`/agents/${encodeURIComponent(userId)}`, {
+			method: 'DELETE'
+		});
+	},
+
+	searchUsers(query: string): Promise<UserRecord[]> {
+		return apiFetch<UserRecord[]>(`/users?q=${encodeURIComponent(query)}`);
+	},
+
+	startCall(roomId: string, join = false): Promise<CallResponse> {
+		return apiFetch<CallResponse>('/calls', {
+			method: 'POST',
+			body: JSON.stringify({ room_id: roomId, join })
+		});
 	}
 };
