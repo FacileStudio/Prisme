@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Input, Spinner } from '@facile/muse';
 	import { prisme, type DirectoryUser } from '$lib/api/prisme';
-	import { isBot } from '$lib/chat/users';
+	import { handle, isBot } from '$lib/chat/users';
 	import { app } from '$lib/state/app.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
@@ -39,7 +39,7 @@
 				<Avatar userId={user.user_id} name={user.name} mxc={user.avatar_url || null} size={28} />
 				<span class="flex min-w-0 flex-1 flex-col">
 					<UserName userId={user.user_id} name={user.name} class="font-medium" />
-					<span class="truncate text-fc-xs text-fc-fg-muted">{user.user_id}</span>
+					<span class="truncate text-fc-xs text-fc-fg-muted">{handle(user.user_id)}</span>
 				</span>
 				{#if busyId === user.user_id}<Spinner size="sm" />{:else if taken}<span class="text-fc-xs text-fc-fg-muted">Member</span>{/if}
 			</button>

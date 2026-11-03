@@ -3,7 +3,7 @@ import { composeMessage } from './compose';
 import { escapeHtml, renderMarkdown, stripReplyFallback } from './markdown';
 import { activeMention, filterMembers, insertMention } from './complete';
 import { findMentions, mentionsUser, presentMentions, segments } from './mentions';
-import { isAgent, typingSentence } from './users';
+import { handle, isAgent, typingSentence } from './users';
 import { continues, formatCount, roomBadge, sumBadges } from './unread';
 
 describe('markdown', () => {
@@ -47,6 +47,11 @@ describe('mentions', () => {
 		expect(isAgent('@agent-alice-bulle:localhost')).toBe(true);
 		expect(isAgent('@alice:localhost')).toBe(false);
 		expect(isAgent('@pixel:localhost', new Map([['@pixel:localhost', {}]]))).toBe(true);
+	});
+
+	it('shows a user id as its handle, without the server', () => {
+		expect(handle('@pixel:prisme.facile.studio')).toBe('@pixel');
+		expect(handle('@bob:localhost:8448')).toBe('@bob');
 	});
 
 	it('finds the query under the caret', () => {

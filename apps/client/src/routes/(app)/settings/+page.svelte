@@ -3,6 +3,7 @@
 	import { Button, OptionCards, ProfileCard, SettingsRow, SettingsSection, Skeleton, Switch, icons } from '@facile/muse';
 	import { prisme, type Agent } from '$lib/api/prisme';
 	import { app } from '$lib/state/app.svelte';
+	import { handle } from '$lib/chat/users';
 	import { notify } from '$lib/state/notify.svelte';
 	import { theme, type ThemePreference } from '$lib/state/theme.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
@@ -100,7 +101,7 @@
 						<Avatar userId={agent.user_id} name={agent.name} size={40} />
 						<div class="flex min-w-0 flex-1 flex-col">
 							<span class="truncate text-fc-sm font-medium text-fc-fg">{agent.name}</span>
-							<span class="truncate font-fc-mono text-fc-xs text-fc-fg-muted">{agent.user_id}</span>
+							<span class="truncate font-fc-mono text-fc-xs text-fc-fg-muted">{handle(agent.user_id)}</span>
 						</div>
 						<span class="shrink-0 text-fc-xs text-fc-fg-muted">
 							{agent.room_ids.length === 1 ? 'In 1 room' : `In ${agent.room_ids.length} rooms`}

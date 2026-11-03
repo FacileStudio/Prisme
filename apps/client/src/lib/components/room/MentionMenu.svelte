@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Mentionable } from '$lib/chat/mentions';
+	import { handle } from '$lib/chat/users';
 	import UserName from '$lib/components/common/UserName.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 
@@ -38,7 +39,7 @@
 		>
 			<Avatar userId={option.userId} name={option.name} size={28} />
 			<UserName userId={option.userId} name={option.name} class="shrink-0 font-medium" />
-			<span class="ml-auto min-w-0 truncate text-fc-xs text-fc-fg-muted">{option.userId}</span>
+			<span class="ml-auto min-w-0 truncate text-fc-xs text-fc-fg-muted">{handle(option.userId)}</span>
 		</li>
 	{/each}
 </ul>

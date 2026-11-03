@@ -13,6 +13,12 @@ export function isBot(userId: string): boolean {
 	return userId.startsWith('@prisme:');
 }
 
+/** The `@name` people see for a Matrix user id, without the `:server` part. */
+export function handle(userId: string): string {
+	const colon = userId.indexOf(':');
+	return colon === -1 ? userId : userId.slice(0, colon);
+}
+
 /** The sentence under the composer for the given names. */
 export function typingSentence(names: string[]): string {
 	if (names.length === 0) return '';
