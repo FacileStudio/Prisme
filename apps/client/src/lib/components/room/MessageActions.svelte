@@ -2,6 +2,7 @@
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
 	import { ConfirmModal, Icon, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { ui } from '$lib/state/ui.svelte';
@@ -22,38 +23,38 @@
 		if (!app.client) return;
 		const me = app.client.getUserId() ?? '';
 		const existing = reactionsFor(room, event, me).find((r) => r.key === key)?.mine;
-		await toggleReaction(app.client, event, key, existing).catch(() => toast.danger('Could not react'));
+		await toggleReaction(app.client, event, key, existing).catch(() => toast.danger(t('actions.reactFailed')));
 	}
 
 	async function remove() {
 		confirming = false;
-		if (app.client) await deleteMessage(app.client, event).catch(() => toast.danger('Could not delete the message'));
+		if (app.client) await deleteMessage(app.client, event).catch(() => toast.danger(t('actions.deleteFailed')));
 	}
 </script>
 
 <div
-	class="absolute -top-4 right-3 z-10 hidden items-center rounded-fc-md border border-fc-border bg-fc-component shadow-sm group-hover:flex group-focus-within:flex {picking ? 'flex' : ''}"
+	class="absolute -top-4 right-3 z-10 hidden items-center rounded-fc-md bg-fc-component shadow-sm group-hover:flex group-focus-within:flex {picking ? 'flex' : ''}"
 	role="toolbar"
-	aria-label="Message actions"
+	aria-label={t('actions.toolbar')}
 >
-	<button type="button" class="action" aria-label="Add a reaction" title="React" onclick={() => (picking = !picking)}>
+	<button type="button" class="action" aria-label={t('actions.reactAria')} title={t('actions.react')} onclick={() => (picking = !picking)}>
 		<Icon icon={glyphs.smile} size={16} />
 	</button>
-	<button type="button" class="action" aria-label="Reply" title="Reply" onclick={() => draft.reply(event)}>
+	<button type="button" class="action" aria-label={t('actions.reply')} title={t('actions.reply')} onclick={() => draft.reply(event)}>
 		<Icon icon={glyphs.reply} size={16} />
 	</button>
 	{#if !inThread}
-		<button type="button" class="action" aria-label="Reply in thread" title="Reply in thread" onclick={() => ui.openThread(event.getId()!)}>
+		<button type="button" class="action" aria-label={t('actions.replyThread')} title={t('actions.replyThread')} onclick={() => ui.openThread(event.getId()!)}>
 			<Icon icon={glyphs.thread} size={16} />
 		</button>
 	{/if}
 	{#if editable}
-		<button type="button" class="action" aria-label="Edit" title="Edit" onclick={() => draft.edit(event)}>
+		<button type="button" class="action" aria-label={t('actions.edit')} title={t('actions.edit')} onclick={() => draft.edit(event)}>
 			<Icon icon={glyphs.pen} size={16} />
 		</button>
 	{/if}
 	{#if mine}
-		<button type="button" class="action hover:text-fc-danger" aria-label="Delete" title="Delete" onclick={() => (confirming = true)}>
+		<button type="button" class="action hover:text-fc-danger" aria-label={t('common.delete')} title={t('common.delete')} onclick={() => (confirming = true)}>
 			<Icon icon={icons.remove} size={16} />
 		</button>
 	{/if}
@@ -66,9 +67,9 @@
 
 <ConfirmModal
 	open={confirming}
-	title="Delete this message?"
-	description="Everyone in the conversation will see that it was deleted."
-	confirmLabel="Delete"
+	title={t('actions.confirmTitle')}
+	description={t('actions.confirmBody')}
+	confirmLabel={t('common.delete')}
 	tone="danger"
 	onConfirm={remove}
 	onCancel={() => (confirming = false)}

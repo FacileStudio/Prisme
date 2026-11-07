@@ -21,7 +21,7 @@
 	{#if typers.length > 0}
 		<span class="flex -space-x-1" aria-hidden="true">
 			{#each typers.slice(0, 3) as member (member.userId)}
-				<Avatar userId={member.userId} name={member.name} mxc={member.getMxcAvatarUrl()} size={20} class="ring-2 ring-fc-page" />
+				<Avatar userId={member.userId} name={member.name} mxc={member.getMxcAvatarUrl()} size={20} />
 			{/each}
 		</span>
 		<span class="truncate">{text}</span>

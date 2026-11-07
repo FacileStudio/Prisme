@@ -1,10 +1,5 @@
 import { ExternalE2EEKeyProvider, Room, isE2EESupported } from 'livekit-client';
-
-export const UNSUPPORTED =
-	'This browser cannot join end-to-end encrypted calls. Use a recent Chrome, Edge, Firefox or Safari.';
-
-export const DECRYPT_FAILED =
-	'Some media could not be decrypted. Someone in the call may be on an old or foreign key: ask them to rejoin from Prisme.';
+import { t } from '$lib/i18n/index.svelte';
 
 /** Whether this browser can join an encrypted call at all. */
 export function canEncrypt(): boolean {
@@ -43,17 +38,18 @@ export function shareError(err: unknown): string | null {
 	const name = err instanceof Error ? err.name : '';
 	const message = err instanceof Error ? err.message : '';
 	if (name === 'NotAllowedError' && /system/i.test(message)) {
-		return 'Your system blocks screen sharing for this browser. Allow screen recording in the system settings.';
+		return t('call.shareBlocked');
 	}
 	if (name === 'NotAllowedError' || name === 'AbortError') return null;
-	return message || 'Could not share the screen';
+	return message || t('call.shareFailed');
 }
 
 /** How long a finished call lasted, the way the call card says it. */
 export function callLength(ms: number): string {
 	const minutes = Math.floor(ms / 60_000);
-	if (minutes < 1) return 'Under a minute';
-	if (minutes < 60) return `${minutes} min`;
+	if (minutes < 1) return t('call.underMinute');
+	if (minutes < 60) return t('call.minutes', { count: minutes });
 	const rest = minutes % 60;
-	return rest ? `${Math.floor(minutes / 60)} h ${rest} min` : `${minutes / 60} h`;
+	const hours = Math.floor(minutes / 60);
+	return rest ? t('call.hoursMinutes', { hours, minutes: rest }) : t('call.hours', { count: hours });
 }

@@ -2,6 +2,7 @@
 	import type { Room } from 'matrix-js-sdk';
 	import { Icon, IconButton, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { setMuted } from '$lib/state/actions';
 	import { ui, type Dialog } from '$lib/state/ui.svelte';
@@ -25,9 +26,9 @@
 		const mute = !info.muted;
 		try {
 			await setMuted(room.roomId, mute);
-			toast.success(mute ? 'Muted' : 'Notifications are back on');
+			toast.success(mute ? t('menu.muted') : t('menu.unmuted'));
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : 'Could not change notifications');
+			toast.danger(err instanceof Error ? err.message : t('menu.muteFailed'));
 		}
 	}
 
@@ -38,24 +39,24 @@
 </script>
 
 <div class="relative">
-	<IconButton variant="ghost" aria-label="More actions" aria-expanded={open} aria-haspopup="menu" onclick={() => (open = !open)}>
+	<IconButton variant="ghost" aria-label={t('menu.more')} aria-expanded={open} aria-haspopup="menu" onclick={() => (open = !open)}>
 		<Icon icon={glyphs.dots} size={18} />
 	</IconButton>
 	{#if open}
-		<button type="button" class="fixed inset-0 z-20 cursor-default" aria-label="Close the menu" onclick={() => (open = false)}></button>
-		<div role="menu" class="absolute right-0 top-12 z-30 flex w-56 flex-col rounded-fc-lg border border-fc-border bg-fc-component p-1 shadow-lg">
+		<button type="button" class="fixed inset-0 z-20 cursor-default" aria-label={t('menu.close')} onclick={() => (open = false)}></button>
+		<div role="menu" class="absolute right-0 top-12 z-30 flex w-56 flex-col rounded-fc-lg bg-fc-component p-1 shadow-lg">
 			<button type="button" role="menuitem" class="menu-item" onclick={toggleMute}>
 				<Icon icon={info.muted ? glyphs.bell : glyphs.bellOff} size={16} />
-				{info.muted ? 'Unmute' : 'Mute'} {direct ? 'conversation' : 'channel'}
+				{t(info.muted ? (direct ? 'menu.unmuteDirect' : 'menu.unmuteChannel') : direct ? 'menu.muteDirect' : 'menu.muteChannel')}
 			</button>
 			{#if !direct}
 				<button type="button" role="menuitem" class="menu-item" onclick={() => show('add-agent')}>
-					<Icon icon={glyphs.mention} size={16} />Add an agent
+					<Icon icon={glyphs.mention} size={16} />{t('menu.addAgent')}
 				</button>
 			{/if}
 			{#if info.admin && !direct}
 				<button type="button" role="menuitem" class="menu-item" onclick={() => show('rename-room')}>
-					<Icon icon={icons.edit} size={16} />Rename channel
+					<Icon icon={icons.edit} size={16} />{t('menu.renameChannel')}
 				</button>
 			{/if}
 		</div>

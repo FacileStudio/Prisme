@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n/index.svelte';
 	import { Avatar as Picture, twMerge } from '@facile/muse';
 	import { Blob } from '@facile/blob';
 	import { app } from '$lib/state/app.svelte';
@@ -62,9 +63,9 @@
 	{/if}
 	{#if presence}
 		<span
-			class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-fc-pill border-2 border-fc-component {online ? 'bg-fc-success' : 'bg-fc-border'}"
+			class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-fc-pill {online ? 'bg-fc-success' : 'bg-fc-fg-muted'}"
 			role="img"
-			aria-label={online ? 'Online' : 'Offline'}
+			aria-label={online ? t('avatar.online') : t('avatar.offline')}
 		></span>
 	{/if}
 </span>

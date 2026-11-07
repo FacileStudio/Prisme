@@ -4,6 +4,7 @@ import { isAgent } from '$lib/chat/users';
 import { formatCount, roomBadge, sumBadges, type Badge, type RoomCounts } from '$lib/chat/unread';
 import { dmPartner, dmRooms, isMuted, roomCounts, spaceInvites } from '$lib/matrix/rooms';
 import { lastMessage, type Preview } from '$lib/matrix/preview';
+import { t } from '$lib/i18n/index.svelte';
 
 export type ChannelRow = { roomId: string; name: string; badge: Badge; muted: boolean };
 export type SpaceNav = { space: Space; name: string; joined: ChannelRow[]; joinable: ChannelRow[]; badge: Badge; counts: RoomCounts[] };
@@ -87,13 +88,13 @@ export function railPages(nav: Nav, current: SpaceNav | null, path: string, room
 	const invites = nav.invites.length;
 	const inDm = !!roomId && nav.dms.some((row) => row.roomId === roomId);
 	const messages: NavPage = {
-		label: countedLabel('Messages', nav.dmBadge),
+		label: countedLabel(t('nav.messages'), nav.dmBadge),
 		href: MESSAGES_PATH,
 		active: path === MESSAGES_PATH || inDm,
 		kind: 'messages'
 	};
 	const browse: NavPage = {
-		label: invites > 0 ? `Overview · ${invites}` : 'Overview',
+		label: invites > 0 ? `${t('nav.overview')} · ${invites}` : t('nav.overview'),
 		href: BROWSE_PATH,
 		active: path === BROWSE_PATH,
 		kind: 'browse'
@@ -102,7 +103,7 @@ export function railPages(nav: Nav, current: SpaceNav | null, path: string, room
 		label: countedLabel(row.name, row.badge),
 		href: roomPath(row.roomId),
 		active: row.roomId === roomId,
-		group: current?.name ?? 'Channels',
+		group: current?.name ?? t('nav.channels'),
 		kind: 'channel'
 	}));
 	return [messages, browse, ...channels];

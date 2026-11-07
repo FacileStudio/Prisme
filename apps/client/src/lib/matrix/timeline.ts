@@ -1,5 +1,6 @@
 import { EventType, RelationType, type MatrixEvent, type Room } from 'matrix-js-sdk';
 import { continues } from '$lib/chat/unread';
+import { formatDate } from '$lib/i18n/format';
 
 export type Item = { event: MatrixEvent; grouped: boolean; day: string | null };
 export type Reaction = { key: string; count: number; mine?: MatrixEvent; senders: string[] };
@@ -12,7 +13,7 @@ export function isMessage(event: MatrixEvent): boolean {
 }
 
 function dayLabel(ts: number): string {
-	return new Date(ts).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+	return formatDate(ts, { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 /** Turns raw events into timeline rows with sender grouping and day breaks. */

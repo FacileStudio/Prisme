@@ -5,6 +5,7 @@
 	import { glyphs } from '$lib/glyphs';
 	import type { Badge } from '$lib/chat/unread';
 	import { ui } from '$lib/state/ui.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import CountBadge from '$lib/components/common/CountBadge.svelte';
 
 	type Props = {
@@ -41,7 +42,7 @@
 		{#if label}{@render label()}{:else}<span class="truncate">{name}</span>{/if}
 	</span>
 	{#if muted}
-		<Icon icon={glyphs.bellOff} size={14} class="shrink-0 opacity-70" aria-label="Muted" />
+		<Icon icon={glyphs.bellOff} size={14} class="shrink-0 opacity-70" aria-label={t('row.muted')} />
 	{/if}
 	<CountBadge {badge} />
 </a>

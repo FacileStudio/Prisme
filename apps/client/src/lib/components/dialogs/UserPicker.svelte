@@ -4,6 +4,7 @@
 	import { handle, isBot } from '$lib/chat/users';
 	import { app } from '$lib/state/app.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 
 	type Props = { onpick: (user: DirectoryUser) => void; busyId?: string; exclude?: string[] };
@@ -25,7 +26,7 @@
 	});
 </script>
 
-<Input bind:value={query} type="search" placeholder="Search people by name or email" aria-label="Search people" />
+<Input bind:value={query} type="search" placeholder={t('picker.placeholder')} aria-label={t('picker.label')} />
 <ul class="flex max-h-72 flex-col overflow-y-auto" aria-busy={loading}>
 	{#each users as user (user.user_id)}
 		{@const taken = exclude.includes(user.user_id)}
@@ -41,10 +42,10 @@
 					<UserName userId={user.user_id} name={user.name} class="font-medium" />
 					<span class="truncate text-fc-xs text-fc-fg-muted">{handle(user.user_id)}</span>
 				</span>
-				{#if busyId === user.user_id}<Spinner size="sm" />{:else if taken}<span class="text-fc-xs text-fc-fg-muted">Member</span>{/if}
+				{#if busyId === user.user_id}<Spinner size="sm" />{:else if taken}<span class="text-fc-xs text-fc-fg-muted">{t('common.member')}</span>{/if}
 			</button>
 		</li>
 	{:else}
-		<li class="px-2 py-3 text-fc-sm text-fc-fg-muted">{loading ? 'Searching…' : 'Nobody matches.'}</li>
+		<li class="px-2 py-3 text-fc-sm text-fc-fg-muted">{loading ? t('picker.searching') : t('picker.nobody')}</li>
 	{/each}
 </ul>

@@ -7,6 +7,7 @@
 	import { joinChannel, roomHref } from '$lib/state/actions';
 	import { canRename } from '$lib/matrix/power';
 	import { ui } from '$lib/state/ui.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import RoomRow from './RoomRow.svelte';
 
 	let { nav }: { nav: SpaceNav } = $props();
@@ -22,7 +23,6 @@
 	});
 
 	const total = $derived(nav.joined.length + nav.joinable.length);
-	const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 	async function join(roomId: string) {
 		joining = roomId;
@@ -30,7 +30,7 @@
 			await joinChannel(roomId);
 			await goto(roomHref(roomId));
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : 'Could not join the channel');
+			toast.danger(err instanceof Error ? err.message : t('space.joinFailed'));
 		} finally {
 			joining = '';
 		}
@@ -47,21 +47,21 @@
 			<div class="flex min-w-0 items-center gap-1">
 				<h1 class="truncate text-fc-2xl font-semibold text-fc-fg">{nav.name}</h1>
 				{#if info.admin}
-					<IconButton variant="ghost" aria-label="Rename {nav.name}" title="Rename the space" onclick={() => (ui.dialog = 'rename-space')}>
+					<IconButton variant="ghost" aria-label={t('space.renameAria', { name: nav.name })} title={t('space.renameTitle')} onclick={() => (ui.dialog = 'rename-space')}>
 						<Icon icon={icons.edit} size={16} />
 					</IconButton>
 				{/if}
 			</div>
-			<p class="text-fc-sm text-fc-fg-muted">{plural(total, 'channel')} · {plural(info.members, 'member')}</p>
+			<p class="text-fc-sm text-fc-fg-muted">{t('space.channelCount', { count: total })} · {t('space.memberCount', { count: info.members })}</p>
 		</div>
 	</div>
 	<div class="flex flex-wrap gap-2">
-		<Button size="lg" variant="outline" icon={glyphs.userPlus} onclick={() => (ui.dialog = 'invite')}>Invite</Button>
-		<Button size="lg" icon={icons.plus} onclick={() => (ui.dialog = 'create-channel')}>New channel</Button>
+		<Button size="lg" variant="outline" icon={glyphs.userPlus} onclick={() => (ui.dialog = 'invite')}>{t('space.invite')}</Button>
+		<Button size="lg" icon={icons.plus} onclick={() => (ui.dialog = 'create-channel')}>{t('space.newChannel')}</Button>
 	</div>
 </header>
 
-<Section title="Your channels" card gap="tight" bodyClass="gap-0 p-2">
+<Section title={t('space.yours')} card gap="tight" bodyClass="gap-0 p-2">
 	{#if nav.joined.length > 0}
 		<ul class="flex flex-col">
 			{#each nav.joined as row (row.roomId)}
@@ -69,19 +69,19 @@
 			{/each}
 		</ul>
 	{:else}
-		<p class="px-3 py-3 text-fc-sm text-fc-fg-muted">You have not joined a channel in {nav.name} yet.</p>
+		<p class="px-3 py-3 text-fc-sm text-fc-fg-muted">{t('space.noneJoined', { name: nav.name })}</p>
 	{/if}
 </Section>
 
 {#if nav.joinable.length > 0}
-	<Section title="Browse channels" description="Channels in {nav.name} you have not joined yet." card gap="tight" bodyClass="gap-0 p-2">
+	<Section title={t('space.browse')} description={t('space.browseBody', { name: nav.name })} card gap="tight" bodyClass="gap-0 p-2">
 		<ul class="flex flex-col">
 			{#each nav.joinable as row (row.roomId)}
 				<li class="flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm text-fc-fg-muted hover:bg-fc-surface">
 					<Icon icon={glyphs.hashtag} size={16} class="shrink-0" />
 					<span class="min-w-0 flex-1 truncate">{row.name}</span>
 					<Button size="sm" variant="ghost" icon={glyphs.login} disabled={joining === row.roomId} onclick={() => join(row.roomId)}>
-						{joining === row.roomId ? 'Joining…' : 'Join'}
+						{joining === row.roomId ? t('common.joining') : t('common.join')}
 					</Button>
 				</li>
 			{/each}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { EmptyState } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { spaceOf } from '$lib/state/nav';
 	import { rememberRoom } from '$lib/state/last-room';
@@ -44,6 +45,6 @@
 	<InvitePrompt {room} />
 {:else}
 	<div class="flex flex-1 items-center justify-center p-6">
-		<EmptyState icon={glyphs.chat} title="This conversation is not available" description="You are not a member of it, or it does not exist." />
+		<EmptyState icon={glyphs.chat} title={t('room.unavailable')} description={t('room.unavailableBody')} />
 	</div>
 {/if}

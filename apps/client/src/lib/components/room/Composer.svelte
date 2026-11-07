@@ -3,6 +3,7 @@
 	import type { Room } from 'matrix-js-sdk';
 	import { Icon, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
+	import { t } from '$lib/i18n/index.svelte';
 	import { segments } from '$lib/chat/mentions';
 	import { activeMention } from '$lib/chat/complete';
 	import { app } from '$lib/state/app.svelte';
@@ -28,7 +29,7 @@
 	});
 	const options = $derived(composer.completions(members));
 	const parts = $derived(segments(composer.text, composer.known(members)));
-	const hint = $derived(placeholder ?? `Message ${room.name}`);
+	const hint = $derived(placeholder ?? t('composer.placeholder', { name: room.name }));
 	const open = $derived(options.length > 0);
 	const canSend = $derived(!composer.sending && (!!composer.text.trim() || composer.files.length > 0));
 	const ROUND =
@@ -57,7 +58,7 @@
 		try {
 			await composer.submit(draft, members);
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : 'Could not send the message');
+			toast.danger(err instanceof Error ? err.message : t('composer.sendFailed'));
 		} finally {
 			composer.sending = false;
 		}
@@ -97,14 +98,14 @@
 	{#if open}
 		<MentionMenu id={menuId} {options} selected={composer.selected} onpick={pick} onhover={(i) => (composer.selected = i)} />
 	{/if}
-	<div class="flex flex-col gap-2 rounded-[31px] border border-fc-border bg-fc-bg p-2 focus-within:border-fc-ring">
+	<div class="flex flex-col gap-2 rounded-[31px] bg-fc-field p-2">
 		<DraftBanner {room} {draft} />
 		<PendingFiles files={composer.files} onremove={(f) => (composer.files = composer.files.filter((x) => x !== f))} />
 		<div class="flex items-end gap-2">
 			<button
 				type="button"
-				aria-label="Attach a file"
-				title="Attach a file"
+				aria-label={t('composer.attach')}
+				title={t('composer.attach')}
 				disabled={!!draft.editing}
 				class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
 				onclick={() => picker?.click()}
@@ -130,8 +131,8 @@
 			/>
 			<button
 				type="button"
-				aria-label={draft.editing ? 'Save the edit' : 'Send'}
-				title="Send"
+				aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
+				title={t('composer.send')}
 				disabled={!canSend}
 				class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
 				onclick={submit}

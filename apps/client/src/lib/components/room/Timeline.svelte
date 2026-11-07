@@ -3,6 +3,7 @@
 	import { EventTimeline, type Room } from 'matrix-js-sdk';
 	import { Button, Spinner } from '@facile/muse';
 	import { app } from '$lib/state/app.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { timelineItems } from '$lib/matrix/timeline';
 	import MessageRow from './MessageRow.svelte';
@@ -55,20 +56,20 @@
 	});
 </script>
 
-<div bind:this={scroller} onscroll={onScroll} class="relative flex-1 overflow-y-auto overscroll-contain py-2" role="log" aria-label="Messages" aria-live="polite">
+<div bind:this={scroller} onscroll={onScroll} class="relative flex-1 overflow-y-auto overscroll-contain py-2" role="log" aria-label={t('timeline.label')} aria-live="polite">
 	{#if loading}
-		<div class="flex justify-center py-2"><Spinner size="sm" label="Loading older messages" /></div>
+		<div class="flex justify-center py-2"><Spinner size="sm" label={t('timeline.loadingOlder')} /></div>
 	{:else if stalled}
 		<div class="flex justify-center py-2">
-			<Button size="sm" variant="ghost" onclick={() => ((stalled = false), loadOlder())}>Load older messages</Button>
+			<Button size="sm" variant="ghost" onclick={() => ((stalled = false), loadOlder())}>{t('timeline.loadOlder')}</Button>
 		</div>
 	{:else if !canLoadMore}
-		<p class="px-4 py-6 text-center text-fc-xs text-fc-fg-muted">This is the start of {room.name}.</p>
+		<p class="px-4 py-6 text-center text-fc-xs text-fc-fg-muted">{t('timeline.start', { name: room.name })}</p>
 	{/if}
 	{#each items as item, index (item.event.getId() ?? item.event.getTxnId())}
 		{#if item.day}
 			<div class="flex items-center gap-3 px-4 py-2 text-fc-xs font-medium text-fc-fg-muted" role="separator">
-				<span class="h-px flex-1 bg-fc-border"></span>{item.day}<span class="h-px flex-1 bg-fc-border"></span>
+				<span class="h-px flex-1 bg-fc-surface"></span>{item.day}<span class="h-px flex-1 bg-fc-surface"></span>
 			</div>
 		{/if}
 		<MessageRow {room} event={item.event} grouped={item.grouped} {draft} />

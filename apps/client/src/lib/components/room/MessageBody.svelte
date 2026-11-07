@@ -4,6 +4,7 @@
 	import { sanitizeMessage } from '$lib/chat/sanitize';
 	import { escapeHtml, stripReplyFallback } from '$lib/chat/markdown';
 	import { callInfo } from '$lib/matrix/timeline';
+	import { t } from '$lib/i18n/index.svelte';
 	import CallCard from './CallCard.svelte';
 	import ImageMessage from './ImageMessage.svelte';
 	import FileMessage from './FileMessage.svelte';
@@ -26,7 +27,7 @@
 </script>
 
 {#if event.isRedacted()}
-	<p class="text-fc-sm italic text-fc-fg-muted">This message was deleted.</p>
+	<p class="text-fc-sm italic text-fc-fg-muted">{t('message.deleted')}</p>
 {:else if call}
 	<CallCard {call} roomId={event.getRoomId() ?? ''} />
 {:else if content.msgtype === MsgType.Image}
