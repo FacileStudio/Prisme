@@ -53,8 +53,9 @@ throwaway secrets. Run the API with `MATRIX_INTERNAL_URL=http://127.0.0.1:18008`
 | `PRISME_SERVICE_KEY` | api | Comma-separated keys for service callers (Bulle). Empty turns that path off |
 | `MATRIX_SERVER_NAME`, `MATRIX_PUBLIC_URL` | synapse, api | `prisme.facile.studio` and its https URL |
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URL`, `OIDC_SUCCESS_URL` | api | porte SSO against Registre, client id `prisme` |
-| `SSO_ONLY` | api | Defaults to `true`. Prisme has no password login |
 | `ECHO_URL`, `ECHO_INTEGRATION_KEY` | api | Echo's integration API. Either empty turns calls off with a clear message |
+| `LIVEKIT_URL` | api | The LiveKit server Echo hands out, so the security headers can allow its `wss://` and `https://` origins in `connect-src`. Calls still work without it, but the CSP reports a violation |
+| `APP_VERSION` | build | Build argument stamped into the binary and served at `GET /version`. Set it in Dokploy at release; defaults to `dev` |
 | `PRISME_PUBLIC_URL` | api | Where Echo posts call events (`/api/echo/events`). Defaults to `MATRIX_PUBLIC_URL` |
 | `TRUSTED_PROXIES`, `JOURNAL_URL`, `JOURNAL_TOKEN` | api | Suite defaults |
 
@@ -67,7 +68,7 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 
 | Route | Auth | Purpose |
 |---|---|---|
-| `GET /api/session` | session | The user and their Matrix login |
+| `GET /api/session` | session | The user, their locale and their Matrix login |
 | `GET /api/spaces` | session or service | Spaces the user is in, with every channel |
 | `POST /api/spaces`, `POST /api/spaces/{id}/channels` | session | Create a space (with `#general`) or a channel |
 | `GET /api/agents`, `POST /api/agents` | session or service | List, or create-or-return, the user's agents |
@@ -75,6 +76,8 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `POST /api/calls` | session | Start or join the Echo call of a room; returns the LiveKit token and the room's `e2ee_key` |
 | `POST /api/echo/events` | Echo signature | Call events: the call message turns into "Call ended" when the last person leaves |
 | `GET /api/users?q=` | session | People directory |
+| `POST /api/registre/sync`, `POST /api/registre/deletions` | none, signed | Registre's space nudge, and its signed GDPR `user.deleted` notice |
+| `GET /version` | none | The version stamped at build |
 
 Service callers send `Authorization: Bearer <PRISME_SERVICE_KEY>` and
 `X-Prisme-Acting-For: <email>`. Prisme creates the user for that email when it does not exist,

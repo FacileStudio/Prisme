@@ -1,5 +1,27 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- The interface comes in French, English, Spanish and German, in the locale of the person's Registre profile (`GET /api/session` returns `user.locale`). Dates, times and file sizes follow it through `Intl`. Spanish and German need native review
+- The sign-in screen is muse's `AuthScreen` with `SignInWithFacile` and the language switch
+- GDPR deletion: Registre's signed `POST /api/registre/deletions` and a poll of its deletion list erase a person's Matrix account and agents in Synapse, their sessions and their porte user. Spaces they created stay with no creator. The state lives in the new `directory_deletion_state` table
+- `GET /version`, served from the `APP_VERSION` build argument
+- `LIVEKIT_URL` (optional) names the LiveKit origin for the CSP `connect-src`
+- CI: build, tests against Postgres, svelte-check, client tests and build, and filet
+- Security headers from tronc: `Permissions-Policy` allows camera, microphone, screen capture and speaker selection for calls. The full CSP stays report-only and allows the homeserver, LiveKit, blob media and the E2EE worker
+
+### Changed
+
+- porte v0.8.0 to v0.12.0, porte/directory v0.1.0 to v0.3.0, tronc v0.16.0 to v0.17.1, muse v0.8.1 to v0.13.0
+- porte now adds `porte_users.locale` and `porte_login_codes.provider` and `.subject` at boot (idempotent, in `pg.Schema`)
+- No borders in the client: reactions, the composer, menus, panels and cards use muse fills
+
+### Removed
+
+- `SSO_ONLY` from the environment and the compose file: porte mounts no password route while `OIDC_ISSUER` is set
+
 ## [0.9.1] - 2026-11-03
 
 ### Fixed

@@ -21,6 +21,22 @@ For Registre to nudge Prisme, its seed entry for `prisme` needs
 `directory_sync_uri: https://prisme.facile.studio/api/registre/sync`; without it the 5-minute pull
 is the only trigger.
 
+## GDPR deletion
+
+The same three `OIDC_*` values start the deletion receiver. It keeps its cursor and the handled
+subjects in the `directory_deletion_state` table (one row, created at boot) and runs in the one API
+replica. Registre's `deletion_uri` for the `prisme` client is
+`https://prisme.facile.studio/api/registre/deletions`; without it the poll is the only trigger.
+
+## Security headers
+
+tronc sends the suite's security headers. Prisme allows `camera`, `microphone`, `display-capture`
+and `speaker-selection` in `Permissions-Policy` for calls. The full CSP is report-only and adds the
+`MATRIX_PUBLIC_URL` origin (https and wss) and the `LIVEKIT_URL` origin to `connect-src`, `blob:` and
+`https:` to `media-src`, `blob:` to `worker-src` (the LiveKit E2EE worker) and the hashes of the
+client's inline scripts to `script-src`. Set `LIVEKIT_URL` to the URL Echo hands out before turning
+enforcement on, and read the console for `[Report Only]` violations first.
+
 ## Secrets
 
 Production secrets live in the Dokploy compose `Prisme` (project Facile, environment

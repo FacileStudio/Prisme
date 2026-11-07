@@ -23,7 +23,7 @@ Matrix device too), and the OIDC callback.
 
 ```json
 {
-  "user": {"id": 1, "email": "a@facile.studio", "name": "Ada", "avatar_url": "https://sso.facile.studio/avatars/…", "matrix_user_id": "@a:prisme.facile.studio"},
+  "user": {"id": 1, "email": "a@facile.studio", "name": "Ada", "avatar_url": "https://sso.facile.studio/avatars/…", "matrix_user_id": "@a:prisme.facile.studio", "locale": "fr"},
   "matrix": {"homeserver": "https://prisme.facile.studio", "user_id": "@a:prisme.facile.studio", "access_token": "syt_…", "device_id": "ABCDEFGHIJ"},
   "calls_enabled": true
 }
@@ -64,6 +64,18 @@ snapshot: each Registre space gets a Prisme space with `#general`, linked by `re
 (an existing space links by case-insensitive name). Members join or leave the space and all its
 channels with the snapshot, and their agents follow them. A member with no Prisme user gets one the
 way a service call acting for them would.
+
+### `POST /registre/deletions`
+
+No session: Registre posts a signed `user.deleted` security event, and Prisme verifies the RS256
+signature, issuer, audience and time window itself (a notice that does not verify is a `400`).
+Prisme also polls Registre's deletion list with the same client credentials as the snapshot sync, so
+a missed push is caught. For each erased person it deactivates and erases their Matrix account and
+their agents in Synapse, deletes their sessions and their porte user, and clears the owner, name and
+tokens of their agents. The Matrix ids stay reserved (Matrix never reissues one): the account row
+under a negated user id, the agent rows deactivated. Spaces and channels they created stay with no
+creator, and their messages stay in the rooms under a deactivated account. A replayed notice changes
+nothing. Set it as the client's `deletion_uri` in Registre. Mounted with `POST /registre/sync`.
 
 ### `POST /agents`
 
