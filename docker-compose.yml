@@ -76,6 +76,7 @@ services:
       SYNAPSE_FORM_SECRET: ${SYNAPSE_FORM_SECRET:?SYNAPSE_FORM_SECRET is required}
       PRISME_AS_TOKEN: ${PRISME_AS_TOKEN:?PRISME_AS_TOKEN is required}
       PRISME_HS_TOKEN: ${PRISME_HS_TOKEN:?PRISME_HS_TOKEN is required}
+      PRISME_AS_URL: ${PRISME_AS_URL:-http://prisme-api:4000}
     volumes:
       - synapse_data:/data
     labels:
@@ -112,8 +113,10 @@ services:
     expose:
       - "4000"
     networks:
-      - default
-      - dokploy-network
+      default:
+        aliases:
+          - prisme-api
+      dokploy-network: {}
     labels:
       traefik.enable: "true"
       traefik.docker.network: dokploy-network
@@ -140,16 +143,19 @@ services:
       OIDC_REDIRECT_URL: ${OIDC_REDIRECT_URL:-}
       OIDC_SUCCESS_URL: ${OIDC_SUCCESS_URL:-}
       OIDC_MACHINE_AUDIENCE: ${OIDC_MACHINE_AUDIENCE:-}
+      OIDC_MOBILE_REDIRECT: ${OIDC_MOBILE_REDIRECT:-}
       MATRIX_INTERNAL_URL: http://synapse:8008
       MATRIX_PUBLIC_URL: ${MATRIX_PUBLIC_URL:-https://prisme.facile.studio}
       MATRIX_SERVER_NAME: ${MATRIX_SERVER_NAME:-prisme.facile.studio}
       PRISME_AS_TOKEN: ${PRISME_AS_TOKEN}
+      PRISME_HS_TOKEN: ${PRISME_HS_TOKEN:-}
       PRISME_SECRET_KEY: ${PRISME_SECRET_KEY:?PRISME_SECRET_KEY is required}
       PRISME_SERVICE_KEY: ${PRISME_SERVICE_KEY:-}
       ECHO_URL: ${ECHO_URL:-}
       ECHO_INTEGRATION_KEY: ${ECHO_INTEGRATION_KEY:-}
       LIVEKIT_URL: ${LIVEKIT_URL:-}
       PRISME_PUBLIC_URL: ${PRISME_PUBLIC_URL:-}
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
       JOURNAL_URL: ${JOURNAL_URL:-}
       JOURNAL_TOKEN: ${JOURNAL_TOKEN:-}
     healthcheck:

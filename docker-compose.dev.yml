@@ -30,6 +30,9 @@ services:
       SYNAPSE_FORM_SECRET: dev-form-secret
       PRISME_AS_TOKEN: dev-as-token
       PRISME_HS_TOKEN: dev-hs-token
+      PRISME_AS_URL: ${PRISME_AS_URL:-http://host.docker.internal:14090}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:18008:8008"
     volumes:

@@ -32,7 +32,7 @@ func testRouter(t *testing.T) chi.Router {
 // failing build. If it fails, fix the registry in the module's
 // documentation.go - never the test.
 func TestEveryRouteIsDocumented(t *testing.T) {
-	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known", "/version"); len(missing) > 0 {
+	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known", "/version", "/_matrix"); len(missing) > 0 {
 		t.Errorf("routes missing from the API registry:\n  %s", strings.Join(missing, "\n  "))
 	}
 }
@@ -44,7 +44,7 @@ func registreRouter(t *testing.T) chi.Router {
 		t.Fatal(err)
 	}
 	deletions := spaces.NewDeletions(&spaces.Service{}, directory.Client{}, nil, quiet)
-	return buildRouter(app{logger: quiet, auth: authService, syncer: &directory.Syncer{}, deletions: deletions})
+	return buildRouter(app{logger: quiet, auth: authService, directory: directorySync{syncer: &directory.Syncer{}, deletions: deletions}})
 }
 
 // Registre nudges anonymously, so the route must answer without a session.

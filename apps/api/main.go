@@ -9,6 +9,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
+	"github.com/FacileStudio/Prisme/apps/api/modules/push"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
@@ -38,6 +39,7 @@ func registry() documentation.Response {
 			agents.Documentation(),
 			calls.Documentation(),
 			users.Documentation(),
+			push.Documentation(),
 		},
 	}
 }
@@ -58,6 +60,13 @@ type app struct {
 	agents    *agents.Service
 	calls     *calls.Service
 	users     *users.Service
+	push      *push.Service
+	directory directorySync
+}
+
+// directorySync is the Registre half of the app: the space sync and the
+// deletion receiver, all nil while OIDC is off.
+type directorySync struct {
 	registre  *spaces.Registre
 	syncer    *directory.Syncer
 	deletions *spaces.Deletions
@@ -73,25 +82,30 @@ func buildRouter(a app) chi.Router {
 		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"m.homeserver": map[string]string{"base_url": a.edge.homeserver}})
 	})
 	if a.auth != nil {
-		router.Route("/api", func(r chi.Router) {
-			r.Use(session.RevokeOnLogout(a.session, a.auth, a.logger))
-			a.auth.Mount(r)
-			session.RegisterRoutes(r, a.session, a.auth)
-			spaces.RegisterRoutes(r, a.spaces, a.auth)
-			agents.RegisterRoutes(r, a.agents, a.auth)
-			calls.RegisterRoutes(r, a.calls, a.auth)
-			users.RegisterRoutes(r, a.users, a.auth)
-			if a.syncer != nil && a.deletions != nil {
-				spaces.RegisterSync(r, a.syncer)
-				spaces.RegisterDeletions(r, a.deletions)
-			}
-		})
+		push.RegisterAppService(router, a.push)
+		router.Route("/api", func(r chi.Router) { mountAPI(r, a) })
 	}
 	if spa.Available(clientDir) {
 		router.Handle("/*", spa.Handler(spa.Config{Dir: clientDir}))
 		a.logger.Info("serving client", slog.String("dir", clientDir))
 	}
 	return router
+}
+
+// mountAPI registers porte and every module under /api.
+func mountAPI(r chi.Router, a app) {
+	r.Use(session.RevokeOnLogout(a.session, a.auth, a.logger))
+	a.auth.Mount(r)
+	session.RegisterRoutes(r, a.session, a.auth)
+	spaces.RegisterRoutes(r, a.spaces, a.auth)
+	agents.RegisterRoutes(r, a.agents, a.auth)
+	calls.RegisterRoutes(r, a.calls, a.auth)
+	users.RegisterRoutes(r, a.users, a.auth)
+	push.RegisterRoutes(r, a.push, a.auth)
+	if sync := a.directory; sync.syncer != nil && sync.deletions != nil {
+		spaces.RegisterSync(r, sync.syncer)
+		spaces.RegisterDeletions(r, sync.deletions)
+	}
 }
 
 func main() {

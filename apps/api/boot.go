@@ -13,13 +13,11 @@ import (
 
 	"github.com/FacileStudio/Prisme/apps/api/internal/accounts"
 	"github.com/FacileStudio/Prisme/apps/api/internal/database"
-	"github.com/FacileStudio/Prisme/apps/api/internal/echo"
 	"github.com/FacileStudio/Prisme/apps/api/internal/env"
 	"github.com/FacileStudio/Prisme/apps/api/internal/matrix"
 	"github.com/FacileStudio/Prisme/apps/api/internal/seal"
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
-	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
@@ -70,9 +68,9 @@ func run() int {
 func start(services app, addr string) int {
 	shutdownSignal, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	if services.registre != nil {
-		go services.registre.Run(shutdownSignal, services.syncer)
-		go services.deletions.Run(shutdownSignal)
+	if sync := services.directory; sync.registre != nil {
+		go sync.registre.Run(shutdownSignal, sync.syncer)
+		go sync.deletions.Run(shutdownSignal)
 	}
 	return serve(shutdownSignal, addr, buildRouter(services), services.logger)
 }
@@ -80,18 +78,16 @@ func start(services app, addr string) int {
 // newDirectory builds the Registre space sync and the GDPR deletion receiver
 // when OIDC is configured, with Prisme's own client credentials, and nils
 // otherwise: without Registre there is nothing to sync and no route to mount.
-func newDirectory(
-	cfg env.Config, spaceService *spaces.Service, sqlDB *sql.DB, appLogger *slog.Logger,
-) (*spaces.Registre, *directory.Syncer, *spaces.Deletions) {
+func newDirectory(cfg env.Config, spaceService *spaces.Service, sqlDB *sql.DB, appLogger *slog.Logger) directorySync {
 	porteCfg := cfg.Porte
 	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
-		return nil, nil, nil
+		return directorySync{}
 	}
 	registre := spaces.NewRegistre(spaceService, porteCfg.Issuer, appLogger)
 	client := directory.Client{Issuer: porteCfg.Issuer, ClientID: porteCfg.ClientID, ClientSecret: porteCfg.ClientSecret}
 	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: appLogger}
 	deletions := spaces.NewDeletions(spaceService, client, pg.New(sqlDB).EraseIdentity, appLogger)
-	return registre, syncer, deletions
+	return directorySync{registre: registre, syncer: syncer, deletions: deletions}
 }
 
 func newLogger(cfg env.Config) (*slog.Logger, func()) {
@@ -138,26 +134,12 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		spaces: spaces.NewService(spaces.Deps{
 			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
 		}),
-		agents: agentService,
-		calls:  newCalls(cfg, db, client, accountService, appLogger),
-		users:  users.NewService(db),
+		agents: agentService, calls: newCalls(cfg, db, client, accountService, appLogger),
+		users: users.NewService(db),
 	}
-	built.registre, built.syncer, built.deletions = newDirectory(cfg, built.spaces, sqlDB, appLogger)
+	built.push = newPush(cfg, db, client, appLogger)
+	built.directory = newDirectory(cfg, built.spaces, sqlDB, appLogger)
 	return built, nil
-}
-
-func newCalls(cfg env.Config, db *gorm.DB, client *matrix.Client, accountService *accounts.Service, appLogger *slog.Logger) *calls.Service {
-	return calls.NewService(calls.Deps{
-		DB: db, Echo: newEcho(cfg), Matrix: client, Accounts: accountService,
-		Secret: cfg.SecretKey, PublicURL: cfg.PublicURL, Logger: appLogger,
-	})
-}
-
-func newEcho(cfg env.Config) *echo.Client {
-	if !cfg.CallsEnabled() {
-		return nil
-	}
-	return echo.New(cfg.Echo.URL, cfg.Echo.Key)
 }
 
 func serve(shutdownSignal context.Context, addr string, router http.Handler, appLogger *slog.Logger) int {

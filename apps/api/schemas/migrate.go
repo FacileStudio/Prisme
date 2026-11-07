@@ -14,7 +14,10 @@ func Migrate(db *gorm.DB) error {
 	if err := db.AutoMigrate(&Account{}, &MatrixSession{}, &Space{}, &Channel{}, &Agent{}, &Call{}); err != nil {
 		return err
 	}
-	return db.Exec(deletionState).Error
+	if err := db.Exec(deletionState).Error; err != nil {
+		return err
+	}
+	return db.Exec(pushDevices).Error
 }
 
 const deletionState = `CREATE TABLE IF NOT EXISTS directory_deletion_state (
@@ -22,3 +25,13 @@ const deletionState = `CREATE TABLE IF NOT EXISTS directory_deletion_state (
 	state      bytea NOT NULL,
 	updated_at timestamptz NOT NULL DEFAULT now()
 )`
+
+// pushDevices holds the Firebase token of each signed-in Android app. A row
+// belongs to a porte session, so signing out deletes it.
+const pushDevices = `CREATE TABLE IF NOT EXISTS push_devices (
+	token            text PRIMARY KEY,
+	user_id          bigint NOT NULL REFERENCES porte_users(id) ON DELETE CASCADE,
+	porte_session_id bigint NOT NULL REFERENCES porte_sessions(id) ON DELETE CASCADE,
+	created_at       timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS push_devices_user_idx ON push_devices (user_id)`

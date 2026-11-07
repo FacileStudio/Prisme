@@ -1,5 +1,5 @@
 id: prisme
-url: null
+url: ${PRISME_AS_URL}
 as_token: "${PRISME_AS_TOKEN}"
 hs_token: "${PRISME_HS_TOKEN}"
 sender_localpart: prisme

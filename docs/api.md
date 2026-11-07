@@ -139,7 +139,22 @@ name, email or Matrix id. `avatar_url` is an mxc URI or empty; `agent` is true f
 `[{"user_id", "name", "owner_user_id"}]`: every active agent with its owner's Matrix id. The client
 draws agents as blobs and badges them from this list.
 
+### `GET /push`
+
+`{"native"}`: true when this server can push to the Android app (`FCM_SERVICE_ACCOUNT` and
+`PRISME_HS_TOKEN` are set). The Android app only registers with Firebase when it is true.
+
+### `POST /push/devices`
+
+`{"token"}`, the Android app's Firebase registration token. Answers `204`. The row belongs to the
+calling porte session and goes when it signs out. `503 unavailable` while push is off.
+
 ## Matrix
 
 The browser talks to Synapse directly at `https://prisme.facile.studio/_matrix` with the token
 from `/session`. `/.well-known/matrix/client` points other Matrix clients at the same URL.
+
+Synapse calls the API as its appservice at `PUT /_matrix/app/v1/transactions/{txnId}` with
+`Authorization: Bearer <PRISME_HS_TOKEN>`, over the compose network only: Traefik sends every
+public `/_matrix` path to Synapse. Every other `/_matrix` path on the API answers `404`, so
+Synapse's user and room queries get a clear no.

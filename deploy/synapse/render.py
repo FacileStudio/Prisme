@@ -51,6 +51,7 @@ def main():
         sys.exit("synapse: missing environment: " + ", ".join(missing))
     values = dict(os.environ)
     values.setdefault("SYNAPSE_DB_NAME", "synapse")
+    values["PRISME_AS_URL"] = values.get("PRISME_AS_URL") or "null"
     values["MATRIX_SERVER_NAME_REGEX"] = re.escape(values["MATRIX_SERVER_NAME"]).replace("\\", "\\\\")
     values["MATRIX_PUBLIC_URL"] = values["MATRIX_PUBLIC_URL"].rstrip("/")
     os.makedirs("/data/media_store", exist_ok=True)
