@@ -75,3 +75,10 @@ func respond(w http.ResponseWriter, status int, body any, err error) {
 	}
 	httpjson.WriteJSON(w, status, body)
 }
+
+// RegisterDeletions mounts Registre's signed user.deleted push at
+// directory.DeletionsPath on the /api group. It sits outside every auth and
+// session middleware: the handler verifies the notice's signature itself.
+func RegisterDeletions(router chi.Router, deletions *Deletions) {
+	router.Method(http.MethodPost, strings.TrimPrefix(directory.DeletionsPath, "/api"), deletions.Handler())
+}

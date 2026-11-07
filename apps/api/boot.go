@@ -27,6 +27,7 @@ import (
 
 	"github.com/FacileStudio/Journal/sdk/journal"
 	"github.com/FacileStudio/porte/directory"
+	"github.com/FacileStudio/porte/pg"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/logger"
 	"gorm.io/gorm"
@@ -63,28 +64,34 @@ func run() int {
 	return start(services, ":"+strconv.Itoa(cfg.Port))
 }
 
-// start runs the Registre sync, when configured, beside the HTTP server until
-// a signal ends both.
+// start runs the Registre sync and the deletion poll, when configured, beside
+// the HTTP server until a signal ends all of them. Prisme runs one replica, so
+// this is the one deletion poller.
 func start(services app, addr string) int {
 	shutdownSignal, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	if services.registre != nil {
 		go services.registre.Run(shutdownSignal, services.syncer)
+		go services.deletions.Run(shutdownSignal)
 	}
 	return serve(shutdownSignal, addr, buildRouter(services), services.logger)
 }
 
-// newDirectory builds the Registre space sync when OIDC is configured, with
-// Prisme's own client credentials, and nils otherwise: without Registre there
-// is nothing to sync and no nudge route to mount.
-func newDirectory(cfg env.Config, spaceService *spaces.Service, appLogger *slog.Logger) (*spaces.Registre, *directory.Syncer) {
+// newDirectory builds the Registre space sync and the GDPR deletion receiver
+// when OIDC is configured, with Prisme's own client credentials, and nils
+// otherwise: without Registre there is nothing to sync and no route to mount.
+func newDirectory(
+	cfg env.Config, spaceService *spaces.Service, sqlDB *sql.DB, appLogger *slog.Logger,
+) (*spaces.Registre, *directory.Syncer, *spaces.Deletions) {
 	porteCfg := cfg.Porte
 	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
-		return nil, nil
+		return nil, nil, nil
 	}
 	registre := spaces.NewRegistre(spaceService, porteCfg.Issuer, appLogger)
 	client := directory.Client{Issuer: porteCfg.Issuer, ClientID: porteCfg.ClientID, ClientSecret: porteCfg.ClientSecret}
-	return registre, &directory.Syncer{Client: client, Apply: registre.Apply, Logger: appLogger}
+	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: appLogger}
+	deletions := spaces.NewDeletions(spaceService, client, pg.New(sqlDB).EraseIdentity, appLogger)
+	return registre, syncer, deletions
 }
 
 func newLogger(cfg env.Config) (*slog.Logger, func()) {
@@ -133,8 +140,9 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		agents: agentService,
 		calls:  newCalls(cfg, db, client, accountService, appLogger),
 		users:  users.NewService(db),
+		core:   cfg.Core, liveKit: cfg.LiveKitURL,
 	}
-	built.registre, built.syncer = newDirectory(cfg, built.spaces, appLogger)
+	built.registre, built.syncer, built.deletions = newDirectory(cfg, built.spaces, sqlDB, appLogger)
 	return built, nil
 }
 

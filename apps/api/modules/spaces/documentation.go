@@ -28,6 +28,13 @@ func Documentation() documentation.Module {
 					"Mounted only when OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET are set.",
 				Auth: "none",
 			},
+			{
+				Method: "POST", Path: "/registre/deletions", Summary: "Receive a GDPR deletion notice",
+				Description: "Registre posts a signed user.deleted security event here when a person erases their " +
+					"account. Prisme verifies the signature, erases that person's Matrix accounts and data and " +
+					"answers 202; a notice that does not verify is a 400. Mounted with the Registre sync.",
+				Auth: "signed security event",
+			},
 		},
 	}
 }

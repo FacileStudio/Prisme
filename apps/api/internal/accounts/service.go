@@ -21,6 +21,7 @@ type Profile struct {
 	Email     string
 	Name      string
 	AvatarURL string
+	Locale    string
 }
 
 // Service provisions and looks up Matrix accounts.
@@ -57,10 +58,10 @@ func (s *Service) Ensure(ctx context.Context, userID int64) (schemas.Account, er
 	return account, nil
 }
 
-// Profile reads the user's name, email and picture from porte's table.
+// Profile reads the user's name, email, picture and locale from porte's table.
 func (s *Service) Profile(ctx context.Context, userID int64) (Profile, error) {
 	var profile Profile
-	err := s.db.WithContext(ctx).Table("porte_users").Select("email, name, avatar_url").
+	err := s.db.WithContext(ctx).Table("porte_users").Select("email, name, avatar_url, locale").
 		Where("id = ?", userID).Take(&profile).Error
 	if err != nil {
 		return profile, errors.Internal("failed to read the user", err)
