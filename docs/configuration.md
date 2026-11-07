@@ -47,5 +47,8 @@ Registre holds the matching OIDC client secret as `REGISTRE_SEED_PRISME_SECRET`.
 
 - `PRISME_SECRET_KEY`: stored Matrix tokens no longer open, so every browser and agent gets a new
   device on its next call. Old devices stay valid until revoked.
-- `PRISME_AS_TOKEN`: change it in Dokploy; both Synapse and the API read it from there.
+- `PRISME_AS_TOKEN`, `PRISME_HS_TOKEN`: change them in Dokploy; both Synapse and the API read
+  them from there.
+- The Android keystore and the Tauri updater key (tiroir `PRISME_ANDROID_*`,
+  `PRISME_TAURI_SIGNING_*`): never. Installed apps only accept updates signed with the same key.
 - `SYNAPSE_SIGNING_KEY`: do not rotate casually; with federation off it only signs local events.

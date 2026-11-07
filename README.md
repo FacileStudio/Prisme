@@ -48,7 +48,10 @@ throwaway secrets. Run the API with `MATRIX_INTERNAL_URL=http://127.0.0.1:18008`
 | `SYNAPSE_SIGNING_KEY` | synapse | The homeserver's ed25519 key. Generated into the volume when unset |
 | `SYNAPSE_MACAROON_SECRET`, `SYNAPSE_FORM_SECRET` | synapse | Synapse's own secrets |
 | `PRISME_AS_TOKEN` | synapse, api | Appservice token: root over the user namespace. Never reaches a browser |
-| `PRISME_HS_TOKEN` | synapse | Homeserver token of the registration. The appservice has no URL, so nothing calls it |
+| `PRISME_HS_TOKEN` | synapse, api | Homeserver token: Synapse sends it on every appservice transaction, and the API refuses a transaction without it |
+| `PRISME_AS_URL` | synapse | Where Synapse sends appservice transactions. Defaults to `http://prisme-api:4000`, the API's alias on the compose network; empty renders `null` |
+| `FCM_SERVICE_ACCOUNT` | api | Firebase service account (raw or base64 JSON) for Android push. Prisme's Android app lives in the `courrier-de1ea` Firebase project, so this is Courrier's account. Empty turns Android push off |
+| `OIDC_MOBILE_REDIRECT` | api | Where porte's app sign-in hands back its code. Defaults to `studio.facile.prisme://auth` while OIDC is on |
 | `PRISME_SECRET_KEY` | api | Seals the Matrix tokens Prisme stores (AES-256-GCM), at least 32 characters |
 | `PRISME_SERVICE_KEY` | api | Comma-separated keys for service callers (Bulle). Empty turns that path off |
 | `MATRIX_SERVER_NAME`, `MATRIX_PUBLIC_URL` | synapse, api | `prisme.facile.studio` and its https URL |
@@ -76,6 +79,8 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `POST /api/calls` | session | Start or join the Echo call of a room; returns the LiveKit token and the room's `e2ee_key` |
 | `POST /api/echo/events` | Echo signature | Call events: the call message turns into "Call ended" when the last person leaves |
 | `GET /api/users?q=` | session | People directory |
+| `GET /api/push`, `POST /api/push/devices` | session | Whether Android push is on; register the app's Firebase token |
+| `PUT /_matrix/app/v1/transactions/{txnId}` | hs_token | Synapse's appservice events, which drive Android push |
 | `POST /api/registre/sync`, `POST /api/registre/deletions` | none, signed | Registre's space nudge, and its signed GDPR `user.deleted` notice |
 | `GET /version` | none | The version stamped at build |
 
@@ -126,6 +131,26 @@ the same way a first sign-in would.
   they cannot decrypt, so captions, recording and Echo's own join link cannot work on a Prisme
   call. Rotating `PRISME_SECRET_KEY` changes every room key. A browser without encoded-frame
   transforms (`isE2EESupported()` false) is refused rather than joined in plaintext.
+- **Installed apps.** `apps/client` is also the Android app (Capacitor 8, `studio.facile.prisme`)
+  and `apps/desktop` wraps the same build in Tauri 2. Both sign in with porte's `?flow=mobile`
+  PKCE flow through the `studio.facile.prisme://auth` deep link and call the API with a bearer
+  token, so CORS always allows `https://localhost`, `tauri://localhost` and
+  `http://tauri.localhost` while OIDC is on. First launch shows a short intro that ends on the
+  sign-in slide, then a welcome step that asks for notifications.
+- **Notifications.** The browser and the desktop app notify from their own Matrix sync while
+  they are out of sight. The Android app cannot, so the server pushes: Synapse never runs push
+  rules for users an exclusive appservice owns (`get_if_app_services_interested_in_user` in
+  https://github.com/element-hq/synapse/blob/v1.164.1/synapse/push/bulk_push_rule_evaluator.py),
+  and every Prisme user is one, so Matrix pushers never fire. Instead Synapse sends every event to
+  the appservice (`PUT /_matrix/app/v1/transactions/{txnId}`), and the API pushes a new message
+  to the other person of a two-member room and to the users its `m.mentions` names, skipping
+  rooms they muted, through Firebase HTTP v1. Device tokens live in `push_devices`, tied to the
+  porte session, so signing out removes them. Events older than five minutes are never pushed.
+- **Releases of the apps.** Publishing a GitHub release runs `android.yml` (signed
+  `Prisme-android.apk`) and `desktop.yml` (Windows, macOS and Linux installers plus the
+  updater's `latest.json`). The app version is `apps/client/package.json`, checked against the
+  tag. Signing keys live in tiroir as `PRISME_ANDROID_*` and `PRISME_TAURI_SIGNING_*`; neither
+  can ever be rotated, or installed apps stop updating.
 - **Bulle access.** The plan's Registre token exchange (`prisme.read prisme.agents`) was replaced
   by the service key, at the suite lead's request, so a Bulle user's agent works before they ever
   open Prisme. porte's `OIDC_MACHINE_AUDIENCE` path still works if it is ever configured.
@@ -133,8 +158,9 @@ the same way a first sign-in would.
 ## Structure
 
 ```
-apps/api/      Go API: modules/ (auth, session, spaces, agents, calls, users), internal/ (matrix, accounts, echo, seal)
-apps/client/   SvelteKit client
+apps/api/      Go API: modules/ (auth, session, spaces, agents, calls, users, push), internal/ (matrix, accounts, echo, seal)
+apps/client/   SvelteKit client, and the Capacitor Android project in android/
+apps/desktop/  Tauri desktop shell around the client build
 deploy/        synapse/ (templates and render.py), postgres/ (creates the synapse database)
 docs/          plan, api, configuration, architecture
 ```

@@ -12,6 +12,8 @@ mise run dev                  # API :4000 and client :5173
 sh scripts/check.sh           # gofmt, vet, go test, svelte-check, client tests
 filet check .                 # must report no error before any push
 cd apps/client && bun run build
+cd apps/desktop && bunx @tauri-apps/cli@2 build --no-bundle     # desktop app (needs the client build)
+cd apps/client && bunx cap sync android                          # needs Node 22: mise x node@22 --
 ```
 
 ## Layout
@@ -32,6 +34,8 @@ cd apps/client && bun run build
   `power_level_content_override.users`.
 - Synapse's user directory never returns Prisme users (they are all appservice users); search
   through `GET /api/users`.
+- Synapse runs no push rules for appservice users, so Matrix pushers never fire for Prisme
+  users. Android push comes from the API's appservice transactions (`modules/push`).
 - The appservice token is root over every account. It lives in Dokploy env only.
 - Every compose variable is forwarded explicitly in `docker-compose.yml`.
 - Deployment shape: one app container (Go API + SPA) behind Traefik, Synapse as a second
