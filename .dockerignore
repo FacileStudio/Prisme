@@ -10,3 +10,6 @@
 **/dist
 **/build
 **/bin
+**/target
+apps/client/android
+apps/desktop
