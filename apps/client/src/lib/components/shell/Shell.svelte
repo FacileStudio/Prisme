@@ -9,7 +9,8 @@
 	import { roomHref } from '$lib/state/actions';
 	import { BROWSE_PATH, MESSAGES_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
 	import { HOME, MANAGE_SPACES_HREF, ui } from '$lib/state/ui.svelte';
-	import { t } from '$lib/i18n/index.svelte';
+	import { t, rememberLocale } from '$lib/i18n/index.svelte';
+	import { theme, type ThemePreference } from '$lib/state/theme.svelte';
 	import { call } from '$lib/call/call.svelte';
 	import Dialogs from '$lib/components/dialogs/Dialogs.svelte';
 	import SidePanel from '$lib/components/panels/SidePanel.svelte';
@@ -41,7 +42,7 @@
 	const path = $derived(page.url.pathname);
 	const roomId = $derived(page.params.id ? decodeURIComponent(page.params.id) : null);
 	const inRoom = $derived(roomId !== null);
-	const onSettings = $derived(path === '/settings');
+	const onSettings = $derived(path.startsWith('/settings'));
 
 	const pages = $derived(
 		nav ? railPages(nav, current, path, roomId).map(({ kind, ...entry }) => ({ ...entry, icon: kindIcons[kind] })) : []
@@ -52,7 +53,15 @@
 	const user = $derived.by(() => {
 		const me = app.session?.user;
 		if (!me) return undefined;
-		return { name: me.name || me.email.split('@')[0], avatar: me.avatar_url || undefined };
+		return { name: me.name || me.email.split('@')[0], email: me.email, avatar: me.avatar_url || undefined };
+	});
+
+	const userMenu = $derived({
+		helpHref: 'https://facile.studio/docs/prisme',
+		onSignOut: () => void app.logout(),
+		onLocaleChange: rememberLocale,
+		theme: theme.preference,
+		onThemeChange: (next: string) => theme.set(next as ThemePreference)
 	});
 
 	const mobileItems = $derived([
@@ -100,6 +109,7 @@
 			{user}
 			userHref="/settings"
 			userActive={onSettings}
+			{userMenu}
 			{spaces}
 			activeSpaceId={current?.space.room_id ?? null}
 			onSpaceSelect={selectSpace}
@@ -141,7 +151,7 @@
 	<SidePanel />
 
 	{#if !inRoom}
-		<MobileNav items={mobileItems} {user} profileHref="/settings" profileActive={onSettings} />
+		<MobileNav items={mobileItems} {user} profileHref="/settings" profileActive={onSettings} {userMenu} />
 	{/if}
 </div>
 

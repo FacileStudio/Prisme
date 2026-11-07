@@ -41,6 +41,15 @@
 			content="Prisme, the Facile team chat."
 		/>
 		<meta name="twitter:image" content="https://prisme.facile.studio/og-image.png" />
+		<script>
+			try {
+				var t = localStorage.getItem('prisme.theme');
+				var r = document.documentElement.classList;
+				var d = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+				r.toggle('dark', d);
+				r.toggle('light', !d);
+			} catch (e) {}
+		</script>
 		%sveltekit.head%
 
 		<title>Prisme</title>
