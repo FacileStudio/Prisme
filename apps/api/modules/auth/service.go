@@ -10,7 +10,6 @@ import (
 
 	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/oidc"
-	"github.com/FacileStudio/porte/pg"
 	"github.com/FacileStudio/porte/session"
 )
 
@@ -24,7 +23,11 @@ type Service struct {
 // NewService builds porte over the identity tables. Prisme signs people in
 // through Registre only, so there is no password kit.
 func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte, logger *slog.Logger) (*Service, error) {
-	store := pg.New(db)
+	store, err := newPorteStore(db)
+	if err != nil {
+		return nil, err
+	}
+	resealInBackground(ctx, store, logger)
 	sessions, err := session.New(cfg, session.Deps{Sessions: store.Sessions(), Logger: logger})
 	if err != nil {
 		return nil, err
