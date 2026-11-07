@@ -11,30 +11,8 @@ export const settings = {
 		'Du, dieser Browser und die Agents, die in deinem Namen schreiben.'
 	],
 	'settings.profile': ['Profile', 'Profil', 'Perfil', 'Profil'],
-	'settings.profileBody': [
-		'Your name and picture come from your Facile account.',
-		'Votre nom et votre photo viennent de votre compte Facile.',
-		'Tu nombre y tu foto proceden de tu cuenta de Facile.',
-		'Dein Name und dein Bild stammen aus deinem Facile-Konto.'
-	],
+	'settings.preferences': ['Preferences', 'Préférences', 'Preferencias', 'Einstellungen'],
 	'settings.matrixId': ['Matrix ID', 'Identifiant Matrix', 'ID de Matrix', 'Matrix-ID'],
-	'settings.appearance': ['Appearance', 'Apparence', 'Apariencia', 'Darstellung'],
-	'settings.appearanceBody': [
-		'Stored in this browser. Every device keeps its own choice.',
-		'Enregistré dans ce navigateur. Chaque appareil garde son propre choix.',
-		'Se guarda en este navegador. Cada dispositivo conserva su propia elección.',
-		'In diesem Browser gespeichert. Jedes Gerät behält seine eigene Wahl.'
-	],
-	'settings.scheme': ['Colour scheme', 'Thème de couleurs', 'Esquema de color', 'Farbschema'],
-	'settings.schemeBody': [
-		'System follows your operating system while Prisme is open.',
-		'« Système » suit votre système d’exploitation tant que Prisme est ouvert.',
-		'«Sistema» sigue tu sistema operativo mientras Prisme está abierto.',
-		'„System“ folgt deinem Betriebssystem, solange Prisme geöffnet ist.'
-	],
-	'settings.modeSystem': ['System', 'Système', 'Sistema', 'System'],
-	'settings.modeLight': ['Light', 'Clair', 'Claro', 'Hell'],
-	'settings.modeDark': ['Dark', 'Sombre', 'Oscuro', 'Dunkel'],
 	'settings.notifications': ['Notifications', 'Notifications', 'Notificaciones', 'Benachrichtigungen'],
 	'settings.browserNotifications': [
 		'Browser notifications',
@@ -85,6 +63,4 @@ export const settings = {
 		{ one: 'En {count} sala', other: 'En {count} salas' },
 		{ one: 'In {count} Raum', other: 'In {count} Räumen' }
 	],
-	'settings.session': ['Session', 'Session', 'Sesión', 'Sitzung'],
-	'settings.signOut': ['Sign out', 'Se déconnecter', 'Cerrar sesión', 'Abmelden']
 } as const satisfies Record<string, Row>;

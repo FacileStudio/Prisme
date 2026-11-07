@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The sidebar user card and the mobile avatar open muse's user menu (account, settings, language, theme, help, sign out). The cog and the in-settings sign-out are gone
+- Settings use muse's `SettingsLayout` with the sections Profile, Preferences, Notifications and Agents, at `/settings/<section>`. Profile is read-only and links to Facile. `/settings/appearance` redirects to `/settings/preferences`
+- A language picked in the app is remembered in the `fc_locale` cookie and wins over the Registre profile locale
+- muse v0.13.0 to v0.14.1
+
 ## [0.10.0] - 2026-11-07
 
 ### Added
