@@ -15,12 +15,10 @@ import (
 
 	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/apiref"
-	troncenv "github.com/FacileStudio/tronc/env"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/healthcheck"
 	"github.com/FacileStudio/tronc/httpjson"
 	"github.com/FacileStudio/tronc/httpx"
-	troncmiddleware "github.com/FacileStudio/tronc/middleware"
 	"github.com/FacileStudio/tronc/spa"
 	"github.com/go-chi/chi/v5"
 )
@@ -51,38 +49,28 @@ func refConfig() apiref.Config {
 // app is every service the router mounts. A nil auth leaves porte and the
 // modules unmounted, which is what the route-table test walks.
 type app struct {
-	logger     *slog.Logger
-	cors       []string
-	dbCheck    health.Check
-	homeserver string
-	auth       *auth.Service
-	session    *session.Service
-	spaces     *spaces.Service
-	agents     *agents.Service
-	calls      *calls.Service
-	users      *users.Service
-	registre   *spaces.Registre
-	syncer     *directory.Syncer
-	deletions  *spaces.Deletions
-	core       troncenv.Core
-	liveKit    string
+	logger    *slog.Logger
+	dbCheck   health.Check
+	edge      edge
+	auth      *auth.Service
+	session   *session.Service
+	spaces    *spaces.Service
+	agents    *agents.Service
+	calls     *calls.Service
+	users     *users.Service
+	registre  *spaces.Registre
+	syncer    *directory.Syncer
+	deletions *spaces.Deletions
 }
 
 func buildRouter(a app) chi.Router {
 	clientDir := spa.DirFromEnv()
-	router := httpx.NewRouter(httpx.Config{
-		Logger:         a.logger,
-		CORS:           troncmiddleware.CORSConfig{AllowedOrigins: a.cors, AllowCredentials: true},
-		TrustedProxies: a.core.TrustedProxies,
-		CDNProxies:     a.core.CDNProxies,
-		CDNHeader:      a.core.CDNHeader,
-		Security:       securityConfig(clientDir, a.homeserver, a.liveKit, a.logger),
-	})
+	router := httpx.NewRouter(routerConfig(a, clientDir))
 	health.Mount(router, a.dbCheck)
 	router.Get("/version", versionHandler)
 	apiref.Mount(router, refConfig())
 	router.Get("/.well-known/matrix/client", func(w http.ResponseWriter, _ *http.Request) {
-		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"m.homeserver": map[string]string{"base_url": a.homeserver}})
+		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"m.homeserver": map[string]string{"base_url": a.edge.homeserver}})
 	})
 	if a.auth != nil {
 		router.Route("/api", func(r chi.Router) {

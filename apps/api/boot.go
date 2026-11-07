@@ -128,7 +128,8 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger,
 	})
 	built := app{
-		logger: appLogger, cors: cfg.CORSAllowedOrigins, dbCheck: health.DB(sqlDB), homeserver: cfg.Matrix.PublicURL,
+		logger: appLogger, dbCheck: health.DB(sqlDB),
+		edge: edge{core: cfg.Core, homeserver: cfg.Matrix.PublicURL, liveKit: cfg.LiveKitURL},
 		auth: authService,
 		session: session.NewService(session.Deps{
 			DB: db, Matrix: client, Accounts: accountService, Box: box,
@@ -140,7 +141,6 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		agents: agentService,
 		calls:  newCalls(cfg, db, client, accountService, appLogger),
 		users:  users.NewService(db),
-		core:   cfg.Core, liveKit: cfg.LiveKitURL,
 	}
 	built.registre, built.syncer, built.deletions = newDirectory(cfg, built.spaces, sqlDB, appLogger)
 	return built, nil

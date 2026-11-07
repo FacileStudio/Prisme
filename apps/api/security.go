@@ -4,9 +4,32 @@ import (
 	"log/slog"
 	"net/url"
 
+	troncenv "github.com/FacileStudio/tronc/env"
+	"github.com/FacileStudio/tronc/httpx"
 	"github.com/FacileStudio/tronc/middleware"
 	"github.com/FacileStudio/tronc/spa"
 )
+
+// edge is what the router needs to know about the deployment around it: the
+// shared tronc settings, the public Matrix homeserver and the LiveKit server.
+type edge struct {
+	core       troncenv.Core
+	homeserver string
+	liveKit    string
+}
+
+// routerConfig is the chassis configuration: CORS, the proxies in front of the
+// binary and the security headers.
+func routerConfig(a app, clientDir string) httpx.Config {
+	return httpx.Config{
+		Logger:         a.logger,
+		CORS:           middleware.CORSConfig{AllowedOrigins: a.edge.core.CORSAllowedOrigins, AllowCredentials: true},
+		TrustedProxies: a.edge.core.TrustedProxies,
+		CDNProxies:     a.edge.core.CDNProxies,
+		CDNHeader:      a.edge.core.CDNHeader,
+		Security:       securityConfig(clientDir, a.edge.homeserver, a.edge.liveKit, a.logger),
+	}
+}
 
 var callFeatures = []string{"camera", "microphone", "display-capture", "speaker-selection"}
 

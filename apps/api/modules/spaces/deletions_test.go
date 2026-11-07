@@ -111,17 +111,21 @@ func TestErasePersonDeletesPersonalDataAndKeepsSharedSpaces(t *testing.T) {
 			t.Fatalf("erase: %v", err)
 		}
 	}
-	for _, table := range []string{"accounts", "matrix_sessions", "porte_users", "porte_identities"} {
-		column := "user_id"
-		if table == "porte_users" {
-			column = "id"
+	for _, table := range []string{"accounts", "matrix_sessions", "porte_users", "porte_identities", "agents"} {
+		column := map[string]string{"porte_users": "id", "agents": "owner_id"}[table]
+		if column == "" {
+			column = "user_id"
 		}
 		if n := count(t, db, "SELECT count(*) FROM "+table+" WHERE "+column+" = ?", f.gone); n != 0 {
 			t.Errorf("%s still holds %d rows of the erased person", table, n)
 		}
 	}
-	if n := count(t, db, `SELECT count(*) FROM agents WHERE owner_id = ?`, f.gone); n != 0 {
-		t.Errorf("agents of the erased person remain: %d", n)
+	if n := count(t, db, `SELECT count(*) FROM accounts WHERE user_id = ? AND avatar_url = ''`, -f.gone); n != 1 {
+		t.Errorf("the erased account did not stay as a reservation of its Matrix id")
+	}
+	reserved := `SELECT count(*) FROM agents WHERE owner_id = 0 AND name = '' AND sealed_token = '' AND deactivated_at IS NOT NULL`
+	if n := count(t, db, reserved); n != 1 {
+		t.Errorf("the erased person's agent was not deactivated and anonymised: %d", n)
 	}
 	if n := count(t, db, `SELECT count(*) FROM spaces WHERE name = 'Studio' AND created_by = 0`); n != 1 {
 		t.Errorf("the shared space lost its row or kept its creator")

@@ -46,17 +46,25 @@ func (d *Deletions) Handler() http.Handler {
 	return d.receiver.Handler()
 }
 
-const (
-	erasedCalls  = `UPDATE calls SET started_by = '' WHERE started_by IN ?`
-	erasedSpaces = `UPDATE spaces SET created_by = 0 WHERE created_by = ?`
-)
+var erasureStatements = []string{
+	`UPDATE calls SET started_by = '' WHERE started_by IN @matrix_ids`,
+	`UPDATE spaces SET created_by = 0 WHERE created_by = @id`,
+	`DELETE FROM matrix_sessions WHERE user_id = @id`,
+	`UPDATE agents SET owner_id = 0, name = '', sealed_token = '', device_id = '', avatar_url = '',
+		avatar_source = '', deactivated_at = coalesce(deactivated_at, now()) WHERE owner_id = @id`,
+	`UPDATE accounts SET user_id = -user_id, avatar_url = '' WHERE user_id = @id`,
+	`DELETE FROM porte_users WHERE id = @id`,
+}
 
 // ErasePerson erases the Matrix accounts of a Registre identity and what Prisme
 // stores for them: the account and its agents are deactivated and erased in
-// Synapse, and the sessions, agents, account and porte user rows are deleted.
-// Spaces and channels the person created stay, with no creator, and their
-// messages stay in the rooms under a deactivated account. A subject that is
-// already gone is a no-op, so a replayed notice changes nothing.
+// Synapse, the sessions and the porte user are deleted, and the agents lose
+// their owner, name and tokens. Matrix never reissues an id, so the account row
+// and the agent rows stay as reservations of the deactivated ids: the account
+// under a negated user id, the agents deactivated. Spaces and channels the
+// person created stay, with no creator, and their messages stay in the rooms
+// under a deactivated account. A subject that is already gone is a no-op, so a
+// replayed notice changes nothing.
 func (d *Deletions) ErasePerson(ctx context.Context, provider, subject string) error {
 	var owners []int64
 	err := d.db.WithContext(ctx).Table("porte_identities").
@@ -89,25 +97,14 @@ func (d *Deletions) matrixIDs(ctx context.Context, userID int64) ([]string, erro
 }
 
 func (d *Deletions) deleteRows(ctx context.Context, userID int64, matrixIDs []string) error {
+	args := map[string]any{"id": userID, "matrix_ids": append(matrixIDs, "")}
 	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if len(matrixIDs) > 0 {
-			if err := tx.Exec(erasedCalls, matrixIDs).Error; err != nil {
+		for _, statement := range erasureStatements {
+			if err := tx.Exec(statement, args).Error; err != nil {
 				return err
 			}
 		}
-		if err := tx.Exec(erasedSpaces, userID).Error; err != nil {
-			return err
-		}
-		for _, table := range []string{"matrix_sessions", "agents", "accounts"} {
-			column := "user_id"
-			if table == "agents" {
-				column = "owner_id"
-			}
-			if err := tx.Exec("DELETE FROM "+table+" WHERE "+column+" = ?", userID).Error; err != nil {
-				return err
-			}
-		}
-		return tx.Exec(`DELETE FROM porte_users WHERE id = ?`, userID).Error
+		return nil
 	})
 }
 

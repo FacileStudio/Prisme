@@ -68,7 +68,7 @@ func TestTheDeletionPushReachesTheReceiverWithoutASession(t *testing.T) {
 
 func TestTheSecurityHeadersAllowCallsAndNameTheHomeserver(t *testing.T) {
 	router := buildRouter(app{logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
-		homeserver: "https://chat.example.test", liveKit: "wss://live.example.test:7881"})
+		edge: edge{homeserver: "https://chat.example.test", liveKit: "wss://live.example.test:7881"}})
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/version", nil))
 	policy := recorder.Header().Get("Permissions-Policy")
