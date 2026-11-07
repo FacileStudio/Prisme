@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-07
+
 ### Added
 
 - The interface comes in French, English, Spanish and German, in the locale of the person's Registre profile (`GET /api/session` returns `user.locale`). Dates, times and file sizes follow it through `Intl`. Spanish and German need native review
