@@ -41,7 +41,7 @@
 		</span>
 	</div>
 	{#if !ended}
-		<Button size="sm" variant={here ? 'outline' : 'primary'} disabled={busy || here || !app.session?.calls_enabled} onclick={join}>
+		<Button size="sm" variant={here ? 'secondary' : 'primary'} disabled={busy || here || !app.session?.calls_enabled} onclick={join}>
 			{here ? t('call.joined') : t('call.join')}
 		</Button>
 	{/if}

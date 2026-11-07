@@ -69,7 +69,7 @@
 								{/if}
 							</div>
 						</div>
-						<Button href={build.url} icon={icons.download} variant={build.platform === platform ? 'primary' : 'outline'} class="min-h-11 shrink-0">
+						<Button href={build.url} icon={icons.download} variant={build.platform === platform ? 'primary' : 'secondary'} class="min-h-11 shrink-0">
 							{t('downloads.download')}
 						</Button>
 					</Card>

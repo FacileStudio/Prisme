@@ -56,7 +56,7 @@
 		</div>
 	</div>
 	<div class="flex flex-wrap gap-2">
-		<Button size="lg" variant="outline" icon={glyphs.userPlus} onclick={() => (ui.dialog = 'invite')}>{t('space.invite')}</Button>
+		<Button size="lg" variant="secondary" icon={glyphs.userPlus} onclick={() => (ui.dialog = 'invite')}>{t('space.invite')}</Button>
 		<Button size="lg" icon={icons.plus} onclick={() => (ui.dialog = 'create-channel')}>{t('space.newChannel')}</Button>
 	</div>
 </header>
