@@ -57,7 +57,7 @@
 	});
 
 	const userMenu = $derived({
-		subscription: { plan: '', href: 'https://sso.facile.studio/spaces' },
+		subscription: { href: 'https://sso.facile.studio/spaces' },
 		helpHref: 'https://facile.studio/docs/prisme',
 		onSignOut: () => void app.logout(),
 		onLocaleChange: rememberLocale,
