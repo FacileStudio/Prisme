@@ -6,6 +6,7 @@
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import { notify } from '$lib/state/notify.svelte';
+	import { isApp } from '$lib/native/platform';
 	import { roomHref } from '$lib/state/actions';
 	import { BROWSE_PATH, MESSAGES_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
 	import { HOME, MANAGE_SPACES_HREF, ui } from '$lib/state/ui.svelte';
@@ -57,6 +58,7 @@
 	});
 
 	const userMenu = $derived({
+		items: isApp() ? [] : [{ label: t('downloads.menu'), icon: icons.download, href: '/downloads' }],
 		subscription: { href: 'https://sso.facile.studio/spaces' },
 		helpHref: 'https://facile.studio/docs/prisme',
 		onSignOut: () => void app.logout(),

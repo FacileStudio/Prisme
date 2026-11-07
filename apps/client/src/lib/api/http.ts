@@ -1,3 +1,5 @@
+import { apiBase, clearToken, getToken } from '$lib/native/platform';
+
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /** An API failure that keeps the HTTP status and the server's error code. */
@@ -22,15 +24,20 @@ async function readError(response: Response): Promise<ApiError> {
 }
 
 /**
- * Calls the Prisme API with the porte session cookie. Mutating requests carry
- * `X-Facile-CSRF`, which porte requires of every cookie-authenticated write.
+ * Calls the Prisme API. The web app sends the porte session cookie, and its mutating
+ * requests carry `X-Facile-CSRF`, which porte requires of every cookie-authenticated write.
+ * The installed apps send their bearer token instead, and forget it when porte refuses it.
  */
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 	const method = (init.method ?? 'GET').toUpperCase();
 	const headers = new Headers(init.headers);
-	if (!SAFE_METHODS.has(method)) headers.set('X-Facile-CSRF', '1');
+	const token = await getToken();
+	if (token) headers.set('Authorization', `Bearer ${token}`);
+	else if (!SAFE_METHODS.has(method)) headers.set('X-Facile-CSRF', '1');
 	if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-	const response = await fetch(`/api${path}`, { ...init, method, headers, credentials: 'same-origin' });
+	const credentials = token ? 'omit' : 'same-origin';
+	const response = await fetch(`${apiBase()}/api${path}`, { ...init, method, headers, credentials });
+	if (response.status === 401 && token) await clearToken();
 	if (!response.ok) throw await readError(response);
 	if (response.status === 204) return undefined as T;
 	const text = await response.text();

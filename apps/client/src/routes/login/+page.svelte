@@ -6,10 +6,17 @@
 	import { glyphs } from '$lib/glyphs';
 	import { rememberLocale, t } from '$lib/i18n/index.svelte';
 	import { LOGIN_PATH, prisme, type AuthConfig } from '$lib/api/prisme';
+	import AppIntro from '$lib/components/native/AppIntro.svelte';
+	import { isApp } from '$lib/native/platform';
 
 	let config = $state<AuthConfig | null>(null);
 	let checking = $state(true);
-	const error = $derived(page.url.searchParams.get('error') ?? '');
+	const app = isApp();
+	let error = $state('');
+
+	$effect(() => {
+		error = page.url.searchParams.get('error') ?? '';
+	});
 
 	onMount(async () => {
 		const signedIn = await prisme.session().then(() => true, () => false);
@@ -26,6 +33,9 @@
 	<title>{t('login.title')}</title>
 </svelte:head>
 
+{#if app}
+	<AppIntro bind:error />
+{:else}
 <AuthScreen appName="Prisme" href={LOGIN_PATH} loading={checking} onLocaleChange={rememberLocale}>
 	{#snippet logo()}
 		<Icon icon={glyphs.logo} size={40} class="text-fc-fg" />
@@ -42,3 +52,4 @@
 		{/if}
 	{/snippet}
 </AuthScreen>
+{/if}

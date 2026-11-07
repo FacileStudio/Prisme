@@ -47,9 +47,15 @@
 	let agents = $state<Agent[] | null>(null);
 	let agentsError = $state('');
 
+	const web = notify.channel === 'web';
+	const notifyLabel = $derived(web ? t('settings.browserNotifications') : t('settings.deviceNotifications'));
+
 	const notifyHint = $derived.by(() => {
 		if (!notify.supported) return t('settings.notifyUnsupported');
-		if (notify.permission === 'denied') return t('settings.notifyBlocked');
+		if (!notify.available) return t('settings.notifyServerOff');
+		if (notify.permission === 'denied') return web ? t('settings.notifyBlocked') : t('settings.notifySystemBlocked');
+		if (notify.channel === 'desktop') return t('settings.notifyDesktopHint');
+		if (notify.channel === 'native') return t('settings.notifyAndroidHint');
 		return t('settings.notifyHint');
 	});
 
@@ -91,9 +97,9 @@
 				/>
 			{:else if id === 'notifications'}
 				<NotificationsSection>
-					<SettingsRow label={t('settings.browserNotifications')} description={notifyHint}>
+					<SettingsRow label={notifyLabel} description={notifyHint}>
 						<Switch
-							aria-label={t('settings.browserNotifications')}
+							aria-label={notifyLabel}
 							checked={notify.enabled}
 							disabled={!notify.supported || notify.permission === 'denied'}
 							onchange={(e) => notify.setEnabled(e.currentTarget.checked)}
