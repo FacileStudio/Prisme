@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0] - 2026-11-07
+
+### Added
+
+- An Android app (`Prisme-android.apk`) and a desktop app for macOS, Windows and Linux, attached to every GitHub release. Both sign in with your Facile account in the browser and come back through `studio.facile.prisme://auth`.
+- A first-run intro in both apps that ends on the sign-in slide, then a welcome step that asks for notifications.
+- Desktop notifications for direct messages and mentions while the window is in the background, and self-update from the latest release.
+- Android push for direct messages and mentions, skipping muted rooms, even when the app is closed. Synapse now sends its events to the API (`PRISME_AS_URL`, `PRISME_HS_TOKEN`), and `FCM_SERVICE_ACCOUNT` turns sending on.
+- `GET /api/push` and `POST /api/push/devices`; device tokens are deleted when their session signs out.
+- A downloads page at `/downloads`, linked from the user menu on the web.
+
+### Changed
+
+- CORS always allows the apps' origins (`https://localhost`, `tauri://localhost`, `http://tauri.localhost`) while OIDC is on.
+- The notification setting reads "Notifications on this device" in the apps.
+
 ## [0.11.3] - 2026-11-07
 
 ### Changed
