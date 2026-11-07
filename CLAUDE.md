@@ -26,7 +26,7 @@ cd apps/client && bun run build
 
 ## Rules that bite
 
-- Auth is porte SSO only (`SSO_ONLY=true`), plus the service-key path for Bulle on the routes that
+- Auth is porte SSO only (porte mounts no password route while `OIDC_ISSUER` is set), plus the service-key path for Bulle on the routes that
   call `Require(scope)` with a non-empty scope. `Require("")` keeps a route to browser sessions.
 - Synapse 1.164 creates room version 12: never put the room creator in
   `power_level_content_override.users`.
