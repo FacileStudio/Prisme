@@ -71,6 +71,9 @@ func TestTheSecurityHeadersAllowCallsAndNameTheHomeserver(t *testing.T) {
 		edge: edge{homeserver: "https://chat.example.test", liveKit: "wss://live.example.test:7881"}})
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/version", nil))
+	if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `"version":"dev"`) {
+		t.Fatalf("GET /version = %d %s", recorder.Code, recorder.Body.String())
+	}
 	policy := recorder.Header().Get("Permissions-Policy")
 	for _, want := range []string{"camera=(self)", "microphone=(self)"} {
 		if !strings.Contains(policy, want) {

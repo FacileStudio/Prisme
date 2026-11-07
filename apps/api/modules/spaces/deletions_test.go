@@ -111,15 +111,7 @@ func TestErasePersonDeletesPersonalDataAndKeepsSharedSpaces(t *testing.T) {
 			t.Fatalf("erase: %v", err)
 		}
 	}
-	for _, table := range []string{"accounts", "matrix_sessions", "porte_users", "porte_identities", "agents"} {
-		column := map[string]string{"porte_users": "id", "agents": "owner_id"}[table]
-		if column == "" {
-			column = "user_id"
-		}
-		if n := count(t, db, "SELECT count(*) FROM "+table+" WHERE "+column+" = ?", f.gone); n != 0 {
-			t.Errorf("%s still holds %d rows of the erased person", table, n)
-		}
-	}
+	assertPersonalRowsGone(t, db, f.gone)
 	if n := count(t, db, `SELECT count(*) FROM accounts WHERE user_id = ? AND avatar_url = ''`, -f.gone); n != 1 {
 		t.Errorf("the erased account did not stay as a reservation of its Matrix id")
 	}
@@ -135,6 +127,19 @@ func TestErasePersonDeletesPersonalDataAndKeepsSharedSpaces(t *testing.T) {
 	}
 	if got := f.erased(); len(got) != 2 {
 		t.Errorf("synapse erased %v, want the account and its agent once", got)
+	}
+}
+
+func assertPersonalRowsGone(t *testing.T, db *gorm.DB, userID int64) {
+	t.Helper()
+	columns := map[string]string{
+		"accounts": "user_id", "matrix_sessions": "user_id", "porte_users": "id",
+		"porte_identities": "user_id", "agents": "owner_id",
+	}
+	for table, column := range columns {
+		if n := count(t, db, "SELECT count(*) FROM "+table+" WHERE "+column+" = ?", userID); n != 0 {
+			t.Errorf("%s still holds %d rows of the erased person", table, n)
+		}
 	}
 }
 
