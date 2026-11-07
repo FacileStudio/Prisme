@@ -1,6 +1,7 @@
 import type { MatrixClient, Room } from 'matrix-js-sdk';
 import { prisme, type Space } from '$lib/api/prisme';
 import { acceptInvite } from '$lib/matrix/directs';
+import { t } from '$lib/i18n/index.svelte';
 import { app } from './app.svelte';
 
 /** The link to a room's page. */
@@ -14,7 +15,7 @@ export function serverName(): string {
 }
 
 function client(): MatrixClient {
-	if (!app.client) throw new Error('The chat client is not running.');
+	if (!app.client) throw new Error(t('app.clientNotRunning'));
 	return app.client;
 }
 

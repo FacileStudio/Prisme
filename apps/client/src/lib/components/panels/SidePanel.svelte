@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Icon, IconButton, icons } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { ui } from '$lib/state/ui.svelte';
 	import ThreadPanel from './ThreadPanel.svelte';
@@ -12,14 +13,17 @@
 		const id = page.params.id ? decodeURIComponent(page.params.id) : '';
 		return id ? (app.client?.getRoom(id) ?? null) : null;
 	});
-	const title = $derived(ui.panel === 'thread' ? 'Thread' : ui.panel === 'members' ? 'Members' : 'Search');
+	const title = $derived(t(ui.panel === 'thread' ? 'panel.thread' : ui.panel === 'members' ? 'panel.members' : 'panel.search'));
+	const closeLabel = $derived(
+		t(ui.panel === 'thread' ? 'panel.closeThread' : ui.panel === 'members' ? 'panel.closeMembers' : 'panel.closeSearch')
+	);
 </script>
 
 {#if ui.panel && room}
-	<aside class="fixed inset-0 z-30 flex flex-col bg-fc-page md:static md:z-auto md:w-96 md:border-l md:border-fc-border" aria-label={title}>
-		<div class="flex min-h-14 items-center border-b border-fc-border pl-4 pr-1">
+	<aside class="fixed inset-0 z-30 flex flex-col bg-fc-page md:static md:z-auto md:w-96" aria-label={title}>
+		<div class="flex min-h-14 items-center pl-4 pr-1">
 			<h2 class="flex-1 text-fc-md font-semibold">{title}</h2>
-			<IconButton variant="ghost" aria-label="Close the {title.toLowerCase()} panel" onclick={() => ui.closePanel()}>
+			<IconButton variant="ghost" aria-label={closeLabel} onclick={() => ui.closePanel()}>
 				<Icon icon={icons.close} size={20} />
 			</IconButton>
 		</div>

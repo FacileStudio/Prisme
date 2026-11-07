@@ -4,6 +4,7 @@ import { prisme, type AgentUser, type Session, type Space } from '$lib/api/prism
 import { isAgent } from '$lib/chat/users';
 import { watchClient } from '$lib/matrix/events';
 import { setMediaToken } from '$lib/matrix/media';
+import { setSessionLocale, t } from '$lib/i18n/index.svelte';
 
 export type Status = 'loading' | 'ready' | 'signed-out' | 'error';
 
@@ -15,7 +16,7 @@ function waitForSync(client: MatrixClient): Promise<void> {
 				resolve();
 			} else if (state === SyncState.Error && !client.isInitialSyncComplete()) {
 				client.off(ClientEvent.Sync, onSync);
-				reject(new Error('The chat server did not answer the first sync.'));
+				reject(new Error(t('app.firstSyncFailed')));
 			}
 		};
 		client.on(ClientEvent.Sync, onSync);
@@ -37,6 +38,7 @@ class AppState {
 	async boot() {
 		try {
 			this.session = await prisme.session();
+			setSessionLocale(this.session.user.locale);
 		} catch (err) {
 			this.fail(err);
 			return;

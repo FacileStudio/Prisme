@@ -8,7 +8,8 @@
 	import { notify } from '$lib/state/notify.svelte';
 	import { roomHref } from '$lib/state/actions';
 	import { BROWSE_PATH, MESSAGES_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
-	import { HOME, MANAGE_SPACES_HREF, MANAGE_SPACES_LABEL, ui } from '$lib/state/ui.svelte';
+	import { HOME, MANAGE_SPACES_HREF, ui } from '$lib/state/ui.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import { call } from '$lib/call/call.svelte';
 	import Dialogs from '$lib/components/dialogs/Dialogs.svelte';
 	import SidePanel from '$lib/components/panels/SidePanel.svelte';
@@ -55,8 +56,8 @@
 	});
 
 	const mobileItems = $derived([
-		{ href: MESSAGES_PATH, label: 'Messages', icon: glyphs.chat, active: path === MESSAGES_PATH },
-		{ href: BROWSE_PATH, label: 'Spaces', icon: icons.home, active: path === BROWSE_PATH }
+		{ href: MESSAGES_PATH, label: t('nav.messages'), icon: glyphs.chat, active: path === MESSAGES_PATH },
+		{ href: BROWSE_PATH, label: t('nav.spaces'), icon: icons.home, active: path === BROWSE_PATH }
 	]);
 
 	function selectSpace(id: string | null) {
@@ -104,7 +105,7 @@
 			onSpaceSelect={selectSpace}
 			personalSpaceLabel={null}
 			manageSpacesHref={MANAGE_SPACES_HREF}
-			manageSpacesLabel={MANAGE_SPACES_LABEL}
+			manageSpacesLabel={t('spaces.manage')}
 		/>
 	</div>
 
@@ -120,7 +121,7 @@
 							onSelect={selectSpace}
 							personalLabel={null}
 							manageHref={MANAGE_SPACES_HREF}
-							manageLabel={MANAGE_SPACES_LABEL}
+							manageLabel={t('spaces.manage')}
 						/>
 					</div>
 				{/if}

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
 	import { app } from '$lib/state/app.svelte';
+	import { t } from '$lib/i18n/index.svelte';
+	import { formatList } from '$lib/i18n/format';
 	import { seenBy } from '$lib/matrix/timeline';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 
@@ -13,12 +15,12 @@
 			return { id, name: member?.name ?? id, avatar: member?.getMxcAvatarUrl() ?? null };
 		});
 	});
-	const label = $derived(`Seen by ${readers.map((r) => r.name).join(', ')}`);
+	const label = $derived(t('seen.byNames', { names: formatList(readers.map((r) => r.name)) }));
 </script>
 
 {#if readers.length > 0}
 	<div class="flex items-center justify-end gap-1 px-4 pt-1" title={label} aria-label={label} role="img">
-		<span class="text-fc-xs text-fc-fg-muted">Seen by</span>
+		<span class="text-fc-xs text-fc-fg-muted">{t('seen.by')}</span>
 		{#each readers.slice(0, 5) as reader (reader.id)}
 			<Avatar userId={reader.id} mxc={reader.avatar} name={reader.name} size={20} />
 		{/each}

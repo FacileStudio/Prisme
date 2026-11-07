@@ -4,6 +4,8 @@
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { callInfo, replyTarget } from '$lib/matrix/timeline';
 	import { mentionsUser } from '$lib/chat/mentions';
+	import { formatTime } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 	import UserName from '$lib/components/common/UserName.svelte';
 	import MessageBody from './MessageBody.svelte';
@@ -25,7 +27,7 @@
 			name: member?.name ?? sender,
 			avatar: member?.getMxcAvatarUrl() ?? event.sender?.getMxcAvatarUrl() ?? null,
 			forMe: sender !== me && !event.isRedacted() && mentionsMe(me),
-			time: new Date(event.getTs()).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+			time: formatTime(event.getTs()),
 			edited: !!event.replacingEventId() && !callInfo(event),
 			pending: event.isSending(),
 			reply: replyTarget(event),
@@ -62,7 +64,7 @@
 		{/if}
 		<MessageBody {event} />
 		{#if view.edited && !view.deleted}
-			<span class="text-fc-xs text-fc-fg-muted">(edited)</span>
+			<span class="text-fc-xs text-fc-fg-muted">{t('message.edited')}</span>
 		{/if}
 		{#if !view.deleted}
 			<Reactions {room} {event} />

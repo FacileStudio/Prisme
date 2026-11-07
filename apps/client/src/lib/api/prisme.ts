@@ -6,6 +6,7 @@ export type SessionUser = {
 	name: string;
 	avatar_url: string;
 	matrix_user_id: string;
+	locale: string;
 };
 
 export type MatrixLogin = {

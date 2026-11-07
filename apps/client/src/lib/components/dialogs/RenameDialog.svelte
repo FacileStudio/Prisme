@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { Field, Input, icons, toast } from '@facile/muse';
 	import { app } from '$lib/state/app.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import FormDialog from './FormDialog.svelte';
 
 	type Props = { roomId: string; kind: 'channel' | 'space'; onclose: () => void };
@@ -14,18 +15,18 @@
 		busy = true;
 		try {
 			await app.client.setRoomName(roomId, name.trim());
-			toast.success(`The ${kind} is renamed`);
+			toast.success(t(kind === 'space' ? 'rename.doneSpace' : 'rename.doneChannel'));
 			onclose();
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : `Could not rename the ${kind}`);
+			toast.danger(err instanceof Error ? err.message : t(kind === 'space' ? 'rename.failedSpace' : 'rename.failedChannel'));
 		} finally {
 			busy = false;
 		}
 	}
 </script>
 
-<FormDialog title="Rename the {kind}" submitLabel="Rename" icon={icons.edit} {busy} disabled={!name.trim()} onsubmit={submit} {onclose}>
-	<Field label="Name">
+<FormDialog title={t(kind === 'space' ? 'rename.titleSpace' : 'rename.titleChannel')} submitLabel={t('rename.submit')} icon={icons.edit} {busy} disabled={!name.trim()} onsubmit={submit} {onclose}>
+	<Field label={t('common.name')}>
 		{#snippet children({ id })}
 			<Input {id} bind:value={name} maxlength={80} required />
 		{/snippet}

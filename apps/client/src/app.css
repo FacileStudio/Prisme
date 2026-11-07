@@ -42,8 +42,9 @@ body {
 }
 
 .prose-msg blockquote {
-	border-left: 3px solid var(--color-fc-border);
-	padding-left: 0.75rem;
+	background: var(--color-fc-surface);
+	border-radius: var(--radius-fc-sm);
+	padding: 0.25rem 0.75rem;
 	color: var(--color-fc-fg-muted);
 }
 

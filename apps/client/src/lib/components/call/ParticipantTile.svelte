@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Track, type Participant } from 'livekit-client';
 	import { Avatar } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let { participant, version, screen = false }: { participant: Participant; version: number; screen?: boolean } =
 		$props();
@@ -12,7 +13,13 @@
 		const name = participant.name || participant.identity;
 		return {
 			name,
-			label: screen ? (participant.isLocal ? 'Your screen' : `${name}'s screen`) : name + (participant.isLocal ? ' (you)' : ''),
+			label: screen
+				? participant.isLocal
+					? t('call.yourScreen')
+					: t('call.screenOf', { name })
+				: participant.isLocal
+					? t('call.you', { name })
+					: name,
 			track: publication && !publication.isMuted ? (publication.videoTrack ?? null) : null,
 			mic: participant.isMicrophoneEnabled,
 			speaking: participant.isSpeaking,
@@ -44,7 +51,7 @@
 	{/if}
 	<div class="absolute bottom-1.5 left-1.5 flex max-w-[calc(100%-0.75rem)] items-center gap-1.5 rounded-fc-sm bg-fc-scrim px-2 py-0.5">
 		{#if !screen}
-			<span class="size-2 shrink-0 rounded-fc-pill {view.mic ? 'bg-fc-success' : 'bg-fc-danger'}" aria-label={view.mic ? 'Microphone on' : 'Muted'} role="img"></span>
+			<span class="size-2 shrink-0 rounded-fc-pill {view.mic ? 'bg-fc-success' : 'bg-fc-danger'}" aria-label={view.mic ? t('call.micOnLabel') : t('call.mutedLabel')} role="img"></span>
 		{/if}
 		<span class="truncate text-fc-xs text-white">{view.label}</span>
 	</div>

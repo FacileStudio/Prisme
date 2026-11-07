@@ -1,3 +1,5 @@
+import { t } from '$lib/i18n/index.svelte';
+
 const AGENT_LOCALPART = /^@agent-/;
 
 /**
@@ -22,7 +24,7 @@ export function handle(userId: string): string {
 /** The sentence under the composer for the given names. */
 export function typingSentence(names: string[]): string {
 	if (names.length === 0) return '';
-	if (names.length === 1) return `${names[0]} is typing…`;
-	if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
-	return `${names[0]}, ${names[1]} and ${names.length - 2} more are typing…`;
+	if (names.length === 1) return t('typing.one', { a: names[0] });
+	if (names.length === 2) return t('typing.two', { a: names[0], b: names[1] });
+	return t('typing.many', { a: names[0], b: names[1], count: names.length - 2 });
 }

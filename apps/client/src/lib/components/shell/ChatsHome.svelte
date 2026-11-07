@@ -6,7 +6,8 @@
 	import { app } from '$lib/state/app.svelte';
 	import { acceptSpace, roomHref } from '$lib/state/actions';
 	import { buildNav } from '$lib/state/nav';
-	import { MANAGE_SPACES_HREF, MANAGE_SPACES_LABEL, ui } from '$lib/state/ui.svelte';
+	import { MANAGE_SPACES_HREF, ui } from '$lib/state/ui.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import SpaceChannels from './SpaceChannels.svelte';
 
 	let accepting = $state('');
@@ -27,7 +28,7 @@
 			const general = space.channels.find((c) => c.name === 'general');
 			if (general) await goto(roomHref(general.room_id));
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : 'Could not join the space');
+			toast.danger(err instanceof Error ? err.message : t('overview.joinFailed'));
 		} finally {
 			accepting = '';
 		}
@@ -35,7 +36,7 @@
 </script>
 
 <svelte:head>
-	<title>{current ? `${current.name} · Prisme` : 'Overview · Prisme'}</title>
+	<title>{current ? t('overview.titleSpace', { name: current.name }) : t('overview.title')}</title>
 </svelte:head>
 
 {#if nav}
@@ -45,9 +46,9 @@
 				<span class="flex size-10 shrink-0 items-center justify-center rounded-fc-md bg-fc-accent text-fc-accent-fg">
 					<Icon icon={icons.mail} size={20} />
 				</span>
-				<p class="min-w-0 flex-1 text-fc-sm text-fc-fg">You are invited to join <strong class="font-semibold">{room.name}</strong>.</p>
+				<p class="min-w-0 flex-1 text-fc-sm text-fc-fg">{t('overview.invited', { name: room.name })}</p>
 				<Button size="lg" icon={glyphs.login} disabled={accepting === room.roomId} onclick={() => accept(room)}>
-					{accepting === room.roomId ? 'Joining…' : 'Join the space'}
+					{accepting === room.roomId ? t('common.joining') : t('overview.joinSpace')}
 				</Button>
 			</Card>
 		{/each}
@@ -57,16 +58,16 @@
 		{:else if nav.spaces.length === 0}
 			<EmptyState
 				icon={icons.space}
-				title="No space yet"
-				description="A space groups the channels of a project or a team."
+				title={t('overview.none')}
+				description={t('overview.noneBody')}
 			/>
 		{/if}
 
-		<div class="flex flex-col gap-3 border-t border-fc-border pt-6 sm:flex-row sm:items-center">
-			<p class="min-w-0 flex-1 text-fc-sm text-fc-fg-muted">Spaces group the channels of a team or a project.</p>
+		<div class="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center">
+			<p class="min-w-0 flex-1 text-fc-sm text-fc-fg-muted">{t('overview.footer')}</p>
 			<div class="flex flex-wrap gap-2">
-				<Button size="lg" variant="ghost" icon={icons.space} href={MANAGE_SPACES_HREF}>{MANAGE_SPACES_LABEL}</Button>
-				<Button size="lg" variant="outline" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>Create a space</Button>
+				<Button size="lg" variant="ghost" icon={icons.space} href={MANAGE_SPACES_HREF}>{t('spaces.manage')}</Button>
+				<Button size="lg" variant="outline" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>{t('overview.createSpace')}</Button>
 			</div>
 		</div>
 	</div>

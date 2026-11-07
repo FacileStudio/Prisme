@@ -1,4 +1,5 @@
 import { RoomEvent, type MatrixClient, type MatrixEvent, type Room } from 'matrix-js-sdk';
+import { t } from '$lib/i18n/index.svelte';
 import { isDirect, isMuted } from '$lib/matrix/rooms';
 import { isMessage } from '$lib/matrix/timeline';
 
@@ -50,7 +51,7 @@ class NotifyState {
 			if (!this.enabled || !document.hidden || !room || start || removed || !data?.liveEvent) return;
 			if (!worthNotifying(client, event, room)) return;
 			const sender = room.getMember(event.getSender() ?? '')?.name ?? event.getSender();
-			const note = new Notification(`${sender} in ${room.name}`, { body: String(event.getContent().body ?? ''), tag: room.roomId });
+			const note = new Notification(t('notify.title', { sender: String(sender), room: room.name }), { body: String(event.getContent().body ?? ''), tag: room.roomId });
 			note.onclick = () => {
 				window.focus();
 				open(room.roomId);

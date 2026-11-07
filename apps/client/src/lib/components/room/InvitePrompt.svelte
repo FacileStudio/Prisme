@@ -6,6 +6,7 @@
 	import { app } from '$lib/state/app.svelte';
 	import { serverName } from '$lib/state/actions';
 	import { acceptInvite } from '$lib/matrix/directs';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let { room }: { room: Room } = $props();
 	let busy = $state(false);
@@ -23,7 +24,7 @@
 				await goto('/');
 			}
 		} catch (err) {
-			toast.danger(err instanceof Error ? err.message : 'Could not answer the invite');
+			toast.danger(err instanceof Error ? err.message : t('invitePrompt.failed'));
 		} finally {
 			busy = false;
 		}
@@ -31,10 +32,10 @@
 </script>
 
 <div class="flex flex-1 items-center justify-center p-6">
-	<EmptyState icon={glyphs.chat} title={room.name} description={inviter ? `${inviterName} wants to talk with you.` : 'You are invited to this conversation.'}>
+	<EmptyState icon={glyphs.chat} title={room.name} description={inviter ? t('invitePrompt.wants', { name: inviterName }) : t('invitePrompt.generic')}>
 		<div class="flex gap-2">
-			<Button variant="primary" icon={icons.check} disabled={busy} onclick={() => answer(true)}>Accept</Button>
-			<Button variant="ghost" icon={icons.close} disabled={busy} onclick={() => answer(false)}>Decline</Button>
+			<Button variant="primary" icon={icons.check} disabled={busy} onclick={() => answer(true)}>{t('invitePrompt.accept')}</Button>
+			<Button variant="ghost" icon={icons.close} disabled={busy} onclick={() => answer(false)}>{t('invitePrompt.decline')}</Button>
 		</div>
 	</EmptyState>
 </div>

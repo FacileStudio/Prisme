@@ -10,7 +10,6 @@ export type Dialog =
 
 export const HOME = 'home';
 export const MANAGE_SPACES_HREF = 'https://sso.facile.studio/spaces';
-export const MANAGE_SPACES_LABEL = 'Manage shared spaces';
 
 class UiState {
 	spaceId = $state<string>(HOME);

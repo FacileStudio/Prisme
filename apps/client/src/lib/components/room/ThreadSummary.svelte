@@ -4,6 +4,7 @@
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import { ui } from '$lib/state/ui.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let { room, event }: { room: Room; event: MatrixEvent } = $props();
 
@@ -25,7 +26,7 @@
 		class="mt-1 inline-flex min-h-9 items-center gap-2 rounded-fc-md px-2 text-fc-xs font-semibold text-fc-info hover:bg-fc-info/10"
 	>
 		<Icon icon={glyphs.thread} size={14} />
-		{summary.count} {summary.count === 1 ? 'reply' : 'replies'}
-		<span class="font-normal text-fc-fg-muted">· last from {summary.last}</span>
+		{t('thread.replies', { count: summary.count })}
+		<span class="font-normal text-fc-fg-muted">· {t('thread.lastFrom', { name: summary.last })}</span>
 	</button>
 {/if}

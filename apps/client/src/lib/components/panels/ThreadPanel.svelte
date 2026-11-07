@@ -2,6 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { EventTimeline, MatrixEvent, type Room, type Thread } from 'matrix-js-sdk';
 	import { Spinner } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { DraftState } from '$lib/state/draft.svelte';
 	import { timelineItems } from '$lib/matrix/timeline';
@@ -44,13 +45,13 @@
 	{#if root}
 		<MessageRow {room} event={root} grouped={false} {draft} inThread />
 		<div class="flex items-center gap-3 px-4 py-2 text-fc-xs text-fc-fg-muted">
-			<span>{items.length} {items.length === 1 ? 'reply' : 'replies'}</span><span class="h-px flex-1 bg-fc-border"></span>
+			<span>{t('thread.replies', { count: items.length })}</span><span class="h-px flex-1 bg-fc-surface"></span>
 		</div>
 		{#each items as item (item.event.getId() ?? item.event.getTxnId())}
 			<MessageRow {room} event={item.event} grouped={item.grouped} {draft} inThread />
 		{/each}
 	{:else}
-		<div class="flex justify-center py-6"><Spinner label="Loading the thread" /></div>
+		<div class="flex justify-center py-6"><Spinner label={t('thread.loading')} /></div>
 	{/if}
 </div>
-<Composer {room} {draft} threadId={rootId} placeholder="Reply in thread" />
+<Composer {room} {draft} threadId={rootId} placeholder={t('thread.placeholder')} />

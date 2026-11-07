@@ -3,6 +3,7 @@
 	import { handle } from '$lib/chat/users';
 	import UserName from '$lib/components/common/UserName.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	type Props = {
 		id: string;
@@ -22,9 +23,9 @@
 <ul
 	bind:this={list}
 	{id}
-	class="absolute bottom-full left-3 right-3 z-20 mb-1 flex max-h-72 flex-col overflow-y-auto overscroll-contain rounded-fc-lg border border-fc-border bg-fc-component p-1 shadow-lg md:left-4 md:right-auto md:w-80"
+	class="absolute bottom-full left-3 right-3 z-20 mb-1 flex max-h-72 flex-col overflow-y-auto overscroll-contain rounded-fc-lg bg-fc-component p-1 shadow-lg md:left-4 md:right-auto md:w-80"
 	role="listbox"
-	aria-label="Mention someone"
+	aria-label={t('mention.label')}
 >
 	{#each options as option, index (option.userId)}
 		<li

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { Button, Modal } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 
 	type Props = {
 		title: string;
@@ -21,7 +22,7 @@
 		{@render children()}
 	</form>
 	{#snippet footer()}
-		<Button variant="ghost" onclick={onclose}>Cancel</Button>
-		<Button type="submit" form={formId} {icon} disabled={busy || disabled}>{busy ? 'Working…' : submitLabel}</Button>
+		<Button variant="ghost" onclick={onclose}>{t('common.cancel')}</Button>
+		<Button type="submit" form={formId} {icon} disabled={busy || disabled}>{busy ? t('common.working') : submitLabel}</Button>
 	{/snippet}
 </Modal>

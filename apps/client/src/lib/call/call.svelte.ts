@@ -1,7 +1,8 @@
 import { Room, RoomEvent, type Participant } from 'livekit-client';
 import { prisme, type CallGrant } from '$lib/api/prisme';
 import { attachAudio, clearAudio, detachAudio } from './audio';
-import { DECRYPT_FAILED, UNSUPPORTED, canEncrypt, canShareScreen, encryptedRoom, shareError } from './media';
+import { t } from '$lib/i18n/index.svelte';
+import { canEncrypt, canShareScreen, encryptedRoom, shareError } from './media';
 
 export type CallStatus = 'idle' | 'connecting' | 'connected' | 'disconnected';
 
@@ -30,8 +31,9 @@ class CallState {
 		if (this.active && this.roomId === roomId && this.status === 'connected') return;
 		this.leave();
 		if (!canEncrypt()) {
-			this.error = UNSUPPORTED;
-			throw new Error(UNSUPPORTED);
+			const message = t('call.unsupported');
+			this.error = message;
+			throw new Error(message);
 		}
 		this.active = true;
 		this.roomId = roomId;
@@ -48,7 +50,7 @@ class CallState {
 			await this.connect(this.grant);
 		} catch (err) {
 			this.status = 'disconnected';
-			this.error = err instanceof Error ? err.message : 'Could not start the call';
+			this.error = err instanceof Error ? err.message : t('call.startFailed');
 			throw err;
 		}
 	}
@@ -62,7 +64,7 @@ class CallState {
 			.on(RoomEvent.TrackSubscribed, (track) => (attachAudio(track), refresh()))
 			.on(RoomEvent.TrackUnsubscribed, (track) => (detachAudio(track), refresh()))
 			.on(RoomEvent.AudioPlaybackStatusChanged, () => (this.canPlayAudio = room.canPlaybackAudio))
-			.on(RoomEvent.EncryptionError, () => this.room === room && (this.error = DECRYPT_FAILED))
+			.on(RoomEvent.EncryptionError, () => this.room === room && (this.error = t('call.decryptFailed')))
 			.on(RoomEvent.Disconnected, () => this.room === room && (this.status = 'disconnected'));
 		[RoomEvent.ParticipantConnected, RoomEvent.ParticipantDisconnected, RoomEvent.LocalTrackPublished,
 			RoomEvent.LocalTrackUnpublished, RoomEvent.TrackMuted, RoomEvent.TrackUnmuted, RoomEvent.ActiveSpeakersChanged,
@@ -71,7 +73,7 @@ class CallState {
 		await room.connect(grant.livekit_url, grant.token);
 		this.status = 'connected';
 		this.canPlayAudio = room.canPlaybackAudio;
-		await room.localParticipant.setMicrophoneEnabled(true).catch(() => (this.error = 'Microphone unavailable. You joined muted.'));
+		await room.localParticipant.setMicrophoneEnabled(true).catch(() => (this.error = t('call.micUnavailable')));
 		this.refresh();
 	}
 
@@ -103,7 +105,7 @@ class CallState {
 			else if (kind === 'cam') await local.setCameraEnabled(!this.camOn);
 			else await local.setScreenShareEnabled(!this.screenOn, { audio: true });
 		} catch (err) {
-			const message = kind === 'screen' ? shareError(err) : err instanceof Error ? err.message : 'Device unavailable';
+			const message = kind === 'screen' ? shareError(err) : err instanceof Error ? err.message : t('call.deviceUnavailable');
 			if (message) this.error = message;
 		}
 		this.refresh();

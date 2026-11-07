@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Room } from 'matrix-js-sdk';
+	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { isBot } from '$lib/chat/users';
 	import Avatar from '$lib/components/common/Avatar.svelte';
@@ -34,7 +35,7 @@
 	{#each invited as member (member.userId)}
 		<li class="flex min-h-11 items-center gap-3 rounded-fc-md px-2 text-fc-fg-muted">
 			<Avatar userId={member.userId} name={member.name} mxc={member.getMxcAvatarUrl()} size={28} />
-			<UserName userId={member.userId} name="{member.name} (invited)" class="flex-1 text-fc-sm" />
+			<UserName userId={member.userId} name={t('members.invited', { name: member.name })} class="flex-1 text-fc-sm" />
 		</li>
 	{/each}
 </ul>
