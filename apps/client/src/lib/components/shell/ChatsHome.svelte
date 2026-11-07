@@ -67,7 +67,7 @@
 			<p class="min-w-0 flex-1 text-fc-sm text-fc-fg-muted">{t('overview.footer')}</p>
 			<div class="flex flex-wrap gap-2">
 				<Button size="lg" variant="ghost" icon={icons.space} href={MANAGE_SPACES_HREF}>{t('spaces.manage')}</Button>
-				<Button size="lg" variant="outline" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>{t('overview.createSpace')}</Button>
+				<Button size="lg" variant="secondary" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>{t('overview.createSpace')}</Button>
 			</div>
 		</div>
 	</div>

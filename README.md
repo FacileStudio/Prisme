@@ -58,7 +58,6 @@ throwaway secrets. Run the API with `MATRIX_INTERNAL_URL=http://127.0.0.1:18008`
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URL`, `OIDC_SUCCESS_URL` | api | porte SSO against Registre, client id `prisme` |
 | `ECHO_URL`, `ECHO_INTEGRATION_KEY` | api | Echo's integration API. Either empty turns calls off with a clear message |
 | `LIVEKIT_URL` | api | The LiveKit server Echo hands out, so the security headers can allow its `wss://` and `https://` origins in `connect-src`. Calls still work without it, but the CSP reports a violation |
-| `APP_VERSION` | build | Build argument stamped into the binary and served at `GET /version`. Set it in Dokploy at release; defaults to `dev` |
 | `PRISME_PUBLIC_URL` | api | Where Echo posts call events (`/api/echo/events`). Defaults to `MATRIX_PUBLIC_URL` |
 | `TRUSTED_PROXIES`, `JOURNAL_URL`, `JOURNAL_TOKEN` | api | Suite defaults |
 

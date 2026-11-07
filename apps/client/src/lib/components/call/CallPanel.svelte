@@ -36,7 +36,7 @@
 		<p class="text-fc-xs text-fc-warning" role="status">{call.error}</p>
 	{/if}
 	{#if !call.canPlayAudio}
-		<Button variant="outline" icon={glyphs.volume} onclick={() => call.enableAudio()}>{t('call.enableSound')}</Button>
+		<Button variant="secondary" icon={glyphs.volume} onclick={() => call.enableAudio()}>{t('call.enableSound')}</Button>
 	{/if}
 	<div class="grid min-h-0 auto-rows-max grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
 		{#each screens as participant (participant.identity)}
@@ -47,14 +47,14 @@
 		{/each}
 	</div>
 	<div class="flex items-center justify-center gap-2">
-		<IconButton variant={call.micOn ? 'default' : 'danger'} aria-label={call.micOn ? t('call.micMute') : t('call.micUnmute')} aria-pressed={!call.micOn} onclick={() => call.toggle('mic')}>
+		<IconButton variant={call.micOn ? 'secondary' : 'ghost-danger'} aria-label={call.micOn ? t('call.micMute') : t('call.micUnmute')} aria-pressed={!call.micOn} onclick={() => call.toggle('mic')}>
 			<Icon icon={glyphs.mic} size={20} />
 		</IconButton>
-		<IconButton variant={call.camOn ? 'default' : 'ghost'} aria-label={call.camOn ? t('call.camOff') : t('call.camOn')} aria-pressed={call.camOn} onclick={() => call.toggle('cam')}>
+		<IconButton variant={call.camOn ? 'secondary' : 'ghost'} aria-label={call.camOn ? t('call.camOff') : t('call.camOn')} aria-pressed={call.camOn} onclick={() => call.toggle('cam')}>
 			<Icon icon={glyphs.camera} size={20} />
 		</IconButton>
 		{#if call.canShare}
-			<IconButton variant={call.screenOn ? 'default' : 'ghost'} aria-label={call.screenOn ? t('call.shareStop') : t('call.share')} title={call.screenOn ? t('call.shareStop') : t('call.share')} aria-pressed={call.screenOn} onclick={() => call.toggle('screen')}>
+			<IconButton variant={call.screenOn ? 'secondary' : 'ghost'} aria-label={call.screenOn ? t('call.shareStop') : t('call.share')} title={call.screenOn ? t('call.shareStop') : t('call.share')} aria-pressed={call.screenOn} onclick={() => call.toggle('screen')}>
 				<Icon icon={glyphs.screenShare} size={20} />
 			</IconButton>
 		{/if}

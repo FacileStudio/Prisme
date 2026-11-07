@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `@facile/muse` v0.14.4 to v0.16.1. Secondary buttons use the `secondary` variant in place of the deprecated `outline`, and the call panel's icon buttons use `secondary` and `ghost-danger` in place of `default` and `danger`.
+- `GET /version` comes from the version in `apps/client/package.json`, which the release commit bumps (still `v` plus the number). The `APP_VERSION` build argument and the Dokploy env no longer take part, so a stale env value cannot make the server report an old release.
+
 ## [0.12.0] - 2026-11-07
 
 ### Added

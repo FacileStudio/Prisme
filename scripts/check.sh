@@ -69,6 +69,8 @@ for dir in $GO_MODULES; do
 
     "$GO" vet ./... || s=1
     "$GO" test ./... || s=1
+    pkg_version="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' ../client/package.json | head -1)"
+    "$GO" test -count=1 -run TestVersionMatchesPackageJSON -ldflags "-X github.com/FacileStudio/Prisme/apps/api.version=v$pkg_version" . || s=1
 
     # Postgres is the only database in this suite, tests included. A test on
     # SQLite builds a different schema from the GORM struct tags and then
