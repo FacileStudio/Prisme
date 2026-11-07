@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Prisme",
+  "mainBinaryName": "prisme-desktop",
+  "version": "../client/package.json",
+  "identifier": "studio.facile.prisme",
+  "build": {
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../client/build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Prisme",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 800,
+        "minHeight": 560,
+        "resizable": true,
+        "center": true,
+        "decorations": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; media-src 'self' data: blob: https:; worker-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost https: wss:",
+      "dangerousDisableAssetCspModification": [
+        "style-src"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "targets": [
+      "deb",
+      "appimage",
+      "nsis",
+      "dmg",
+      "app"
+    ],
+    "category": "SocialNetworking",
+    "shortDescription": "The Facile team chat",
+    "publisher": "Facile",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "studio.facile.prisme"
+        ]
+      }
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5RUJCQUI3QkYxNkI5ODEKUldTQnVSYS90N3JyeWQ1NEpiQWdoSkZEa0hKZmtOUzBhSjJlL0tIMTMwVGpzUEQ0NnN0ZlRtUGMK",
+      "endpoints": [
+        "https://github.com/FacileStudio/Prisme/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}
