@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-07
 ### Changed
 
 - The sidebar user card and the mobile avatar open muse's user menu (account, settings, language, theme, help, sign out). The cog and the in-settings sign-out are gone
