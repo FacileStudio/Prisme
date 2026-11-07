@@ -51,7 +51,7 @@ func (s *Service) Get(ctx context.Context, userID, porteSessionID int64) (Respon
 	return Response{
 		User: User{
 			ID: userID, Email: profile.Email, Name: profile.Name,
-			AvatarURL: profile.AvatarURL, MatrixUserID: account.MatrixUserID,
+			AvatarURL: profile.AvatarURL, MatrixUserID: account.MatrixUserID, Locale: profile.Locale,
 		},
 		Matrix:       MatrixLogin{Homeserver: s.deps.Homeserver, UserID: login.UserID, AccessToken: login.AccessToken, DeviceID: login.DeviceID},
 		CallsEnabled: s.deps.CallsEnabled,

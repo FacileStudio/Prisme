@@ -15,6 +15,7 @@ import (
 
 	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/apiref"
+	troncenv "github.com/FacileStudio/tronc/env"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/healthcheck"
 	"github.com/FacileStudio/tronc/httpjson"
@@ -62,14 +63,23 @@ type app struct {
 	users      *users.Service
 	registre   *spaces.Registre
 	syncer     *directory.Syncer
+	deletions  *spaces.Deletions
+	core       troncenv.Core
+	liveKit    string
 }
 
 func buildRouter(a app) chi.Router {
+	clientDir := spa.DirFromEnv()
 	router := httpx.NewRouter(httpx.Config{
-		Logger: a.logger,
-		CORS:   troncmiddleware.CORSConfig{AllowedOrigins: a.cors, AllowCredentials: true},
+		Logger:         a.logger,
+		CORS:           troncmiddleware.CORSConfig{AllowedOrigins: a.cors, AllowCredentials: true},
+		TrustedProxies: a.core.TrustedProxies,
+		CDNProxies:     a.core.CDNProxies,
+		CDNHeader:      a.core.CDNHeader,
+		Security:       securityConfig(clientDir, a.homeserver, a.liveKit, a.logger),
 	})
 	health.Mount(router, a.dbCheck)
+	router.Get("/version", versionHandler)
 	apiref.Mount(router, refConfig())
 	router.Get("/.well-known/matrix/client", func(w http.ResponseWriter, _ *http.Request) {
 		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"m.homeserver": map[string]string{"base_url": a.homeserver}})
@@ -83,12 +93,12 @@ func buildRouter(a app) chi.Router {
 			agents.RegisterRoutes(r, a.agents, a.auth)
 			calls.RegisterRoutes(r, a.calls, a.auth)
 			users.RegisterRoutes(r, a.users, a.auth)
-			if a.syncer != nil {
+			if a.syncer != nil && a.deletions != nil {
 				spaces.RegisterSync(r, a.syncer)
+				spaces.RegisterDeletions(r, a.deletions)
 			}
 		})
 	}
-	clientDir := spa.DirFromEnv()
 	if spa.Available(clientDir) {
 		router.Handle("/*", spa.Handler(spa.Config{Dir: clientDir}))
 		a.logger.Info("serving client", slog.String("dir", clientDir))

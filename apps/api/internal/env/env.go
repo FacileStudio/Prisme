@@ -32,6 +32,7 @@ type Config struct {
 	Matrix      Matrix
 	Echo        Echo
 	PublicURL   string
+	LiveKitURL  string
 	SecretKey   string
 	ServiceKeys string
 }
@@ -49,10 +50,9 @@ func Load() (Config, error) {
 		SecretKey:   troncenv.String("PRISME_SECRET_KEY", ""),
 		ServiceKeys: troncenv.String("PRISME_SERVICE_KEY", ""),
 	}
+	cfg.LiveKitURL = strings.TrimRight(troncenv.String("LIVEKIT_URL", ""), "/")
 	cfg.PublicURL = strings.TrimRight(troncenv.String("PRISME_PUBLIC_URL", cfg.Matrix.PublicURL), "/")
-	if cfg.Porte, err = loadPorte(); err != nil {
-		return Config{}, err
-	}
+	cfg.Porte = loadPorte()
 	return cfg, cfg.validate()
 }
 
@@ -65,11 +65,7 @@ func loadMatrix() Matrix {
 	}
 }
 
-func loadPorte() (porte.Config, error) {
-	ssoOnly, err := troncenv.Bool("SSO_ONLY", true)
-	if err != nil {
-		return porte.Config{}, err
-	}
+func loadPorte() porte.Config {
 	return porte.Config{
 		Issuer:          troncenv.String("OIDC_ISSUER", ""),
 		ClientID:        troncenv.String("OIDC_CLIENT_ID", ""),
@@ -77,8 +73,7 @@ func loadPorte() (porte.Config, error) {
 		RedirectURL:     troncenv.String("OIDC_REDIRECT_URL", ""),
 		SuccessURL:      troncenv.String("OIDC_SUCCESS_URL", ""),
 		MachineAudience: troncenv.String("OIDC_MACHINE_AUDIENCE", ""),
-		SSOOnly:         ssoOnly,
-	}, nil
+	}
 }
 
 func (c Config) validate() error {

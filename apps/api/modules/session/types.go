@@ -7,6 +7,7 @@ type User struct {
 	Name         string `json:"name"`
 	AvatarURL    string `json:"avatar_url"`
 	MatrixUserID string `json:"matrix_user_id"`
+	Locale       string `json:"locale"`
 }
 
 // MatrixLogin is what a Matrix client needs to start: the public homeserver

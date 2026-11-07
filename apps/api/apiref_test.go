@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
+	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/tronc/apiref"
@@ -31,23 +32,56 @@ func testRouter(t *testing.T) chi.Router {
 // failing build. If it fails, fix the registry in the module's
 // documentation.go - never the test.
 func TestEveryRouteIsDocumented(t *testing.T) {
-	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known"); len(missing) > 0 {
+	if missing := apiref.Undocumented(testRouter(t), refConfig(), "/api/auth", "/.well-known", "/version"); len(missing) > 0 {
 		t.Errorf("routes missing from the API registry:\n  %s", strings.Join(missing, "\n  "))
 	}
 }
 
-// Registre nudges anonymously, so the route must answer without a session.
-func TestTheRegistreNudgeNeedsNoCredentials(t *testing.T) {
+func registreRouter(t *testing.T) chi.Router {
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
 	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
 	if err != nil {
 		t.Fatal(err)
 	}
-	router := buildRouter(app{logger: quiet, auth: authService, syncer: &directory.Syncer{}})
+	deletions := spaces.NewDeletions(&spaces.Service{}, directory.Client{}, nil, quiet)
+	return buildRouter(app{logger: quiet, auth: authService, syncer: &directory.Syncer{}, deletions: deletions})
+}
+
+// Registre nudges anonymously, so the route must answer without a session.
+func TestTheRegistreNudgeNeedsNoCredentials(t *testing.T) {
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, directory.SyncPath, nil))
+	registreRouter(t).ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, directory.SyncPath, nil))
 	if recorder.Code != http.StatusAccepted {
 		t.Fatalf("POST %s = %d, want 202", directory.SyncPath, recorder.Code)
+	}
+}
+
+// The deletion push is verified by its signature, not by a session: an unsigned
+// body reaches the receiver and is refused as a bad notice, not as a missing login.
+func TestTheDeletionPushReachesTheReceiverWithoutASession(t *testing.T) {
+	recorder := httptest.NewRecorder()
+	registreRouter(t).ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, directory.DeletionsPath, strings.NewReader("x")))
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("POST %s = %d, want 400", directory.DeletionsPath, recorder.Code)
+	}
+}
+
+func TestTheSecurityHeadersAllowCallsAndNameTheHomeserver(t *testing.T) {
+	router := buildRouter(app{logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		homeserver: "https://chat.example.test", liveKit: "wss://live.example.test:7881"})
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/version", nil))
+	policy := recorder.Header().Get("Permissions-Policy")
+	for _, want := range []string{"camera=(self)", "microphone=(self)"} {
+		if !strings.Contains(policy, want) {
+			t.Errorf("Permissions-Policy = %q, missing %q", policy, want)
+		}
+	}
+	csp := recorder.Header().Get("Content-Security-Policy-Report-Only")
+	for _, want := range []string{"https://chat.example.test", "wss://chat.example.test", "wss://live.example.test:7881"} {
+		if !strings.Contains(csp, want) {
+			t.Errorf("CSP = %q, missing %q", csp, want)
+		}
 	}
 }
 
