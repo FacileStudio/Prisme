@@ -79,9 +79,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: FacileStudio/filet@v0.19.1
+      - uses: FacileStudio/filet@v0.19.2
         with:
-          version: v0.19.1
+          version: v0.19.2
           fail-on: error
           antenne-url: ${{ secrets.ANTENNE_FILET_SECRET != '' && 'https://antenne.facile.studio/webhook/filet' || '' }}
           antenne-secret: ${{ secrets.ANTENNE_FILET_SECRET }}
@@ -89,8 +89,8 @@ jobs:
   douane:
     runs-on: ubuntu-latest
     env:
-      DOUANE_VERSION: 0.7.1
-      DOUANE_SHA256: 4f82ffbe1dc02aaf2ea0e7952c35066f9bef486a85fe5e21c53b253c45f33e57
+      DOUANE_VERSION: 0.7.2
+      DOUANE_SHA256: 2a8875196d61111d01004fd2e7bf52fb92ebac9dc62015694c52f0251591d7a1
     steps:
       - uses: actions/checkout@v7
 
