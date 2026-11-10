@@ -10,14 +10,16 @@ import (
 
 	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/oidc"
+	portepg "github.com/FacileStudio/porte/pg"
 	"github.com/FacileStudio/porte/session"
 )
 
 // Service holds one session manager and the OIDC kit built over it.
 type Service struct {
-	sessions *session.Manager
-	kit      *oidc.Kit
-	services serviceKeys
+	sessions   *session.Manager
+	kit        *oidc.Kit
+	services   serviceKeys
+	identities *portepg.IdentityStore
 }
 
 // NewService builds porte over the identity tables. Prisme signs people in
@@ -42,7 +44,13 @@ func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte
 	if err != nil {
 		return nil, err
 	}
-	return &Service{sessions: sessions, kit: kit, services: serviceKeys{keys: keys, db: db}}, nil
+	return &Service{sessions: sessions, kit: kit, services: serviceKeys{keys: keys, db: db}, identities: store.Identities()}, nil
+}
+
+// Identities is porte's identity store, with the token sealer the sign-in
+// uses, for readers such as the invitations badge.
+func (s *Service) Identities() *portepg.IdentityStore {
+	return s.identities
 }
 
 // Optional authenticates when a credential is present and passes through

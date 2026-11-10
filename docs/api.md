@@ -70,12 +70,19 @@ way a service call acting for them would.
 No session: Registre posts a signed `user.deleted` security event, and Prisme verifies the RS256
 signature, issuer, audience and time window itself (a notice that does not verify is a `400`).
 Prisme also polls Registre's deletion list with the same client credentials as the snapshot sync, so
-a missed push is caught. For each erased person it deactivates and erases their Matrix account and
-their agents in Synapse, deletes their sessions and their porte user, and clears the owner, name and
-tokens of their agents. The Matrix ids stay reserved (Matrix never reissues one): the account row
-under a negated user id, the agent rows deactivated. Spaces and channels they created stay with no
-creator, and their messages stay in the rooms under a deactivated account. A replayed notice changes
-nothing. Set it as the client's `deletion_uri` in Registre. Mounted with `POST /registre/sync`.
+a missed push is caught. For each erased person it settles their rooms, deletes their uploads and
+deactivates their Matrix account and their agents' with erasure, through Synapse's admin API, then
+deletes their account, agents, sessions and porte user in one transaction. It answers success only
+when it erased the person or can prove they were never here; otherwise it answers an error and
+Registre retries. A replayed notice is answered as done. [Erasure](erasure.md) has the rules and
+what remains. Set it as the client's `deletion_uri` in Registre. Mounted with `POST /registre/sync`.
+
+### `GET /me/invitations`
+
+Session only. The signed-in person's pending Registre space invitations, for the user menu:
+`{"count": n, "href": url}`, where `href` is the one invitation's page when `n` is 1 and Registre's
+spaces page otherwise. Any failure answers `{"count": 0}` with no `href`. porte/kit caches each
+answer for 60 seconds. Mounted with `POST /registre/sync`.
 
 ### `POST /agents`
 

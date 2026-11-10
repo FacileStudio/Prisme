@@ -26,6 +26,7 @@ export type Agent = { user_id: string; name: string; room_ids: string[] };
 export type CallGrant = { call_id: string; livekit_url: string; token: string; join_url: string; e2ee_key: string };
 
 export type PushConfig = { native: boolean };
+export type Invitations = { count: number; href?: string };
 
 export const LOGIN_PATH = '/api/auth/oidc';
 
@@ -45,5 +46,6 @@ export const prisme = {
 		send<{ room_ids: string[] }>(`/agents/${encodeURIComponent(userId)}/rooms`, 'PUT', { room_ids: roomIds }),
 	call: (roomId: string, join = false) => send<CallGrant>('/calls', 'POST', { room_id: roomId, join }),
 	pushConfig: () => request<PushConfig>('/push'),
+	invitations: () => request<Invitations>('/me/invitations'),
 	registerPushDevice: (token: string) => send<void>('/push/devices', 'POST', { token })
 };

@@ -13,6 +13,7 @@
 	import { t, rememberLocale } from '$lib/i18n/index.svelte';
 	import { theme, type ThemePreference } from '$lib/state/theme.svelte';
 	import { call } from '$lib/call/call.svelte';
+	import { prisme } from '$lib/api/prisme';
 	import Dialogs from '$lib/components/dialogs/Dialogs.svelte';
 	import SidePanel from '$lib/components/panels/SidePanel.svelte';
 	import CallPanel from '$lib/components/call/CallPanel.svelte';
@@ -57,7 +58,18 @@
 		return { name: me.name || me.email.split('@')[0], email: me.email, avatar: me.avatar_url || undefined };
 	});
 
+	let invitations = $state<{ count: number; href: string } | null>(null);
+
+	$effect(() => {
+		if (!app.session) return;
+		prisme
+			.invitations()
+			.then((answer) => (invitations = answer.href ? { count: answer.count, href: answer.href } : null))
+			.catch(() => (invitations = null));
+	});
+
 	const userMenu = $derived({
+		invitations,
 		items: isApp() ? [] : [{ label: t('downloads.menu'), icon: icons.download, href: '/downloads' }],
 		subscription: { href: 'https://sso.facile.studio/spaces' },
 		helpHref: 'https://facile.studio/docs/prisme',

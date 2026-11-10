@@ -1,6 +1,9 @@
 package spaces
 
-import documentation "github.com/FacileStudio/Prisme/apps/api/internal/documentation"
+import (
+	documentation "github.com/FacileStudio/Prisme/apps/api/internal/documentation"
+	"github.com/FacileStudio/porte/kit"
+)
 
 // Documentation describes the space routes for the API reference.
 func Documentation() documentation.Module {
@@ -39,8 +42,11 @@ func registreRoutes() []documentation.Route {
 			Method: "POST", Path: "/registre/deletions", Summary: "Receive a GDPR deletion notice",
 			Description: "Registre posts a signed user.deleted security event here when a person erases their " +
 				"account. Prisme verifies the signature, erases that person's Matrix accounts and data and " +
-				"answers 202; a notice that does not verify is a 400. Mounted with the Registre sync.",
+				"answers 202; a notice that does not verify is a 400. An erasure that fails, or a subject " +
+				"Prisme cannot prove it never knew, answers an error so Registre retries (docs/erasure.md). " +
+				"Mounted with the Registre sync.",
 			Auth: "signed security event",
 		},
+		kit.InvitationsRoute(),
 	}
 }

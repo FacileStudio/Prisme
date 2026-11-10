@@ -25,6 +25,7 @@ import (
 
 	"github.com/FacileStudio/Journal/sdk/journal"
 	"github.com/FacileStudio/porte/directory"
+	"github.com/FacileStudio/porte/kit"
 	"github.com/FacileStudio/porte/pg"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/logger"
@@ -89,7 +90,13 @@ func newDirectory(cfg env.Config, built app, db *gorm.DB, sqlDB *sql.DB) directo
 	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: built.logger}
 	eraser := spaces.Eraser{OnPersonDeleted: built.eraser.ErasePerson, Erase: pg.New(sqlDB).EraseIdentity}
 	deletions := spaces.NewDeletions(db, client, eraser, built.logger)
-	return directorySync{registre: registre, syncer: syncer, deletions: deletions}
+	invitations, err := kit.NewInvitations(kit.InvitationsConfig{
+		Directory: client, Identities: built.auth.Identities(), Logger: built.logger,
+	})
+	if err != nil {
+		built.logger.Warn("the invitations badge is off", slog.Any("error", err))
+	}
+	return directorySync{registre: registre, syncer: syncer, deletions: deletions, invitations: invitations}
 }
 
 func newLogger(cfg env.Config) (*slog.Logger, func()) {

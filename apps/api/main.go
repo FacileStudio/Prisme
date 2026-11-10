@@ -16,6 +16,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
 
 	"github.com/FacileStudio/porte/directory"
+	"github.com/FacileStudio/porte/kit"
 	"github.com/FacileStudio/tronc/apiref"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/healthcheck"
@@ -69,9 +70,10 @@ type app struct {
 // directorySync is the Registre half of the app: the space sync and the
 // deletion receiver, all nil while OIDC is off.
 type directorySync struct {
-	registre  *spaces.Registre
-	syncer    *directory.Syncer
-	deletions *spaces.Deletions
+	registre    *spaces.Registre
+	syncer      *directory.Syncer
+	deletions   *spaces.Deletions
+	invitations *kit.Invitations
 }
 
 func buildRouter(a app) chi.Router {
@@ -107,6 +109,9 @@ func mountAPI(r chi.Router, a app) {
 	if sync := a.directory; sync.syncer != nil && sync.deletions != nil {
 		spaces.RegisterSync(r, sync.syncer)
 		spaces.RegisterDeletions(r, sync.deletions)
+	}
+	if invitations := a.directory.invitations; invitations != nil {
+		r.With(a.auth.Require("")).Method(http.MethodGet, kit.InvitationsPath, invitations)
 	}
 }
 

@@ -21,6 +21,8 @@
 
 ### Added
 
+- Pending Registre space invitations in the user menu, from `GET /api/me/invitations`
+  (`porte/kit`'s handler, cached 60 seconds per person, behind the session).
 - `/api erase-user <email>` erases an account that holds no Registre subject, which no
   deletion notice can reach.
 - The Synapse image makes the appservice sender a server admin at start, and the API checks

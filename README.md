@@ -81,6 +81,7 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `GET /api/push`, `POST /api/push/devices` | session | Whether Android push is on; register the app's Firebase token |
 | `PUT /_matrix/app/v1/transactions/{txnId}` | hs_token | Synapse's appservice events, which drive Android push |
 | `POST /api/registre/sync`, `POST /api/registre/deletions` | none, signed | Registre's space nudge, and its signed GDPR `user.deleted` notice |
+| `GET /api/me/invitations` | session | Pending Registre space invitations for the user menu |
 | `GET /version` | none | The version stamped at build |
 
 Service callers send `Authorization: Bearer <PRISME_SERVICE_KEY>` and
