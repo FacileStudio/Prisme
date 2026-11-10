@@ -71,3 +71,11 @@ type Call struct {
 	StartedBy string `gorm:"not null"`
 	StartedAt time.Time
 }
+
+// ErasedSubject records that Prisme erased a Registre identity, so a repeated
+// deletion notice for it is answered as done. It holds only a SHA-256 of the
+// issuer and subject, never the subject itself.
+type ErasedSubject struct {
+	SubjectHash string    `gorm:"primaryKey"`
+	ErasedAt    time.Time `gorm:"not null"`
+}

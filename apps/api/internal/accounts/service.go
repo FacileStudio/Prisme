@@ -107,8 +107,9 @@ func (s *Service) create(ctx context.Context, userID int64, base string) (schema
 }
 
 // claim stores the account under localpart and registers it. It reports false
-// when another user holds the localpart; when the user already has an account,
-// that one is returned instead.
+// when another user holds the localpart, or Synapse holds it for a deactivated
+// account, which an erased person leaves behind; when the user already has an
+// account, that one is returned instead.
 func (s *Service) claim(ctx context.Context, userID int64, localpart string) (schemas.Account, bool, error) {
 	account := schemas.Account{UserID: userID, Localpart: localpart, MatrixUserID: s.matrix.UserID(localpart)}
 	err := s.db.WithContext(ctx).Create(&account).Error
@@ -119,11 +120,15 @@ func (s *Service) claim(ctx context.Context, userID int64, localpart string) (sc
 	if err != nil {
 		return account, false, errors.Internal("failed to store the account", err)
 	}
-	if err := s.matrix.Register(ctx, localpart); err != nil {
-		s.db.WithContext(ctx).Delete(&account)
-		return account, false, errors.Internal("failed to register the Matrix account", err)
+	err = s.matrix.Register(ctx, localpart)
+	if err == nil {
+		return account, true, nil
 	}
-	return account, true, nil
+	s.db.WithContext(ctx).Delete(&account)
+	if stderrors.Is(err, matrix.ErrRetired) {
+		return account, false, nil
+	}
+	return account, false, errors.Internal("failed to register the Matrix account", err)
 }
 
 // heldByAgent reports whether an agent already owns the localpart, so a human

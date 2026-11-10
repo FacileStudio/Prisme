@@ -36,7 +36,11 @@ cd apps/client && bunx cap sync android                          # needs Node 22
   through `GET /api/users`.
 - Synapse runs no push rules for appservice users, so Matrix pushers never fire for Prisme
   users. Android push comes from the API's appservice transactions (`modules/push`).
-- The appservice token is root over every account. It lives in Dokploy env only.
+- The appservice token is root over every account and, since `deploy/synapse/render.py` makes
+  `@prisme` a server admin, a Synapse admin credential too. It lives in Dokploy env only.
+- A Registre erasure goes through `internal/erasure`: Synapse's admin API first, then one
+  transaction. Answer a deletion notice with success only when the person was erased or provably
+  never here; `docs/erasure.md` lists what remains and why. Matrix ids are never reused.
 - Every compose variable is forwarded explicitly in `docker-compose.yml`.
 - Deployment shape: one app container (Go API + SPA) behind Traefik, Synapse as a second
   service owning `/_matrix` and `/_synapse/client` with a higher router priority. Read the

@@ -68,6 +68,7 @@ func run() int {
 func start(services app, addr string) int {
 	shutdownSignal, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	go services.eraser.Report(shutdownSignal)
 	if sync := services.directory; sync.registre != nil {
 		go sync.registre.Run(shutdownSignal, sync.syncer)
 		go sync.deletions.Run(shutdownSignal)
@@ -78,15 +79,16 @@ func start(services app, addr string) int {
 // newDirectory builds the Registre space sync and the GDPR deletion receiver
 // when OIDC is configured, with Prisme's own client credentials, and nils
 // otherwise: without Registre there is nothing to sync and no route to mount.
-func newDirectory(cfg env.Config, spaceService *spaces.Service, sqlDB *sql.DB, appLogger *slog.Logger) directorySync {
+func newDirectory(cfg env.Config, built app, db *gorm.DB, sqlDB *sql.DB) directorySync {
 	porteCfg := cfg.Porte
 	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
 		return directorySync{}
 	}
-	registre := spaces.NewRegistre(spaceService, porteCfg.Issuer, appLogger)
+	registre := spaces.NewRegistre(built.spaces, porteCfg.Issuer, built.logger)
 	client := directory.Client{Issuer: porteCfg.Issuer, ClientID: porteCfg.ClientID, ClientSecret: porteCfg.ClientSecret}
-	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: appLogger}
-	deletions := spaces.NewDeletions(spaceService, client, pg.New(sqlDB).EraseIdentity, appLogger)
+	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: built.logger}
+	eraser := spaces.Eraser{OnPersonDeleted: built.eraser.ErasePerson, Erase: pg.New(sqlDB).EraseIdentity}
+	deletions := spaces.NewDeletions(db, client, eraser, built.logger)
 	return directorySync{registre: registre, syncer: syncer, deletions: deletions}
 }
 
@@ -137,9 +139,7 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		agents: agentService, calls: newCalls(cfg, db, client, accountService, appLogger),
 		users: users.NewService(db),
 	}
-	built.push = newPush(cfg, db, client, appLogger)
-	built.directory = newDirectory(cfg, built.spaces, sqlDB, appLogger)
-	return built, nil
+	return withBackground(built, cfg, db, sqlDB, client)
 }
 
 func serve(shutdownSignal context.Context, addr string, router http.Handler, appLogger *slog.Logger) int {

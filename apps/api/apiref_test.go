@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -43,7 +44,8 @@ func registreRouter(t *testing.T) chi.Router {
 	if err != nil {
 		t.Fatal(err)
 	}
-	deletions := spaces.NewDeletions(&spaces.Service{}, directory.Client{}, nil, quiet)
+	refuse := func(context.Context, string, string) error { return errors.New("not in this test") }
+	deletions := spaces.NewDeletions(nil, directory.Client{}, spaces.Eraser{OnPersonDeleted: refuse}, quiet)
 	return buildRouter(app{logger: quiet, auth: authService, directory: directorySync{syncer: &directory.Syncer{}, deletions: deletions}})
 }
 

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	documentation "github.com/FacileStudio/Prisme/apps/api/internal/documentation"
+	"github.com/FacileStudio/Prisme/apps/api/internal/erasure"
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
@@ -61,6 +62,7 @@ type app struct {
 	calls     *calls.Service
 	users     *users.Service
 	push      *push.Service
+	eraser    *erasure.Eraser
 	directory directorySync
 }
 
@@ -111,6 +113,9 @@ func mountAPI(r chi.Router, a app) {
 func main() {
 	if healthcheck.Handle(os.Args) {
 		return
+	}
+	if len(os.Args) > 1 && os.Args[1] == "erase-user" {
+		os.Exit(eraseUser(os.Args[2:], os.Stdout))
 	}
 	os.Exit(run())
 }

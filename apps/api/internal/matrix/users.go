@@ -2,9 +2,15 @@ package matrix
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 )
+
+// ErrRetired is a registration onto an id Synapse already holds for a
+// deactivated account. The caller picks another id: Matrix never reissues one.
+var ErrRetired = errors.New("matrix: the id belongs to a deactivated account")
 
 // Login is an access token minted for a user, as handed to a Matrix client.
 type Login struct {
@@ -20,14 +26,23 @@ func (c *Client) UserID(localpart string) string {
 
 // Register creates a passwordless user in the appservice namespace. It sets
 // inhibit_login, as MSC4190 asks, so registering leaves no stray device; the
-// tokens come from Login. An existing user is not an error.
+// tokens come from Login. An existing active user is not an error; a
+// deactivated one is ErrRetired, and so is an existing user whose state the
+// admin API cannot confirm, so a new person is never bound to an erased one.
 func (c *Client) Register(ctx context.Context, localpart string) error {
 	body := map[string]any{"type": "m.login.application_service", "username": localpart, "inhibit_login": true}
 	err := c.do(ctx, request{method: http.MethodPost, path: "/_matrix/client/v3/register", body: body}, nil)
-	if IsCode(err, "M_USER_IN_USE") {
-		return nil
+	if !IsCode(err, "M_USER_IN_USE") {
+		return err
 	}
-	return err
+	retired, err := c.Retired(ctx, c.UserID(localpart))
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrRetired, err)
+	}
+	if retired {
+		return ErrRetired
+	}
+	return nil
 }
 
 // Login mints a new device and access token for a user of the namespace.

@@ -54,18 +54,24 @@ func (s *Service) find(ctx context.Context, ownerID int64, name string) (schemas
 	return row, nil
 }
 
-// taken reports whether a localpart belongs to a human account or to any agent
-// row other than self, deactivated ones included: Matrix never reissues an id.
+// taken reports whether a localpart belongs to a human account, to any agent
+// row other than self, or to an account Synapse deactivated, which an erased
+// person's agents leave behind: Matrix never reissues an id.
 func (s *Service) taken(ctx context.Context, selfID int64, localpart string) bool {
 	db := s.deps.DB.WithContext(ctx)
 	var humans, agents int64
 	if err := db.Model(&schemas.Account{}).Where("localpart = ?", localpart).Count(&humans).Error; err != nil || humans > 0 {
 		return true
 	}
+	userID := s.deps.Matrix.UserID(localpart)
 	err := db.Model(&schemas.Agent{}).
-		Where("id <> ? AND (slug = ? OR matrix_user_id = ?)", selfID, localpart, s.deps.Matrix.UserID(localpart)).
+		Where("id <> ? AND (slug = ? OR matrix_user_id = ?)", selfID, localpart, userID).
 		Count(&agents).Error
-	return err != nil || agents > 0
+	if err != nil || agents > 0 {
+		return true
+	}
+	retired, err := s.deps.Matrix.Retired(ctx, userID)
+	return err != nil || retired
 }
 
 // chooseLocalpart picks an agent's Matrix localpart: the slug itself, else the

@@ -17,7 +17,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const botLocalpart = "prisme"
+// BotLocalpart is the appservice sender's localpart (sender_localpart in
+// deploy/synapse/appservice.yaml): the bot that administers every space.
+const BotLocalpart = "prisme"
 
 // Followers moves a user's agents along with the user. The agents module
 // implements it; spaces cannot import agents, which imports spaces.
@@ -113,7 +115,7 @@ func (s *Service) Get(ctx context.Context, userID, spaceID int64) (schemas.Space
 	return row, account, nil
 }
 
-func (s *Service) bot() string { return s.matrix.UserID(botLocalpart) }
+func (s *Service) bot() string { return s.matrix.UserID(BotLocalpart) }
 
 func (s *Service) createRoom(ctx context.Context, creator string, body matrix.CreateRoomRequest) (string, error) {
 	roomID, err := s.matrix.CreateRoom(ctx, creator, body)

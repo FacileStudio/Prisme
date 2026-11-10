@@ -2,7 +2,33 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- A Registre erasure now erases the person everywhere. Before, a notice for an account that
+  held no Registre subject (one Bulle created through the service key) erased nothing and was
+  still answered as done, so the account, its agents and its Matrix data stayed. Prisme now
+  answers a notice as done only when it erased the person or can prove they were never here,
+  and leaves the notice pending otherwise. See `docs/erasure.md`.
+- The Matrix half of an erasure goes through Synapse's admin API: rooms only the person was in
+  are purged, a shared room they alone administered gets a new admin first, their uploads are
+  deleted, and their accounts and their agents' accounts are deactivated with erasure.
+- The database half runs in one transaction through `porte/kit`'s erase hook and deletes the
+  account, identities, sessions, push devices, Matrix sessions and agents. A failure on either
+  side leaves the notice pending, and the retry converges.
+- A new person who signs in with the email of an erased one gets a new Matrix id (`alice2`),
+  never the erased account. Prisme asks Synapse whether a taken id is deactivated, so the
+  reservation rows older erasures kept in `accounts` and `agents` are deleted at boot.
+
+### Added
+
+- `/api erase-user <email>` erases an account that holds no Registre subject, which no
+  deletion notice can reach.
+- The Synapse image makes the appservice sender a server admin at start, and the API checks
+  the admin credential with one read-only call at boot.
+
 ### Changed
+
+- tronc v0.21.0, porte v0.18.2 (`porte/directory` v0.4.0) and `@facile/muse` v0.18.0.
 
 - Licensed under the GNU Affero General Public License v3.0 only (`AGPL-3.0-only`). See `LICENSE`.
 
