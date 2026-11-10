@@ -31,6 +31,10 @@
 ### Changed
 
 - tronc v0.21.0, porte v0.18.2 (`porte/directory` v0.4.0) and `@facile/muse` v0.18.0.
+- Go 1.26.10 (the standard library's critical advisories), `golang.org/x/text` v0.41.0 and
+  `go-jose` v4.1.6. CI scans dependencies with douane v0.7.1 and fails on a critical finding.
+- `filet.yml` is `preset: facile` (identical findings), CI runs filet v0.19.1, and the pre-push
+  hook runs `filet gate .`.
 
 - Licensed under the GNU Affero General Public License v3.0 only (`AGPL-3.0-only`). See `LICENSE`.
 

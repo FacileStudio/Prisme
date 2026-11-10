@@ -8,7 +8,7 @@ lockfile = true
 config_roots = ["apps/api", "apps/client"]
 
 [tools]
-lefthook = "latest"
+lefthook = "2.1.12"
 go = "1.26"
 bun = "1.3.11"
 

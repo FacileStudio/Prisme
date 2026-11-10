@@ -11,6 +11,7 @@ docker compose -p prisme-dev -f docker-compose.dev.yml up -d --build   # Postgre
 mise run dev                  # API :4000 and client :5173
 sh scripts/check.sh           # gofmt, vet, go test, svelte-check, client tests
 filet check .                 # must report no error before any push
+filet gate .                  # the pre-push hook: format, filet, vet, staticcheck, tests, douane
 cd apps/client && bun run build
 cd apps/desktop && bunx @tauri-apps/cli@2 build --no-bundle     # desktop app (needs the client build)
 cd apps/client && bunx cap sync android                          # needs Node 22: mise x node@22 --
