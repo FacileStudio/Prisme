@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Service-key calls accept `X-Prisme-Acting-Subject: <Registre subject>` beside
+  `X-Prisme-Acting-For`. Prisme links the subject to the account for that email through porte's
+  identity store, the way a sign-in does, so a Registre deletion notice can erase someone Bulle
+  provisioned who never signed in to Prisme. Before, such a notice stayed pending until an
+  operator ran `erase-user`. A call without the header behaves exactly as before.
+- The header never moves an identity. A subject that belongs to another account answers
+  `409 acting_subject_taken`, an account holding another subject answers
+  `409 acting_subject_mismatch`, a malformed value answers `400 acting_subject_invalid`, and a
+  Prisme with no `OIDC_ISSUER` answers `412 acting_subject_unsupported`. Each refusal writes
+  nothing. Session and delegated-token requests ignore the header. See `docs/api.md`.
+
+### Changed
+
+- CI pins douane v0.7.2 and filet v0.19.2.
+
 ## [0.13.0] - 2026-11-10
 
 ### Fixed

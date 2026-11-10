@@ -14,13 +14,15 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/schemas"
 	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/tronc/testdb"
+
+	"gorm.io/gorm"
 )
 
 const authBootstrap = "docker run -d -e POSTGRES_PASSWORD=t -e POSTGRES_DB=t -p 5432:5432 postgres:16"
 
 var (
 	authDBOnce sync.Once
-	authDB     *sql.DB
+	authGorm   *gorm.DB
 	authDBErr  error
 	authDBCfg  = testdb.Config{Prefix: "prisme_auth_test", Migrate: schemas.Migrate}
 )
@@ -32,31 +34,29 @@ func openAuthDatabase(t *testing.T) *sql.DB {
 		testdb.Announce(authBootstrap)
 		t.Skip(testdb.SkipReason(authBootstrap))
 	}
-	authDBOnce.Do(func() {
-		db, err := testdb.Open(url, authDBCfg)
-		if err != nil {
-			authDBErr = err
-			return
-		}
-		if err = testdb.Truncate(db, authDBCfg); err != nil {
-			authDBErr = err
-			return
-		}
-		authDB, authDBErr = db.DB()
-	})
+	authDBOnce.Do(func() { authGorm, authDBErr = testdb.Open(url, authDBCfg) })
 	if authDBErr != nil {
 		t.Fatalf("test database: %v", authDBErr)
 	}
-	if _, err := authDB.Exec(`TRUNCATE porte_users RESTART IDENTITY CASCADE`); err != nil {
+	if err := testdb.Truncate(authGorm, authDBCfg); err != nil {
 		t.Fatalf("reset test database: %v", err)
 	}
-	return authDB
+	db, err := authGorm.DB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return db
 }
 
 func newTestService(t *testing.T, db *sql.DB, cfg porte.Config) *Service {
 	t.Helper()
-	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	service, err := NewService(context.Background(), db, cfg, ParseServiceKeys("key-one, key-two"), quiet)
+	return newLoggedService(t, db, cfg, io.Discard)
+}
+
+func newLoggedService(t *testing.T, db *sql.DB, cfg porte.Config, out io.Writer) *Service {
+	t.Helper()
+	logger := slog.New(slog.NewTextHandler(out, nil))
+	service, err := NewService(context.Background(), db, cfg, ParseServiceKeys("key-one, key-two"), logger)
 	if err != nil {
 		t.Fatalf("new service: %v", err)
 	}

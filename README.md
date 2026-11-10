@@ -86,7 +86,9 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 
 Service callers send `Authorization: Bearer <PRISME_SERVICE_KEY>` and
 `X-Prisme-Acting-For: <email>`. Prisme creates the user for that email when it does not exist,
-the same way a first sign-in would.
+the same way a first sign-in would. Since v0.14.0 they may add `X-Prisme-Acting-Subject: <sub>`,
+the person's Registre subject, which Prisme links to that account so a Registre erasure reaches
+it; see `docs/api.md` for the answers it can produce.
 
 ## Design notes
 

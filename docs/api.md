@@ -14,6 +14,49 @@ A service call acts for the Prisme user with that email. When none exists, Prism
 first sign-in would (porte user with a verified email, then a Matrix account), and porte links the
 Registre identity to it on that person's first SSO sign-in.
 
+### `X-Prisme-Acting-Subject` (since v0.14.0)
+
+A service call may also send `X-Prisme-Acting-Subject: <Registre subject>`, the person's `sub`
+under Prisme's own `OIDC_ISSUER`. Prisme then links that subject to the account for the email,
+so a Registre deletion notice can find the person even if they never signed in to Prisme
+(see [erasure](erasure.md)). Without the header, a call behaves exactly as before.
+
+Prisme reads the header only on a call authenticated by the service key. A browser session or a
+delegated bearer token that sends it is unaffected, and nothing is validated or written.
+
+| The account for the email | The subject | Answer |
+|---|---|---|
+| does not exist | is nobody's | Created, subject linked, then the route runs |
+| holds no subject of the issuer | is nobody's | Subject linked, then the route runs |
+| holds this subject (either spelling of the issuer) | | Left alone, the route runs |
+| holds another subject of the issuer | | `409 acting_subject_mismatch` |
+| exists or not | belongs to another account | `409 acting_subject_taken` |
+
+Refusals write nothing: no account is created and no identity changes. A service key can never
+move or merge an identity. Prisme links the subject through porte's identity store, the same
+`Save` a sign-in calls, with the issuer spelled as `OIDC_ISSUER` is.
+
+Every refusal uses the error body above (`{"error": {"code", "message"}}`), with these codes:
+
+| Status | `error.code` | Meaning | Retry? |
+|---|---|---|---|
+| 400 | `acting_subject_invalid` | The header is empty, longer than 64 bytes (Registre's limit), not UTF-8, holds a control character, or is sent twice | No, fix the value |
+| 409 | `acting_subject_mismatch` | The account for this email holds a different subject of the issuer | No, the stored data conflicts |
+| 409 | `acting_subject_taken` | Another account holds this subject | No, the stored data conflicts |
+| 412 | `acting_subject_unsupported` | This Prisme has no `OIDC_ISSUER`, so there is nothing to file a subject under | No |
+| 500 | `internal` | The database failed | Yes |
+
+A 409 is final for the data as stored: Prisme reads the rows before answering it, and a store
+refusal the rows do not explain is a 500.
+
+**A changed address is refused, never merged.** If the person changed their email in Registre,
+Bulle sends the new address with the old subject. The subject belongs to the account under the
+old address, so the call answers `409 acting_subject_taken` and no account is created for the new
+address. The person's next Prisme sign-in finds the account by subject and porte rewrites its
+verified email; Bulle's next call then succeeds. Prisme logs each link at info and each refusal at
+warn, with the account id and the service key's position in `PRISME_SERVICE_KEY`, never the
+email or the subject.
+
 porte also serves `GET /api/auth/config`, `POST /api/auth/logout` (which revokes the session's
 Matrix device too), and the OIDC callback.
 

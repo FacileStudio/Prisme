@@ -51,11 +51,22 @@ the transaction runs. Tests cover both failures (`internal/erasure/erasure_test.
 | The subject maps to nothing, and every account holds a Registre subject | Done: it was never here |
 | The subject maps to nothing, and some account holds no subject | Error, so the notice stays pending |
 
-An account holds no subject when Bulle created it through the service key
-(`X-Prisme-Acting-For` carries only an email) and the person never signed in to Prisme and is in
-no Registre space. The Registre space sync links every member it sees, and a first sign-in
-links the rest. An unlinked account may belong to the erased person, and the notice carries
-only the subject, so Prisme cannot tell. It answers with an error instead of guessing.
+An unlinked account may belong to the erased person, and the notice carries only the subject,
+so Prisme cannot tell. It answers with an error instead of guessing.
+
+Three things link an account to its subject: the person's first Prisme sign-in, the Registre
+space sync (it links every member it sees), and, since v0.14.0, a service call that sends
+`X-Prisme-Acting-Subject` next to `X-Prisme-Acting-For` (see [the API](api.md)). Before v0.14.0
+Bulle named people by email only, so an account Bulle created for someone who never signed in to
+Prisme and is in no Registre space held no subject. Such an account gains its subject at Bulle's
+next call that sends the header, and from then on a deletion notice for that subject erases it
+like any other. A notice that was pending meanwhile succeeds at the next delivery or poll.
+
+The header never re-points an identity. When the subject already belongs to another account,
+for example after the person changed their email in Registre, the call is refused with
+`409 acting_subject_taken`, nothing is written, and the old account stays the one the notice
+erases. An account a service key created under the new address before v0.14.0 then stays
+unlinked and needs `erase-user` below.
 
 At boot Prisme logs how many accounts hold no subject (a count, no names). To settle one, run
 inside the API container:

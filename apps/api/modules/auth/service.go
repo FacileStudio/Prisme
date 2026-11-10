@@ -44,7 +44,8 @@ func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte
 	if err != nil {
 		return nil, err
 	}
-	return &Service{sessions: sessions, kit: kit, services: serviceKeys{keys: keys, db: db}, identities: store.Identities()}, nil
+	services := serviceKeys{keys: keys, db: db, issuer: cfg.Issuer, identities: store.Identities(), logger: logger}
+	return &Service{sessions: sessions, kit: kit, services: services, identities: store.Identities()}, nil
 }
 
 // Identities is porte's identity store, with the token sealer the sign-in
@@ -66,11 +67,20 @@ func (s *Service) Require(scope string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		sessions := s.sessions.RequireAuth(gate(scope, next))
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if scope != "" && s.services.matches(r) {
-				s.services.serve(w, r, next)
+			if key := s.serviceKey(scope, r); key != 0 {
+				s.services.serve(w, r, next, key)
 				return
 			}
 			sessions.ServeHTTP(w, r)
 		})
 	}
+}
+
+// serviceKey is the matching service key's position, or 0 on a route that
+// takes no service call or a request that carries no key.
+func (s *Service) serviceKey(scope string, r *http.Request) int {
+	if scope == "" {
+		return 0
+	}
+	return s.services.match(r)
 }
