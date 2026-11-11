@@ -68,6 +68,30 @@ for example after the person changed their email in Registre, the call is refuse
 erases. An account a service key created under the new address before v0.14.0 then stays
 unlinked and needs `erase-user` below.
 
+## An erased subject never gets an account again
+
+Since v0.14.2, every path that creates or links an account from a Registre subject first looks
+the subject up in `erased_subjects` and refuses it when Prisme erased it:
+
+| Path | Answer for an erased subject |
+|---|---|
+| Service call with `X-Prisme-Acting-Subject` | `409 acting_subject_erased`, nothing written (see [the API](api.md)) |
+| Sign-in through Registre (porte's OIDC callback, and porte's bearer provisioning) | Refused with `permission_denied`, nothing written |
+| Registre space sync | The member is skipped and logged, nothing written |
+
+Before v0.14.2 a service call that arrived just after an erasure created and linked a new account
+for the erased subject (2026-11-11). Two things now clean up such an account:
+
+- The next delivery of the notice, by push or poll, erases it. porte/directory skips subjects it
+  already handled, so Prisme's state store hands porte back as unhandled every handled subject an
+  identity holds again. It reads the store once per process, so this takes effect from the next
+  start.
+- `erase-user <email>` erases it: an identity whose subject Prisme erased does not count as a
+  link.
+
+A service call that names a person by email alone (no `X-Prisme-Acting-Subject`) carries no
+subject to check, so it still creates an unlinked account; `erase-user` settles that one.
+
 At boot Prisme logs how many accounts hold no subject (a count, no names). To settle one, run
 inside the API container:
 
@@ -76,7 +100,7 @@ inside the API container:
 ```
 
 It erases that account exactly as a notice would, Synapse first, and refuses an account that
-holds a Registre subject. Once no unlinked account is left, pending notices for unknown
+holds a Registre subject Prisme has not erased. Once no unlinked account is left, pending notices for unknown
 subjects succeed on the next poll.
 
 ## The admin credential

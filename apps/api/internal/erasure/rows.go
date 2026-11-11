@@ -35,10 +35,12 @@ func eraseRows(ctx context.Context, tx *sql.Tx, userID int64) error {
 	return nil
 }
 
-// EraseUnlinked erases an account that holds no Registre subject, found by its
-// email: the one kind of account a deletion notice cannot reach, because the
-// notice carries only the subject. An account linked to a subject is refused;
-// Registre's notice erases that one. It reports whether an account was found.
+// EraseUnlinked erases an account, found by its email, that no deletion
+// notice reaches: one that holds no Registre subject, because the notice
+// carries only the subject, or one re-created for a subject Prisme already
+// erased, whose notice was handled before the account existed. An account
+// linked to a live subject is refused; Registre's notice erases that one. It
+// reports whether an account was found.
 func (e *Eraser) EraseUnlinked(ctx context.Context, email string) (bool, error) {
 	userID, err := e.unlinkedAccount(ctx, email)
 	if err != nil || userID == 0 {
@@ -67,13 +69,15 @@ func (e *Eraser) unlinkedAccount(ctx context.Context, email string) (int64, erro
 		Linked bool
 	}
 	err := e.deps.DB.WithContext(ctx).Raw(`SELECT u.id,
-		EXISTS (SELECT 1 FROM porte_identities i WHERE i.user_id = u.id AND i.provider <> 'local') AS linked
+		EXISTS (SELECT 1 FROM porte_identities i WHERE i.user_id = u.id AND i.provider <> 'local'
+			AND NOT EXISTS (SELECT 1 FROM erased_subjects e WHERE e.subject_hash =
+				encode(sha256(convert_to(rtrim(i.provider, '/') || ' ' || i.subject, 'UTF8')), 'hex'))) AS linked
 		FROM porte_users u WHERE lower(u.email) = lower(?)`, email).Scan(&rows).Error
 	if err != nil || len(rows) == 0 {
 		return 0, err
 	}
 	if rows[0].Linked {
-		return 0, fmt.Errorf("erasure: the account is linked to a registre identity; registre's deletion notice erases it")
+		return 0, fmt.Errorf("erasure: the account is linked to a registre identity prisme never erased; registre's deletion notice erases it")
 	}
 	return rows[0].ID, nil
 }

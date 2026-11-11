@@ -2,8 +2,12 @@ package spaces
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
+	"maps"
 	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/FacileStudio/porte/directory"
 
@@ -31,7 +35,7 @@ func NewDeletions(db *gorm.DB, client directory.Client, eraser Eraser, logger *s
 		Client:          client,
 		OnPersonDeleted: eraser.OnPersonDeleted,
 		Erase:           eraser.Erase,
-		State:           deletionState{db: db},
+		State:           NewDeletionState(db, client.Issuer),
 		Logger:          logger,
 	}}
 }
@@ -48,17 +52,58 @@ func (d *Deletions) Handler() http.Handler {
 
 // deletionState keeps the receiver's cursor and handled subjects in one row.
 type deletionState struct {
-	db *gorm.DB
+	db     *gorm.DB
+	issuer string
 }
 
-// Load returns the saved state, or nil before the first save.
+// NewDeletionState is the receiver's state in Prisme's database. A subject
+// it hands back as handled is one no identity holds any more: an account
+// re-created for an erased subject makes the next notice or poll erase it
+// instead of skipping it.
+func NewDeletionState(db *gorm.DB, issuer string) directory.StateStore {
+	return deletionState{db: db, issuer: issuer}
+}
+
+// Load returns the saved state, or nil before the first save, reopening the
+// handled subjects an identity holds again.
 func (s deletionState) Load(ctx context.Context) ([]byte, error) {
 	var rows []struct{ State []byte }
 	err := s.db.WithContext(ctx).Raw(`SELECT state FROM directory_deletion_state WHERE id = 1`).Scan(&rows).Error
 	if err != nil || len(rows) == 0 {
 		return nil, err
 	}
-	return rows[0].State, nil
+	return s.reopen(ctx, rows[0].State)
+}
+
+// reopen drops from porte's handled subjects every one an identity of the
+// issuer holds, keeping every other field of the state as porte wrote it. A
+// state it cannot read goes back untouched, for porte to report.
+func (s deletionState) reopen(ctx context.Context, raw []byte) ([]byte, error) {
+	var state map[string]json.RawMessage
+	var done map[string]json.RawMessage
+	if json.Unmarshal(raw, &state) != nil || json.Unmarshal(state["done"], &done) != nil || len(done) == 0 {
+		return raw, nil
+	}
+	held, err := s.held(ctx, slices.Collect(maps.Keys(done)))
+	if err != nil || len(held) == 0 {
+		return raw, err
+	}
+	for _, subject := range held {
+		delete(done, subject)
+	}
+	if state["done"], err = json.Marshal(done); err != nil {
+		return nil, err
+	}
+	return json.Marshal(state)
+}
+
+func (s deletionState) held(ctx context.Context, subjects []string) ([]string, error) {
+	trimmed := strings.TrimSuffix(s.issuer, "/")
+	var held []string
+	err := s.db.WithContext(ctx).Table("porte_identities").
+		Where("provider IN ? AND subject IN ?", []string{trimmed, trimmed + "/"}, subjects).
+		Distinct().Pluck("subject", &held).Error
+	return held, err
 }
 
 // Save replaces the saved state.
