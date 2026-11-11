@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.14.2] - 2026-11-11
+
+### Fixed
+
+- An erased Registre subject never gets a Prisme account again. On 2026-11-11 a Bulle service
+  call that arrived one second after an erasure created and linked a new account for the erased
+  subject. Every path that creates or links an account from a subject now checks
+  `erased_subjects` first: a service call with `X-Prisme-Acting-Subject` answers
+  `409 acting_subject_erased` (final, nothing written), a sign-in through Registre is refused,
+  and the Registre space sync skips the member. See `docs/api.md` and `docs/erasure.md`.
+- An account re-created for an erased subject is erased instead of skipped. The next delivery of
+  the deletion notice erases it (porte/directory's handled subjects that an identity holds again
+  are handed back as unhandled, from the next start), and `erase-user <email>` no longer refuses
+  it, because an identity whose subject Prisme erased does not count as a link.
+
+### Security
+
+- build(client): vite 7.3.8, and overrides for devalue 5.9.4, nanoid 3.3.20 and source-map-js
+  1.2.2, which clear the four high advisories douane reported in `apps/client/bun.lock`.
+
 ## [0.14.1] - 2026-11-11
 
 ### Security
