@@ -1,7 +1,7 @@
 {
   "name": "Prisme",
   "short_name": "Prisme",
-  "description": "The Facile team chat.",
+  "description": "A channel per project, encrypted calls and Bulle AI teammates you can mention. No subscription.",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -12,15 +12,10 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
-    },
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#0a0a0a",
-  "background_color": "#0a0a0a",
+  "theme_color": "#fafafa",
+  "background_color": "#fafafa",
   "display": "standalone",
   "start_url": "/"
 }
