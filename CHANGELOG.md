@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0] - 2026-11-11
+
+### Changed
+
+- The Prisme logo is now the solid chat bubble (`solar:chat-round-bold-duotone`), the suite
+  catalog's mark, in the rail, the sign-in page, the downloads page and the app intro.
+
+### Fixed
+
+- Favicons, touch and manifest icons, the link preview image and the head metadata come from
+  the muse v0.19.0 brand generator, so Prisme's tab, title, description and og/twitter tags
+  match the suite catalog.
+
 ## [0.14.2] - 2026-11-11
 
 ### Fixed
