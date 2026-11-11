@@ -34,10 +34,14 @@ func (r *Registre) resolveAll(ctx context.Context, members []directory.Member) (
 
 // resolve returns the porte user for a snapshot member, or 0 to skip them: the
 // user holding the identity (issuer, subject), else the user with this email,
-// created the way a service-key call acting for them would create it.
+// created the way a service-key call acting for them would create it. A
+// subject Prisme already erased is skipped: it never holds an account again.
 func (r *Registre) resolve(ctx context.Context, member directory.Member) (int64, error) {
 	if member.Subject == "" {
 		return 0, nil
+	}
+	if erased, err := r.erased(ctx, member.Subject); err != nil || erased {
+		return 0, err
 	}
 	var ids []int64
 	err := r.spaces.db.WithContext(ctx).Table("porte_identities").
@@ -82,6 +86,18 @@ func (r *Registre) adopt(ctx context.Context, email string, member directory.Mem
 		name = CASE WHEN name = '' THEN ? ELSE name END,
 		avatar_url = CASE WHEN avatar_url = '' THEN ? ELSE avatar_url END
 		WHERE id = ?`, strings.TrimSpace(member.Name), httpsOnly(member.Picture), userID).Error
+}
+
+func (r *Registre) erased(ctx context.Context, subject string) (bool, error) {
+	sqlDB, err := r.spaces.db.DB()
+	if err != nil {
+		return false, err
+	}
+	erased, err := auth.Erased(ctx, sqlDB, r.issuer, subject)
+	if erased {
+		r.logger.Warn("directory: skipped a member whose registre subject prisme erased")
+	}
+	return erased, err
 }
 
 // accountsIn maps the users who hold a Prisme account among the Matrix ids to

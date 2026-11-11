@@ -31,6 +31,7 @@ delegated bearer token that sends it is unaffected, and nothing is validated or 
 | holds this subject (either spelling of the issuer) | | Left alone, the route runs |
 | holds another subject of the issuer | | `409 acting_subject_mismatch` |
 | exists or not | belongs to another account | `409 acting_subject_taken` |
+| exists or not | was erased by Prisme (since v0.14.2) | `409 acting_subject_erased` |
 
 Refusals write nothing: no account is created and no identity changes. A service key can never
 move or merge an identity. Prisme links the subject through porte's identity store, the same
@@ -43,6 +44,7 @@ Every refusal uses the error body above (`{"error": {"code", "message"}}`), with
 | 400 | `acting_subject_invalid` | The header is empty, longer than 64 bytes (Registre's limit), not UTF-8, holds a control character, or is sent twice | No, fix the value |
 | 409 | `acting_subject_mismatch` | The account for this email holds a different subject of the issuer | No, the stored data conflicts |
 | 409 | `acting_subject_taken` | Another account holds this subject | No, the stored data conflicts |
+| 409 | `acting_subject_erased` | Prisme erased this subject after a Registre deletion notice; it never holds an account again | No, never: Registre does not reissue a subject |
 | 412 | `acting_subject_unsupported` | This Prisme has no `OIDC_ISSUER`, so there is nothing to file a subject under | No |
 | 500 | `internal` | The database failed | Yes |
 

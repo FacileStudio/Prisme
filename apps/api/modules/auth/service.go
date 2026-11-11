@@ -35,7 +35,7 @@ func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte
 		return nil, err
 	}
 	kit, err := oidc.New(ctx, cfg, oidc.Deps{
-		Users:      pictureUsers{UserStore: store.Users()},
+		Users:      pictureUsers{UserStore: store.Users(), db: db},
 		Identities: store.Identities(),
 		Codes:      store.LoginCodes(),
 		Sessions:   sessions,

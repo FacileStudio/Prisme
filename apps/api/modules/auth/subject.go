@@ -62,6 +62,9 @@ func (s serviceKeys) attach(ctx context.Context, email, subject string, key int)
 	if s.issuer == "" {
 		return 0, subjectUnsupported
 	}
+	if err := s.refuseErased(ctx, subject, key); err != nil {
+		return 0, err
+	}
 	if userID, err := s.classify(ctx, email, subject, key); userID != 0 || err != nil {
 		return userID, err
 	}

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"net/http"
 	"net/http/httptest"
@@ -161,6 +162,31 @@ func TestTheActingSubjectRefusesAndWritesNothing(t *testing.T) {
 	}
 	if n := strings.Count(logs.String(), "refused, nothing written"); n != 2 {
 		t.Errorf("logged %d conflicts, want 2:\n%s", n, logs.String())
+	}
+}
+
+// A subject Prisme erased never gets an account again, under either
+// spelling of the issuer: the call is refused with a final 409 and nothing
+// is written. Sign-in through porte is refused the same way.
+func TestAnErasedSubjectIsRefusedAnAccount(t *testing.T) {
+	db := openAuthDatabase(t)
+	s, logs := subjectService(t, db)
+	if _, err := db.Exec(`INSERT INTO erased_subjects (subject_hash, erased_at)
+		VALUES (encode(sha256(convert_to(rtrim($1, '/') || ' ' || $2, 'UTF8')), 'hex'), now())`, testIssuer+"/", "sub-gone"); err != nil {
+		t.Fatalf("seed tombstone: %v", err)
+	}
+	want := exchange{409, "application/json", `{"error":{"code":"acting_subject_erased","message":"Prisme erased this Registre subject; it never holds an account again"}}` + "\n"}
+	if got := call(t, s, ScopeAgents, actingAs("gone@facile.studio", "sub-gone")); got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	if _, err := (pictureUsers{db: db}).UpsertFromOIDC(context.Background(), porte.Claims{Provider: testIssuer, Subject: "sub-gone"}); err == nil {
+		t.Fatal("sign-in created an account for an erased subject")
+	}
+	if n := countIn(t, db, `SELECT count(*) FROM porte_users`) + countIn(t, db, `SELECT count(*) FROM porte_identities`); n != 0 {
+		t.Errorf("a refused call wrote %d rows", n)
+	}
+	if !strings.Contains(logs.String(), "refused, nothing written") || strings.Contains(logs.String(), "sub-gone") {
+		t.Errorf("log does not record the refusal by key alone:\n%s", logs.String())
 	}
 }
 
