@@ -10,9 +10,15 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/internal/env"
 	"github.com/FacileStudio/Prisme/apps/api/internal/erasure"
 	"github.com/FacileStudio/Prisme/apps/api/internal/matrix"
+	"github.com/FacileStudio/Prisme/apps/api/internal/seal"
+	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
 	"github.com/FacileStudio/Prisme/apps/api/modules/push"
+	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
+
+	"github.com/FacileStudio/porte"
+	"github.com/FacileStudio/porte/pg"
 
 	"gorm.io/gorm"
 )
@@ -52,15 +58,41 @@ func newEraser(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, client *matrix.Client
 	})
 }
 
-// withBackground adds what runs beside the routes: the Android push relay, the
-// eraser and the Registre directory sync that hands it deletion notices.
-func withBackground(built app, cfg env.Config, db *gorm.DB, sqlDB *sql.DB, client *matrix.Client) (app, error) {
-	built.push = newPush(cfg, db, client, built.logger)
-	eraser, err := newEraser(cfg, db, sqlDB, client, built.logger)
-	if err != nil {
-		return app{}, err
+// newDeletions builds the GDPR deletion receiver when OIDC is configured, with
+// Prisme's own client credentials, and nil otherwise. It exists before porte's
+// OIDC kit, which refuses an account to every subject it handled.
+func newDeletions(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, eraser *erasure.Eraser, logger *slog.Logger) *spaces.Deletions {
+	porteCfg := cfg.Porte
+	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
+		return nil
 	}
-	built.eraser = eraser
-	built.directory = newDirectory(cfg, built, db, sqlDB)
-	return built, nil
+	store := pg.New(sqlDB)
+	return spaces.NewDeletions(db, directoryClient(porteCfg), spaces.Eraser{
+		OnPersonDeleted: eraser.ErasePerson, Erase: store.EraseIdentity, Holds: store.HoldsIdentity,
+	}, logger)
+}
+
+// erasedSubjects is the receiver as porte/oidc's guard, or no guard without one.
+func erasedSubjects(deletions *spaces.Deletions) porte.ErasedSubjects {
+	if deletions == nil {
+		return nil
+	}
+	return deletions
+}
+
+// newAuth builds the deletion receiver, then porte with Bulle's service keys,
+// refusing an account to every subject the receiver handled.
+func newAuth(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, eraser *erasure.Eraser, logger *slog.Logger) (*auth.Service, *spaces.Deletions, error) {
+	deletions := newDeletions(cfg, db, sqlDB, eraser, logger)
+	service, err := auth.NewService(context.Background(), sqlDB, cfg.Porte, auth.Guards{
+		ServiceKeys: auth.ParseServiceKeys(cfg.ServiceKeys), Erased: erasedSubjects(deletions),
+	}, logger)
+	return service, deletions, err
+}
+
+func newSession(cfg env.Config, db *gorm.DB, client *matrix.Client, accountService *accounts.Service, box *seal.Box) *session.Service {
+	return session.NewService(session.Deps{
+		DB: db, Matrix: client, Accounts: accountService, Box: box,
+		Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(),
+	})
 }

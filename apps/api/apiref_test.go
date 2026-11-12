@@ -21,7 +21,7 @@ import (
 
 func testRouter(t *testing.T) chi.Router {
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, auth.Guards{}, quiet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestEveryRouteIsDocumented(t *testing.T) {
 
 func registreRouter(t *testing.T) chi.Router {
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, auth.Guards{}, quiet)
 	if err != nil {
 		t.Fatal(err)
 	}

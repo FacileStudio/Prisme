@@ -38,26 +38,26 @@ func assertRecreatedErased(t *testing.T, w world, back person) {
 }
 
 // A notice handled before an account was re-created for its subject is
-// handled again on the next delivery, which erases the new account instead
-// of skipping it as done.
+// handled again on the next delivery to the same running receiver: porte asks
+// Holds, which finds the new identity, and erases it instead of skipping the
+// subject as done.
 func TestARepushedNoticeErasesAnAccountRecreatedAfterTheErasure(t *testing.T) {
 	w := seedWorld(t)
 	issuer := fakeRegistre(t, w.gone.subject)
 	mustExec(t, w.db, `UPDATE porte_identities SET provider = ?`, issuer)
 	sqlDB, _ := w.db.DB()
-	receive := func() *directory.Deletions {
-		return &directory.Deletions{
-			Client:          directory.Client{Issuer: issuer, ClientID: "prisme", ClientSecret: "s"},
-			OnPersonDeleted: w.eraser.ErasePerson, Erase: pg.New(sqlDB).EraseIdentity,
-			State: spaces.NewDeletionState(w.db, issuer), Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
-		}
+	store := pg.New(sqlDB)
+	receiver := &directory.Deletions{
+		Client:          directory.Client{Issuer: issuer, ClientID: "prisme", ClientSecret: "s"},
+		OnPersonDeleted: w.eraser.ErasePerson, Erase: store.EraseIdentity, Holds: store.HoldsIdentity,
+		State: spaces.NewDeletionState(w.db), Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	if err := receive().Poll(context.Background()); err != nil {
+	if err := receiver.Poll(context.Background()); err != nil {
 		t.Fatalf("first notice: %v", err)
 	}
 	assertNoLeftovers(t, w.db, w.gone)
 	back := recreate(t, w, issuer)
-	if err := receive().Poll(context.Background()); err != nil {
+	if err := receiver.Poll(context.Background()); err != nil {
 		t.Fatalf("repushed notice: %v", err)
 	}
 	assertRecreatedErased(t, w, back)

@@ -24,7 +24,7 @@ func (noIdentities) ListByUser(context.Context, int64) ([]porte.StoredIdentity, 
 // answers only behind a session, and only where the Registre sync is wired.
 func TestTheInvitationsBadgeNeedsASession(t *testing.T) {
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, auth.Guards{}, quiet)
 	if err != nil {
 		t.Fatal(err)
 	}

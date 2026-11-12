@@ -17,16 +17,14 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/internal/matrix"
 	"github.com/FacileStudio/Prisme/apps/api/internal/seal"
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
-	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
-	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
 	"github.com/FacileStudio/Prisme/apps/api/schemas"
 
 	"github.com/FacileStudio/Journal/sdk/journal"
+	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/directory"
 	"github.com/FacileStudio/porte/kit"
-	"github.com/FacileStudio/porte/pg"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/logger"
 	"gorm.io/gorm"
@@ -77,19 +75,16 @@ func start(services app, addr string) int {
 	return serve(shutdownSignal, addr, buildRouter(services), services.logger)
 }
 
-// newDirectory builds the Registre space sync and the GDPR deletion receiver
-// when OIDC is configured, with Prisme's own client credentials, and nils
-// otherwise: without Registre there is nothing to sync and no route to mount.
-func newDirectory(cfg env.Config, built app, db *gorm.DB, sqlDB *sql.DB) directorySync {
-	porteCfg := cfg.Porte
-	if porteCfg.Issuer == "" || porteCfg.ClientID == "" || porteCfg.ClientSecret == "" {
+// newDirectory builds the Registre space sync beside the deletion receiver,
+// and nils without the receiver: without Registre there is nothing to sync
+// and no route to mount.
+func newDirectory(cfg env.Config, built app, deletions *spaces.Deletions) directorySync {
+	if deletions == nil {
 		return directorySync{}
 	}
-	registre := spaces.NewRegistre(built.spaces, porteCfg.Issuer, built.logger)
-	client := directory.Client{Issuer: porteCfg.Issuer, ClientID: porteCfg.ClientID, ClientSecret: porteCfg.ClientSecret}
+	registre := spaces.NewRegistre(built.spaces, cfg.Porte.Issuer, built.logger)
+	client := directoryClient(cfg.Porte)
 	syncer := &directory.Syncer{Client: client, Apply: registre.Apply, Logger: built.logger}
-	eraser := spaces.Eraser{OnPersonDeleted: built.eraser.ErasePerson, Erase: pg.New(sqlDB).EraseIdentity}
-	deletions := spaces.NewDeletions(db, client, eraser, built.logger)
 	invitations, err := kit.NewInvitations(kit.InvitationsConfig{
 		Directory: client, Identities: built.auth.Identities(), Logger: built.logger,
 	})
@@ -97,6 +92,10 @@ func newDirectory(cfg env.Config, built app, db *gorm.DB, sqlDB *sql.DB) directo
 		built.logger.Warn("the invitations badge is off", slog.Any("error", err))
 	}
 	return directorySync{registre: registre, syncer: syncer, deletions: deletions, invitations: invitations}
+}
+
+func directoryClient(cfg porte.Config) directory.Client {
+	return directory.Client{Issuer: cfg.Issuer, ClientID: cfg.ClientID, ClientSecret: cfg.ClientSecret}
 }
 
 func newLogger(cfg env.Config) (*slog.Logger, func()) {
@@ -119,7 +118,12 @@ func newLogger(cfg env.Config) (*slog.Logger, func()) {
 }
 
 func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger) (app, error) {
-	authService, err := auth.NewService(context.Background(), sqlDB, cfg.Porte, auth.ParseServiceKeys(cfg.ServiceKeys), appLogger)
+	client := matrix.New(matrix.Config{BaseURL: cfg.Matrix.InternalURL, ServerName: cfg.Matrix.ServerName, ASToken: cfg.Matrix.ASToken})
+	eraser, err := newEraser(cfg, db, sqlDB, client, appLogger)
+	if err != nil {
+		return app{}, err
+	}
+	authService, deletions, err := newAuth(cfg, db, sqlDB, eraser, appLogger)
 	if err != nil {
 		return app{}, err
 	}
@@ -127,7 +131,6 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 	if err != nil {
 		return app{}, err
 	}
-	client := matrix.New(matrix.Config{BaseURL: cfg.Matrix.InternalURL, ServerName: cfg.Matrix.ServerName, ASToken: cfg.Matrix.ASToken})
 	accountService := accounts.NewService(db, client, appLogger)
 	agentService := agents.NewService(agents.Deps{
 		DB: db, Matrix: client, Accounts: accountService, Box: box, Homeserver: cfg.Matrix.PublicURL, Logger: appLogger,
@@ -135,18 +138,16 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 	built := app{
 		logger: appLogger, dbCheck: health.DB(sqlDB),
 		edge: edge{core: cfg.Core, homeserver: cfg.Matrix.PublicURL, liveKit: cfg.LiveKitURL},
-		auth: authService,
-		session: session.NewService(session.Deps{
-			DB: db, Matrix: client, Accounts: accountService, Box: box,
-			Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(),
-		}),
+		auth: authService, eraser: eraser,
+		session: newSession(cfg, db, client, accountService, box),
 		spaces: spaces.NewService(spaces.Deps{
 			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
 		}),
 		agents: agentService, calls: newCalls(cfg, db, client, accountService, appLogger),
-		users: users.NewService(db),
+		users: users.NewService(db), push: newPush(cfg, db, client, appLogger),
 	}
-	return withBackground(built, cfg, db, sqlDB, client)
+	built.directory = newDirectory(cfg, built, deletions)
+	return built, nil
 }
 
 func serve(shutdownSignal context.Context, addr string, router http.Handler, appLogger *slog.Logger) int {

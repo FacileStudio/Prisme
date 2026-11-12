@@ -23,7 +23,7 @@ type matrixCall struct {
 
 func appserviceRouter(t *testing.T) chi.Router {
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, nil, quiet)
+	authService, err := auth.NewService(context.Background(), nil, porte.Config{}, auth.Guards{}, quiet)
 	if err != nil {
 		t.Fatal(err)
 	}

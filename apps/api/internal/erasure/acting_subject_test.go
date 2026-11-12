@@ -83,7 +83,7 @@ func newActingWorld(t *testing.T) actingWorld {
 	service, err := auth.NewService(context.Background(), sqlDB, porte.Config{
 		Issuer: issuer, ClientID: "prisme", ClientSecret: "s",
 		RedirectURL: "http://localhost/api/auth/oidc/callback", SuccessURL: "http://localhost/",
-	}, auth.ParseServiceKeys("bulle-key"), quiet)
+	}, auth.Guards{ServiceKeys: auth.ParseServiceKeys("bulle-key")}, quiet)
 	if err != nil {
 		t.Fatalf("auth service: %v", err)
 	}

@@ -70,24 +70,35 @@ unlinked and needs `erase-user` below.
 
 ## An erased subject never gets an account again
 
-Since v0.14.2, every path that creates or links an account from a Registre subject first looks
-the subject up in `erased_subjects` and refuses it when Prisme erased it:
+Two records answer whether a subject was erased:
 
-| Path | Answer for an erased subject |
-|---|---|
-| Service call with `X-Prisme-Acting-Subject` | `409 acting_subject_erased`, nothing written (see [the API](api.md)) |
-| Sign-in through Registre (porte's OIDC callback, and porte's bearer provisioning) | Refused with `permission_denied`, nothing written |
-| Registre space sync | The member is skipped and logged, nothing written |
+- `erased_subjects`, Prisme's own tombstone. The erasure writes it, `erase-user` included, and
+  it never expires.
+- porte/directory's handled subjects in `directory_deletion_state`. Every notice the receiver
+  handled is there, also one for a person who never held an account here, for at least 60
+  days.
+
+Every path that creates or links an account from a Registre subject asks them first:
+
+| Path | Asks | Answer for an erased subject |
+|---|---|---|
+| Service call with `X-Prisme-Acting-Subject` | `erased_subjects` | `409 acting_subject_erased`, nothing written (see [the API](api.md)) |
+| Sign-in through Registre (porte's OIDC callback, bearer provisioning and profile sync) | porte's handled subjects (`oidc.Deps.Erased`, since v0.16.0), then `erased_subjects` | Refused with `permission_denied`, nothing written; the callback shows "this account was deleted" |
+| Registre space sync | `erased_subjects` | The member is skipped and logged, nothing written |
 
 Before v0.14.2 a service call that arrived just after an erasure created and linked a new account
 for the erased subject (2026-11-11). Two things now clean up such an account:
 
-- The next delivery of the notice, by push or poll, erases it. porte/directory skips subjects it
-  already handled, so Prisme's state store hands porte back as unhandled every handled subject an
-  identity holds again. It reads the store once per process, so this takes effect from the next
-  start.
+- The next delivery of the notice, by push or poll, erases it, with no restart. When a notice
+  names a subject porte already handled, porte asks `pg.Store.HoldsIdentity` whether an
+  identity of the issuer holds it again, and erases the person again when one does. Since
+  v0.16.0 this is porte's own check (`directory.Deletions.Holds`); from v0.14.2 to v0.15.0
+  Prisme's state store did it, and only from the next start.
 - `erase-user <email>` erases it: an identity whose subject Prisme erased does not count as a
   link.
+
+`HoldsIdentity` matches the issuer exactly as `OIDC_ISSUER` spells it, which is the spelling
+sign-in, the space sync and the service path store.
 
 A service call that names a person by email alone (no `X-Prisme-Acting-Subject`) carries no
 subject to check, so it still creates an unlinked account; `erase-user` settles that one.

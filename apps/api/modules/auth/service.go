@@ -22,9 +22,17 @@ type Service struct {
 	identities *portepg.IdentityStore
 }
 
+// Guards are the callers NewService admits besides a session, and the subjects
+// it refuses an account to. Erased is porte/directory's deletion receiver, nil
+// without Registre.
+type Guards struct {
+	ServiceKeys [][]byte
+	Erased      porte.ErasedSubjects
+}
+
 // NewService builds porte over the identity tables. Prisme signs people in
 // through Registre only, so there is no password kit.
-func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte, logger *slog.Logger) (*Service, error) {
+func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, guards Guards, logger *slog.Logger) (*Service, error) {
 	store, err := newPorteStore(db)
 	if err != nil {
 		return nil, err
@@ -39,12 +47,13 @@ func NewService(ctx context.Context, db *sql.DB, cfg porte.Config, keys [][]byte
 		Identities: store.Identities(),
 		Codes:      store.LoginCodes(),
 		Sessions:   sessions,
+		Erased:     guards.Erased,
 		Logger:     logger,
 	})
 	if err != nil {
 		return nil, err
 	}
-	services := serviceKeys{keys: keys, db: db, issuer: cfg.Issuer, identities: store.Identities(), logger: logger}
+	services := serviceKeys{keys: guards.ServiceKeys, db: db, issuer: cfg.Issuer, identities: store.Identities(), logger: logger}
 	return &Service{sessions: sessions, kit: kit, services: services, identities: store.Identities()}, nil
 }
 

@@ -2,12 +2,8 @@ package spaces
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
-	"maps"
 	"net/http"
-	"slices"
-	"strings"
 
 	"github.com/FacileStudio/porte/directory"
 
@@ -22,11 +18,14 @@ type Deletions struct {
 	receiver *directory.Deletions
 }
 
-// Eraser is the receiver's two callbacks: Prisme's erasure of the person,
-// then porte's own rows eraser, pg.Store.EraseIdentity.
+// Eraser is the receiver's callbacks: Prisme's erasure of the person, then
+// porte's own rows eraser, pg.Store.EraseIdentity, and pg.Store.HoldsIdentity,
+// which makes a re-pushed notice erase an account re-created for a handled
+// subject instead of skipping it.
 type Eraser struct {
 	OnPersonDeleted func(ctx context.Context, provider, subject string) error
 	Erase           func(ctx context.Context, provider, subject string) error
+	Holds           func(ctx context.Context, provider, subject string) (bool, error)
 }
 
 // NewDeletions builds the receiver, keeping its cursor in Prisme's database.
@@ -35,7 +34,8 @@ func NewDeletions(db *gorm.DB, client directory.Client, eraser Eraser, logger *s
 		Client:          client,
 		OnPersonDeleted: eraser.OnPersonDeleted,
 		Erase:           eraser.Erase,
-		State:           NewDeletionState(db, client.Issuer),
+		Holds:           eraser.Holds,
+		State:           NewDeletionState(db),
 		Logger:          logger,
 	}}
 }
@@ -45,6 +45,13 @@ func (d *Deletions) Run(ctx context.Context) {
 	d.receiver.Run(ctx)
 }
 
+// Erased reports whether the receiver handled this subject of the issuer:
+// porte/oidc's Deps.Erased, which then refuses it an account. It reads the
+// saved state on every call.
+func (d *Deletions) Erased(ctx context.Context, provider, subject string) (bool, error) {
+	return d.receiver.Erased(ctx, provider, subject)
+}
+
 // Handler verifies and applies Registre's signed user.deleted push.
 func (d *Deletions) Handler() http.Handler {
 	return d.receiver.Handler()
@@ -52,58 +59,22 @@ func (d *Deletions) Handler() http.Handler {
 
 // deletionState keeps the receiver's cursor and handled subjects in one row.
 type deletionState struct {
-	db     *gorm.DB
-	issuer string
+	db *gorm.DB
 }
 
-// NewDeletionState is the receiver's state in Prisme's database. A subject
-// it hands back as handled is one no identity holds any more: an account
-// re-created for an erased subject makes the next notice or poll erase it
-// instead of skipping it.
-func NewDeletionState(db *gorm.DB, issuer string) directory.StateStore {
-	return deletionState{db: db, issuer: issuer}
+// NewDeletionState is the receiver's state in Prisme's database.
+func NewDeletionState(db *gorm.DB) directory.StateStore {
+	return deletionState{db: db}
 }
 
-// Load returns the saved state, or nil before the first save, reopening the
-// handled subjects an identity holds again.
+// Load returns the saved state, or nil before the first save.
 func (s deletionState) Load(ctx context.Context) ([]byte, error) {
 	var rows []struct{ State []byte }
 	err := s.db.WithContext(ctx).Raw(`SELECT state FROM directory_deletion_state WHERE id = 1`).Scan(&rows).Error
 	if err != nil || len(rows) == 0 {
 		return nil, err
 	}
-	return s.reopen(ctx, rows[0].State)
-}
-
-// reopen drops from porte's handled subjects every one an identity of the
-// issuer holds, keeping every other field of the state as porte wrote it. A
-// state it cannot read goes back untouched, for porte to report.
-func (s deletionState) reopen(ctx context.Context, raw []byte) ([]byte, error) {
-	var state map[string]json.RawMessage
-	var done map[string]json.RawMessage
-	if json.Unmarshal(raw, &state) != nil || json.Unmarshal(state["done"], &done) != nil || len(done) == 0 {
-		return raw, nil
-	}
-	held, err := s.held(ctx, slices.Collect(maps.Keys(done)))
-	if err != nil || len(held) == 0 {
-		return raw, err
-	}
-	for _, subject := range held {
-		delete(done, subject)
-	}
-	if state["done"], err = json.Marshal(done); err != nil {
-		return nil, err
-	}
-	return json.Marshal(state)
-}
-
-func (s deletionState) held(ctx context.Context, subjects []string) ([]string, error) {
-	trimmed := strings.TrimSuffix(s.issuer, "/")
-	var held []string
-	err := s.db.WithContext(ctx).Table("porte_identities").
-		Where("provider IN ? AND subject IN ?", []string{trimmed, trimmed + "/"}, subjects).
-		Distinct().Pluck("subject", &held).Error
-	return held, err
+	return rows[0].State, nil
 }
 
 // Save replaces the saved state.

@@ -56,7 +56,7 @@ func newTestService(t *testing.T, db *sql.DB, cfg porte.Config) *Service {
 func newLoggedService(t *testing.T, db *sql.DB, cfg porte.Config, out io.Writer) *Service {
 	t.Helper()
 	logger := slog.New(slog.NewTextHandler(out, nil))
-	service, err := NewService(context.Background(), db, cfg, ParseServiceKeys("key-one, key-two"), logger)
+	service, err := NewService(context.Background(), db, cfg, Guards{ServiceKeys: ParseServiceKeys("key-one, key-two")}, logger)
 	if err != nil {
 		t.Fatalf("new service: %v", err)
 	}
