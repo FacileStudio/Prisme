@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.16.0] - 2026-11-12
+
+### Changed
+
+- porte v0.19.0 and porte/directory v0.5.0. The deletion receiver re-checks a handled subject
+  with `pg.Store.HoldsIdentity`, so a re-pushed or re-polled notice erases an account that was
+  re-created after the erasure, at once and without a restart. This replaces Prisme's own
+  state-store workaround from v0.14.2, which only took effect after a restart.
+- porte's OIDC kit refuses an account to every subject the deletion receiver handled
+  (`oidc.Deps.Erased`), on the login callback, bearer provisioning and the profile sync. This
+  also covers a person erased in Registre who never held a Prisme account, which leaves no
+  `erased_subjects` tombstone. The tombstone checks on the service-key path
+  (`409 acting_subject_erased`), the sign-in upsert and the space sync stay. See
+  `docs/erasure.md`.
+
 ## [0.15.0] - 2026-11-11
 
 ### Changed
