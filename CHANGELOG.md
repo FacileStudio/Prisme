@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.20.0] - 2026-11-13
+
+### Security
+
+- Installed apps: the bearer token moves from `@capacitor/preferences`, which is plain storage, to
+  the platform's secure store: the Android Keystore through `capacitor-secure-storage-plugin`
+  0.13.0, and the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service) through
+  the `keyring` crate 3.6.3 in the desktop app. On the first launch after the update the app
+  moves an existing Preferences token into the secure store and deletes the Preferences copy only
+  once the store holds it, so nobody is signed out; a device whose store refuses the token keeps
+  it where it was. A new sign-in writes only to the secure store, and signing out clears both.
+  The web build is unchanged: it never held a token. The token code moves to
+  `apps/client/src/lib/native/token.ts`.
+
 ## [0.19.0] - 2026-11-13
 
 ### Changed
