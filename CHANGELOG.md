@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.18.0] - 2026-11-13
+
+### Changed
+
+- Database: the schema of the `prisme` database is ordered goose SQL under `apps/api/migrations/`,
+  applied at boot by `tronc/migrate` v0.1.1 behind a Postgres advisory lock. GORM `AutoMigrate`,
+  porte's `pg.Schema` and the hand-written `CREATE TABLE IF NOT EXISTS` are gone from the boot
+  path; the GORM structs stay as the query layer. `TestGORMModelsMatchTheMigratedSchema` fails
+  when a struct names a column the migrations do not create, `TestPorteSchemaIsInTheMigrations`
+  fails when porte's `pg.Schema` would change a `porte_*` table, and `scripts/check.sh` fails on an
+  `.AutoMigrate(` call outside a test file. The `synapse` database is untouched.
+- Database: `00001_baseline.sql` is production's schema as `pg_dump --schema-only` printed it on
+  2026-11-13, porte's tables, `erased_subjects`, `directory_deletion_state`, `push_devices` and the
+  leftover `agents_owner_slug` index included. A database built before this release (Prisme's
+  tables, no applied migration) is stamped at version 1 on its first boot with tronc/migrate's
+  `baseline` command, so the baseline is recorded without running. A database built from the
+  migrations dumps identical to production.
+- Boot: the two data steps the old boot ran at every start are gone, because neither had anything
+  left to change. The deletion of the pre-v0.13.0 reservation rows (`accounts.user_id < 0`,
+  `agents.owner_id = 0`) matched no row in production, and nothing has written such a row since
+  v0.13.0. porte's re-keying of password identities (`provider = 'local'`) matched no row either:
+  Prisme signs in through Registre only and has no local identity.
+- build: `pressly/goose/v3` v3.27.3 comes in through `tronc/migrate`.
+
+### Added
+
+- `docker run <image> migrate status` (also `up`, `version`, `baseline <n>`) answers without a
+  shell. A migration failure stops the boot with exit status 1.
+- Database: `00002_column_defaults.sql` gives `created_at` on `accounts`, `agents`, `channels`,
+  `matrix_sessions` and `spaces`, `calls.started_at` and `erased_subjects.erased_at` a `now()`
+  default, so a row written outside GORM no longer gets NULL there. It has a Down.
+
+### Rollback
+
+- Rolling back to v0.17.x drops these defaults again, because AutoMigrate removes a default its
+  struct tags do not declare, while the ledger still records version 2. Before deploying this
+  release again after such a rollback, run `DELETE FROM goose_db_version WHERE version_id = 2`
+  in the `prisme` database, and the next boot applies 00002 again.
+
 ## [0.17.0] - 2026-11-13
 
 ### Security
