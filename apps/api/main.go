@@ -96,10 +96,16 @@ func buildRouter(a app) chi.Router {
 	return router
 }
 
-// mountAPI registers porte and every module under /api.
+// mountAPI registers porte and every module under /api, behind the rate
+// limits: every request spends from its bucket, and porte's routes from the
+// sign-in bucket as well.
 func mountAPI(r chi.Router, a app) {
-	r.Use(session.RevokeOnLogout(a.session, a.auth, a.logger))
-	a.auth.Mount(r)
+	limits := newRateLimits(productionBudgets, a.auth)
+	r.Use(limits.requests, session.RevokeOnLogout(a.session, a.auth, a.logger))
+	r.Group(func(signIn chi.Router) {
+		signIn.Use(limits.signIn)
+		a.auth.Mount(signIn)
+	})
 	session.RegisterRoutes(r, a.session, a.auth)
 	spaces.RegisterRoutes(r, a.spaces, a.auth)
 	agents.RegisterRoutes(r, a.agents, a.auth)

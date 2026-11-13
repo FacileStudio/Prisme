@@ -85,6 +85,13 @@ func (s *Service) Require(scope string) func(http.Handler) http.Handler {
 	}
 }
 
+// ServiceCaller is the position of the service key the request presents,
+// counting from 1, or 0 when it presents none. It authorizes nothing: the
+// rate limiter reads it to keep service traffic in a bucket of its own.
+func (s *Service) ServiceCaller(r *http.Request) int {
+	return s.services.match(r)
+}
+
 // serviceKey is the matching service key's position, or 0 on a route that
 // takes no service call or a request that carries no key.
 func (s *Service) serviceKey(scope string, r *http.Request) int {
