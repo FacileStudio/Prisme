@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.17.0] - 2026-11-13
+
+### Security
+
+- `GET /api/users` and `GET /api/users/agents` show only the caller, the people and agents joined
+  to a space the caller is joined to, and the caller's own agents. Before, any account that could
+  sign in through Registre could list every Prisme account's name and Matrix id, and test an
+  email against the search. Prisme reads the caller's spaces and their members from Synapse on
+  each call. A person you share only a DM with no longer appears in the people picker; the DM
+  itself is unchanged.
+- Every `/api` route is rate limited with tronc's `Ratelimit`, keyed on the visitor address that
+  tronc's real-IP middleware resolved from `TRUSTED_PROXIES` (production:
+  `private,cloudflare`): 240 requests per minute (burst 120), 30 writes per minute (burst 30) on
+  top, and at most 30 sign-in requests (`/api/auth/*`) in any minute. A service-key caller (Bulle)
+  spends from its own bucket per key, 1200 per minute (burst 600), and never from a visitor's.
+  Refusals are `429` with the `rate_limited` code and `Retry-After` in seconds. See
+  `docs/api.md`.
+
 ## [0.16.0] - 2026-11-12
 
 ### Changed
