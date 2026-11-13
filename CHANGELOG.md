@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.19.0] - 2026-11-13
+
+### Changed
+
+- Rate limits: a request whose session cookie or bearer token resolves to a live session spends
+  from that user's own visitor and write buckets, wherever it comes from, so people behind one
+  office address no longer share a budget. A request with no session, or one that does not
+  resolve, spends from its address's buckets as before. porte's routes (`/api/auth/*`) stay
+  counted per address and never look the session up. The budgets are unchanged, and every limiter
+  still remembers at most 50,000 keys. The limiter resolves the session once per request
+  (`auth.Service.SessionUser`), so an authenticated `/api` request reads `porte_sessions` twice:
+  once for its bucket and once in `Require`. See `docs/api.md`.
+
 ## [0.18.0] - 2026-11-13
 
 ### Changed
