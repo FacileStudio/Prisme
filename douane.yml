@@ -1,0 +1,5 @@
+permits:
+  - id: RUSTSEC-2024-0429
+    package: glib
+    reason: glib 0.18.5 (GHSA-wrw7-89jp-8q8g, unsound VariantStrIter iterator) comes only through the desktop app's Linux stack, tauri 2.12.5 -> gtk 0.18.2 -> glib 0.18.5 (also atk, gdk, webkit2gtk). The fix is glib 0.20, which needs gtk4-rs, and tauri 2 stays on gtk3; no tauri release moves it. Prisme never calls glib::VariantStrIter. Re-check when tauri leaves gtk 0.18
+    expires: 2027-05-13
