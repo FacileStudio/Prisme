@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.20.4] - 2026-11-13
+
+### Changed
+
+- muse v0.21.0: icon buttons show their label as a muse tooltip on hover and keyboard focus.
+
+### Fixed
+
+- The message toolbar, composer attach and send, draft cancel, pending-file remove, window controls and intro step dots show a muse tooltip; native `title` tooltips on reactions, the seen-by row, the call encryption pill and the header buttons are gone.
+
 ## [0.20.2] - 2026-11-13
 
 ### Changed
