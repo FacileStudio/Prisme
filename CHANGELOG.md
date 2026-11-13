@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.20.1] - 2026-11-13
+
+### Security
+
+- douane: `douane.yml` permits RUSTSEC-2024-0429 (GHSA-wrw7-89jp-8q8g, unsound
+  `glib::VariantStrIter`) on glib 0.18.5 until 2027-05-13. glib 0.18 comes only through the
+  desktop app's Linux stack (tauri 2.12.5, gtk 0.18.2, webkit2gtk), the fix is glib 0.20, which
+  needs gtk4-rs, and no tauri 2 release moves off gtk3. Prisme never calls `VariantStrIter`.
+  Re-check when tauri leaves gtk 0.18.
+
 ## [0.20.0] - 2026-11-13
 
 ### Security
