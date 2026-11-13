@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"errors"
 	"reflect"
 	"slices"
 	"sync"
@@ -25,6 +26,8 @@ var porteTables = []string{
 	"porte_users", "porte_identities", "porte_sessions", "porte_login_codes",
 	"porte_magic_links", "porte_api_keys", "porte_api_key_usage",
 }
+
+var errRollBack = errors.New("roll back")
 
 var timeType = reflect.TypeFor[time.Time]()
 
@@ -117,36 +120,54 @@ func tableShape(t *testing.T, db *gorm.DB, table string) []string {
 	t.Helper()
 	var shape []string
 	err := db.Raw(`SELECT column_name || ' ' || data_type || ' ' || is_nullable || ' ' || coalesce(column_default, '')
-		FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ?
-		UNION ALL SELECT indexdef FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ?
+		FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = @table
+		UNION ALL SELECT replace(indexdef, ' ON ' || schemaname || '.', ' ON ')
+		FROM pg_indexes WHERE schemaname = current_schema() AND tablename = @table
 		UNION ALL SELECT conname || ' ' || pg_get_constraintdef(oid) FROM pg_constraint
-		 WHERE conrelid = to_regclass(?)
-		ORDER BY 1`, table, table, table).Scan(&shape).Error
+		WHERE conrelid = to_regclass(@table)
+		ORDER BY 1`, map[string]any{"table": table}).Scan(&shape).Error
 	if err != nil {
 		t.Fatalf("read the shape of %s: %v", table, err)
 	}
 	return shape
 }
 
-// TestPorteSchemaIsInTheMigrations checks the migrations already hold
-// porte/pg's Schema, which Prisme used to execute at every boot. A porte bump
-// that changes it makes this fail, and the change then needs a numbered
-// migration of its own.
+// assertMatchesLibrary builds a library's own DDL in a scratch schema, inside
+// a transaction that is rolled back, and compares each table's columns,
+// types, defaults, indexes and constraints with the ones the migrations
+// built. Running the DDL over the migrated schema instead proves nothing,
+// since its CREATE TABLE IF NOT EXISTS skips a table that already exists.
+func assertMatchesLibrary(t *testing.T, db *gorm.DB, ddl string, tables []string) {
+	t.Helper()
+	migrated := map[string][]string{}
+	for _, table := range tables {
+		migrated[table] = tableShape(t, db, table)
+	}
+	err := db.Transaction(func(tx *gorm.DB) error {
+		for _, statement := range []string{`CREATE SCHEMA prisme_library_drift`, `SET LOCAL search_path TO prisme_library_drift`, ddl} {
+			if err := tx.Exec(statement).Error; err != nil {
+				t.Fatalf("build the library schema: %v", err)
+			}
+		}
+		for _, table := range tables {
+			want := tableShape(t, tx, table)
+			if len(want) == 0 {
+				t.Errorf("the library no longer creates %s", table)
+			} else if !slices.Equal(migrated[table], want) {
+				t.Errorf("%s drifted from the library:\nmigrations %v\nlibrary    %v", table, migrated[table], want)
+			}
+		}
+		return errRollBack
+	})
+	if !errors.Is(err, errRollBack) {
+		t.Fatalf("transaction: %v", err)
+	}
+}
+
+// TestPorteSchemaIsInTheMigrations checks the migrations build porte's tables
+// exactly as porte/pg's Schema does, which Prisme used to execute at every
+// boot. A porte bump that changes it makes this fail, and the change then
+// needs a numbered migration of its own.
 func TestPorteSchemaIsInTheMigrations(t *testing.T) {
-	db := openSchemasDatabase(t)
-	before := map[string][]string{}
-	for _, table := range porteTables {
-		before[table] = tableShape(t, db, table)
-		if len(before[table]) == 0 {
-			t.Fatalf("the migrations do not create %s", table)
-		}
-	}
-	if err := db.Exec(pg.Schema).Error; err != nil {
-		t.Fatalf("run porte's Schema: %v", err)
-	}
-	for _, table := range porteTables {
-		if after := tableShape(t, db, table); !slices.Equal(before[table], after) {
-			t.Errorf("porte's Schema changed %s:\nbefore %v\nafter  %v", table, before[table], after)
-		}
-	}
+	assertMatchesLibrary(t, openSchemasDatabase(t), pg.Schema, porteTables)
 }
