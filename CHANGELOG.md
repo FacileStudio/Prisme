@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.5] - 2026-11-13
+
+### Added
+
+- The client loads Vision's tracker (`https://vision.facile.studio/s.js`, with `data-mask`) on
+  `prisme.facile.studio` only. `script-src` allows the Vision origin next to the inline script
+  hashes.
+
 ## [0.20.4] - 2026-11-13
 
 ### Changed
