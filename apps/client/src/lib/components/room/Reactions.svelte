@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
-	import { toast } from '@facile/muse';
+	import { Tooltip, toast } from '@facile/muse';
 	import { app } from '$lib/state/app.svelte';
 	import { t } from '$lib/i18n/index.svelte';
 	import { toggleReaction } from '$lib/matrix/messages';
@@ -26,18 +26,19 @@
 {#if reactions.length > 0}
 	<div class="mt-1 flex flex-wrap gap-1">
 		{#each reactions as reaction (reaction.key)}
-			<button
-				type="button"
-				onclick={() => toggle(reaction)}
-				title={who(reaction)}
-				aria-pressed={!!reaction.mine}
-				aria-label={t('reactions.label', { key: reaction.key, count: reaction.count, who: who(reaction) })}
-				class="inline-flex h-7 items-center gap-1 rounded-fc-pill px-2 text-fc-xs transition-colors {reaction.mine
-					? 'bg-fc-accent text-fc-accent-fg font-semibold'
-					: 'bg-fc-surface hover:bg-fc-field'}"
-			>
-				<span>{reaction.key}</span><span>{reaction.count}</span>
-			</button>
+			<Tooltip text={who(reaction)} describe={false} class="contents">
+				<button
+					type="button"
+					onclick={() => toggle(reaction)}
+					aria-pressed={!!reaction.mine}
+					aria-label={t('reactions.label', { key: reaction.key, count: reaction.count, who: who(reaction) })}
+					class="inline-flex h-7 items-center gap-1 rounded-fc-pill px-2 text-fc-xs transition-colors {reaction.mine
+						? 'bg-fc-accent text-fc-accent-fg font-semibold'
+						: 'bg-fc-surface hover:bg-fc-field'}"
+				>
+					<span>{reaction.key}</span><span>{reaction.count}</span>
+				</button>
+			</Tooltip>
 		{/each}
 	</div>
 {/if}

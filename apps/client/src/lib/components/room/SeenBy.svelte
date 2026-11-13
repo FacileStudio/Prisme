@@ -4,6 +4,7 @@
 	import { t } from '$lib/i18n/index.svelte';
 	import { formatList } from '$lib/i18n/format';
 	import { seenBy } from '$lib/matrix/timeline';
+	import { Tooltip } from '@facile/muse';
 	import Avatar from '$lib/components/common/Avatar.svelte';
 
 	let { room, event }: { room: Room; event: MatrixEvent } = $props();
@@ -19,11 +20,13 @@
 </script>
 
 {#if readers.length > 0}
-	<div class="flex items-center justify-end gap-1 px-4 pt-1" title={label} aria-label={label} role="img">
-		<span class="text-fc-xs text-fc-fg-muted">{t('seen.by')}</span>
-		{#each readers.slice(0, 5) as reader (reader.id)}
-			<Avatar userId={reader.id} mxc={reader.avatar} name={reader.name} size={20} />
-		{/each}
-		{#if readers.length > 5}<span class="text-fc-xs text-fc-fg-muted">+{readers.length - 5}</span>{/if}
-	</div>
+	<Tooltip text={label} describe={false} class="contents">
+		<div class="ml-auto flex w-fit items-center gap-1 px-4 pt-1" aria-label={label} role="img">
+			<span class="text-fc-xs text-fc-fg-muted">{t('seen.by')}</span>
+			{#each readers.slice(0, 5) as reader (reader.id)}
+				<Avatar userId={reader.id} mxc={reader.avatar} name={reader.name} size={20} />
+			{/each}
+			{#if readers.length > 5}<span class="text-fc-xs text-fc-fg-muted">+{readers.length - 5}</span>{/if}
+		</div>
+	</Tooltip>
 {/if}

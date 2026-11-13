@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Alert, Button, Icon, IconButton, Spinner, icons } from '@facile/muse';
+	import { Alert, Button, Icon, IconButton, Spinner, Tooltip, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
@@ -18,10 +18,12 @@
 		<Icon icon={glyphs.phone} size={18} class="text-fc-success" />
 		<h2 class="min-w-0 flex-1 truncate text-fc-sm font-semibold">{t('call.panelTitle', { room: roomName })}</h2>
 		{#if call.encrypted}
-			<span class="flex shrink-0 items-center gap-1 text-fc-xs text-fc-fg-muted" title={t('call.e2eeNote')}>
-				<Icon icon={glyphs.lock} size={14} />
-				{t('call.e2ee')}
-			</span>
+			<Tooltip text={t('call.e2eeNote')} class="contents">
+				<span class="flex shrink-0 items-center gap-1 text-fc-xs text-fc-fg-muted">
+					<Icon icon={glyphs.lock} size={14} />
+					{t('call.e2ee')}
+				</span>
+			</Tooltip>
 		{/if}
 		{#if call.status === 'connecting'}<Spinner size="sm" label={t('call.connecting')} />{/if}
 	</div>
@@ -54,7 +56,7 @@
 			<Icon icon={glyphs.camera} size={20} />
 		</IconButton>
 		{#if call.canShare}
-			<IconButton variant={call.screenOn ? 'secondary' : 'ghost'} aria-label={call.screenOn ? t('call.shareStop') : t('call.share')} title={call.screenOn ? t('call.shareStop') : t('call.share')} aria-pressed={call.screenOn} onclick={() => call.toggle('screen')}>
+			<IconButton variant={call.screenOn ? 'secondary' : 'ghost'} aria-label={call.screenOn ? t('call.shareStop') : t('call.share')} aria-pressed={call.screenOn} onclick={() => call.toggle('screen')}>
 				<Icon icon={glyphs.screenShare} size={20} />
 			</IconButton>
 		{/if}

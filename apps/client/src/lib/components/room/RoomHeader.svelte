@@ -38,10 +38,10 @@
 		{/if}
 	</div>
 	<CallButton roomId={room.roomId} />
-	<IconButton variant="ghost" aria-label={t('header.searchAria')} title={t('common.search')} aria-pressed={ui.panel === 'search'} onclick={() => ui.toggle('search')}>
+	<IconButton variant="ghost" aria-label={t('header.searchAria')} tooltip={t('common.search')} aria-pressed={ui.panel === 'search'} onclick={() => ui.toggle('search')}>
 		<Icon icon={icons.search} size={18} />
 	</IconButton>
-	<IconButton variant="ghost" aria-label={t('header.membersAria', { count: info.members })} title={t('common.members')} aria-pressed={ui.panel === 'members'} onclick={() => ui.toggle('members')}>
+	<IconButton variant="ghost" aria-label={t('header.membersAria', { count: info.members })} tooltip={t('common.members')} aria-pressed={ui.panel === 'members'} onclick={() => ui.toggle('members')}>
 		<Icon icon={glyphs.users} size={18} />
 	</IconButton>
 	<HeaderMenu {room} {direct} />

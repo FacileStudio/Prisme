@@ -47,7 +47,7 @@
 			<div class="flex min-w-0 items-center gap-1">
 				<h1 class="truncate text-fc-2xl font-semibold text-fc-fg">{nav.name}</h1>
 				{#if info.admin}
-					<IconButton variant="ghost" aria-label={t('space.renameAria', { name: nav.name })} title={t('space.renameTitle')} onclick={() => (ui.dialog = 'rename-space')}>
+					<IconButton variant="ghost" aria-label={t('space.renameAria', { name: nav.name })} tooltip={t('space.renameTitle')} onclick={() => (ui.dialog = 'rename-space')}>
 						<Icon icon={icons.edit} size={16} />
 					</IconButton>
 				{/if}

@@ -24,6 +24,6 @@
 	}
 </script>
 
-<IconButton variant="ghost" aria-label={label} title={label} disabled={!enabled || busy} onclick={startCall}>
+<IconButton variant="ghost" aria-label={label} disabled={!enabled || busy} onclick={startCall}>
 	<Icon icon={glyphs.phone} size={18} />
 </IconButton>

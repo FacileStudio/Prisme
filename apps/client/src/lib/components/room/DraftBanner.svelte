@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Room } from 'matrix-js-sdk';
-	import { Icon, icons } from '@facile/muse';
+	import { Icon, Tooltip, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { t } from '$lib/i18n/index.svelte';
@@ -17,8 +17,10 @@
 		<span class="min-w-0 flex-1 truncate">
 			{#if draft.editing}{t('draft.editing')}{:else}{t('draft.replying', { name: String(who), text: String(target.getContent().body ?? '') })}{/if}
 		</span>
-		<button type="button" class="flex size-9 items-center justify-center rounded-fc-pill hover:bg-fc-surface" aria-label={t('common.cancel')} onclick={() => draft.clear()}>
-			<Icon icon={icons.close} size={14} />
-		</button>
+		<Tooltip text={t('common.cancel')} describe={false} class="contents">
+			<button type="button" class="flex size-9 items-center justify-center rounded-fc-pill hover:bg-fc-surface" aria-label={t('common.cancel')} onclick={() => draft.clear()}>
+				<Icon icon={icons.close} size={14} />
+			</button>
+		</Tooltip>
 	</div>
 {/if}
