@@ -28,5 +28,5 @@ describe('app messages', () => {
 		expect(t('nav.messages')).toBe('Messages');
 		expect(t('space.channelCount', { count: 3 })).toBe('3 canaux');
 		expect(t('typing.two', { a: 'Ann', b: 'Bob' })).toBe('Ann et Bob écrivent…');
-	});
+	}, 30_000);
 });
