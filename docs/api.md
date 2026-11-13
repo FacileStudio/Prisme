@@ -10,6 +10,24 @@ Every route lives under `/api` on `https://prisme.facile.studio`. The generated 
 | Browser | porte session cookie from the Registre SSO flow (`GET /api/auth/oidc`). Mutating cookie requests send `X-Facile-CSRF` | every route |
 | Service (Bulle) | `Authorization: Bearer <PRISME_SERVICE_KEY>` and `X-Prisme-Acting-For: <email>` | `GET /spaces`, every `/agents` route |
 
+### Rate limits (since v0.17.0)
+
+Every `/api` route spends from a token bucket. Past it, Prisme answers `429` with the
+`rate_limited` code and a `Retry-After` in seconds.
+
+| Bucket | Key | Budget |
+|---|---|---|
+| Every request | the visitor's address | 240 per minute, burst 120 |
+| Writes (anything but `GET`, `HEAD`, `OPTIONS`), on top | the visitor's address | 30 per minute, burst 30 |
+| Sign-in (`/api/auth/*`), on top | the visitor's address | at most 30 in any minute (burst 15) |
+| Service key | which key in `PRISME_SERVICE_KEY` | 1200 per minute, burst 600, instead of the visitor buckets |
+
+The visitor's address is what tronc's real-IP middleware resolved from `TRUSTED_PROXIES`, never a
+header read by hand. Production runs `TRUSTED_PROXIES=private,cloudflare`, so it is
+`Cf-Connecting-Ip` read from a trusted chain. Without that setting, every visitor shares the
+Cloudflare edge's bucket. Synapse's appservice transactions (`/_matrix/app/...`), `/health`,
+`/ready` and `/version` are not limited.
+
 A service call acts for the Prisme user with that email. When none exists, Prisme creates it as a
 first sign-in would (porte user with a verified email, then a Matrix account), and porte links the
 Registre identity to it on that person's first SSO sign-in.
@@ -186,10 +204,15 @@ Answers `{"call_id", "livekit_url", "token", "join_url"}`. `503 unavailable` whe
 `[{"user_id", "name", "avatar_url", "agent"}]`, at most 200 people and active agents, matching
 name, email or Matrix id. `avatar_url` is an mxc URI or empty; `agent` is true for an agent.
 
+Since v0.17.0 the list holds only the caller, the people and agents joined to a space the caller
+is joined to, and the caller's own agents. Nobody else is found, by name, email or Matrix id.
+Prisme reads the caller's spaces and their members from Synapse on every call.
+
 ### `GET /users/agents`
 
-`[{"user_id", "name", "owner_user_id"}]`: every active agent with its owner's Matrix id. The client
-draws agents as blobs and badges them from this list.
+`[{"user_id", "name", "owner_user_id"}]`: the active agents the caller may see, with the owner's
+Matrix id. Since v0.17.0 that is the caller's own agents, and the agents joined to a shared space
+whose owner is a space peer. The client draws agents as blobs and badges them from this list.
 
 ### `GET /push`
 

@@ -77,7 +77,7 @@ Full reference at `/docs`; summary in [docs/api.md](docs/api.md).
 | `PUT /api/agents/{user_id}/rooms`, `DELETE /api/agents/{user_id}` | session or service | Place or deactivate an agent |
 | `POST /api/calls` | session | Start or join the Echo call of a room; returns the LiveKit token and the room's `e2ee_key` |
 | `POST /api/echo/events` | Echo signature | Call events: the call message turns into "Call ended" when the last person leaves |
-| `GET /api/users?q=` | session | People directory |
+| `GET /api/users?q=`, `GET /api/users/agents` | session | The people and agents the caller shares a space with |
 | `GET /api/push`, `POST /api/push/devices` | session | Whether Android push is on; register the app's Firebase token |
 | `PUT /_matrix/app/v1/transactions/{txnId}` | hs_token | Synapse's appservice events, which drive Android push |
 | `POST /api/registre/sync`, `POST /api/registre/deletions` | none, signed | Registre's space nudge, and its signed GDPR `user.deleted` notice |
@@ -112,7 +112,10 @@ it; see `docs/api.md` for the answers it can produce.
 - **Directory.** Synapse leaves every user of an exclusive appservice namespace out of its user
   directory (`should_include_local_user_in_dir` in
   https://github.com/element-hq/synapse/blob/v1.164.1/synapse/storage/databases/main/user_directory.py),
-  and every Prisme human is one. `GET /api/users` answers search instead.
+  and every Prisme human is one. `GET /api/users` answers search instead, limited to the
+  caller's space peers.
+- **Rate limits.** Every `/api` route is rate limited per visitor address, with a separate bucket
+  per service key. See [docs/api.md](docs/api.md#rate-limits-since-v0170).
 - **Channels.** Rooms with join rule `restricted` to their space, history `shared`, unencrypted in
   v1 so search and agents can read them.
 - **Media.** Authenticated media stays on (the Synapse default), so the client fetches media with
