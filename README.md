@@ -141,7 +141,11 @@ it; see `docs/api.md` for the answers it can produce.
   PKCE flow through the `studio.facile.prisme://auth` deep link and call the API with a bearer
   token, so CORS always allows `https://localhost`, `tauri://localhost` and
   `http://tauri.localhost` while OIDC is on. First launch shows a short intro that ends on the
-  sign-in slide, then a welcome step that asks for notifications.
+  sign-in slide, then a welcome step that asks for notifications. The bearer token lives in the
+  platform's secure store (`apps/client/src/lib/native/token.ts`): the Android Keystore through
+  `capacitor-secure-storage-plugin`, and the OS keychain through the `keyring` crate on desktop
+  (`apps/desktop/src/token.rs`). Builds before v0.20.0 kept it in plain `@capacitor/preferences`;
+  the first read moves it across and deletes the old copy once the secure store holds it.
 - **Notifications.** The browser and the desktop app notify from their own Matrix sync while
   they are out of sight. The Android app cannot, so the server pushes: Synapse never runs push
   rules for users an exclusive appservice owns (`get_if_app_services_interested_in_user` in

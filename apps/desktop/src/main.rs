@@ -1,8 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod token;
+
 use tauri::Manager;
 
-/// Starts the Prisme window with sign-in deep links, notifications, the system browser and self-update wired in.
+/// Starts the Prisme window with the keychain token, sign-in deep links, notifications, the system browser and self-update wired in.
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
@@ -16,6 +18,11 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .invoke_handler(tauri::generate_handler![
+            token::token_get,
+            token::token_set,
+            token::token_clear
+        ])
         .setup(|_app| {
             #[cfg(any(target_os = "linux", windows))]
             {

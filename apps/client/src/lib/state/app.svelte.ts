@@ -4,7 +4,7 @@ import { prisme, type AgentUser, type Session, type Space } from '$lib/api/prism
 import { isAgent } from '$lib/chat/users';
 import { watchClient } from '$lib/matrix/events';
 import { setMediaToken } from '$lib/matrix/media';
-import { clearToken } from '$lib/native/platform';
+import { clearToken } from '$lib/native/token';
 import { setSessionLocale, t } from '$lib/i18n/index.svelte';
 
 export type Status = 'loading' | 'ready' | 'signed-out' | 'error';

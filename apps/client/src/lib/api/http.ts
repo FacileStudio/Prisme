@@ -1,4 +1,5 @@
-import { apiBase, clearToken, getToken } from '$lib/native/platform';
+import { apiBase } from '$lib/native/platform';
+import { clearToken, getToken } from '$lib/native/token';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
