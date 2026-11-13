@@ -31,6 +31,10 @@ func routerConfig(a app, clientDir string) httpx.Config {
 	}
 }
 
+// visionScript is the origin of Vision's tracker, which app.html loads on the
+// production host.
+const visionScript = "https://vision.facile.studio"
+
 var callFeatures = []string{"camera", "microphone", "display-capture", "speaker-selection"}
 
 // origins returns the http(s) origin of rawURL and its websocket twin, or
@@ -59,13 +63,14 @@ func securityConfig(clientDir, homeserver, liveKit string, logger *slog.Logger) 
 		"connect-src": connect,
 		"media-src":   {"blob:", "https:"},
 		"worker-src":  {"blob:"},
+		"script-src":  {visionScript},
 	}
 	if spa.Available(clientDir) {
 		hashes, err := spa.InlineScriptHashes(clientDir)
 		if err != nil {
 			logger.Warn("failed to hash the client's inline scripts", slog.Any("error", err))
 		} else {
-			sources["script-src"] = hashes
+			sources["script-src"] = append(sources["script-src"], hashes...)
 		}
 	}
 	return middleware.SecurityConfig{CSPSources: sources, Allow: callFeatures}
