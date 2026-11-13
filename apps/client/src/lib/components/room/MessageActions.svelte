@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { MatrixEvent, Room } from 'matrix-js-sdk';
-	import { ConfirmModal, Icon, icons, toast } from '@facile/muse';
+	import { ConfirmModal, Icon, Tooltip, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
@@ -37,26 +37,36 @@
 	role="toolbar"
 	aria-label={t('actions.toolbar')}
 >
-	<button type="button" class="action" aria-label={t('actions.reactAria')} title={t('actions.react')} onclick={() => (picking = !picking)}>
-		<Icon icon={glyphs.smile} size={16} />
-	</button>
-	<button type="button" class="action" aria-label={t('actions.reply')} title={t('actions.reply')} onclick={() => draft.reply(event)}>
-		<Icon icon={glyphs.reply} size={16} />
-	</button>
-	{#if !inThread}
-		<button type="button" class="action" aria-label={t('actions.replyThread')} title={t('actions.replyThread')} onclick={() => ui.openThread(event.getId()!)}>
-			<Icon icon={glyphs.thread} size={16} />
+	<Tooltip text={t('actions.react')} describe={false} class="contents">
+		<button type="button" class="action" aria-label={t('actions.reactAria')} onclick={() => (picking = !picking)}>
+			<Icon icon={glyphs.smile} size={16} />
 		</button>
+	</Tooltip>
+	<Tooltip text={t('actions.reply')} describe={false} class="contents">
+		<button type="button" class="action" aria-label={t('actions.reply')} onclick={() => draft.reply(event)}>
+			<Icon icon={glyphs.reply} size={16} />
+		</button>
+	</Tooltip>
+	{#if !inThread}
+		<Tooltip text={t('actions.replyThread')} describe={false} class="contents">
+			<button type="button" class="action" aria-label={t('actions.replyThread')} onclick={() => ui.openThread(event.getId()!)}>
+				<Icon icon={glyphs.thread} size={16} />
+			</button>
+		</Tooltip>
 	{/if}
 	{#if editable}
-		<button type="button" class="action" aria-label={t('actions.edit')} title={t('actions.edit')} onclick={() => draft.edit(event)}>
-			<Icon icon={glyphs.pen} size={16} />
-		</button>
+		<Tooltip text={t('actions.edit')} describe={false} class="contents">
+			<button type="button" class="action" aria-label={t('actions.edit')} onclick={() => draft.edit(event)}>
+				<Icon icon={glyphs.pen} size={16} />
+			</button>
+		</Tooltip>
 	{/if}
 	{#if mine}
-		<button type="button" class="action hover:text-fc-danger" aria-label={t('common.delete')} title={t('common.delete')} onclick={() => (confirming = true)}>
-			<Icon icon={icons.remove} size={16} />
-		</button>
+		<Tooltip text={t('common.delete')} describe={false} class="contents">
+			<button type="button" class="action hover:text-fc-danger" aria-label={t('common.delete')} onclick={() => (confirming = true)}>
+				<Icon icon={icons.remove} size={16} />
+			</button>
+		</Tooltip>
 	{/if}
 	{#if picking}
 		<div class="absolute right-0 top-11">

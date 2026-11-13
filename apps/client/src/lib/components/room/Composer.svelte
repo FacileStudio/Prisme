@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import type { Room } from 'matrix-js-sdk';
-	import { Icon, icons, toast } from '@facile/muse';
+	import { Icon, Tooltip, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { segments } from '$lib/chat/mentions';
@@ -102,16 +102,17 @@
 		<DraftBanner {room} {draft} />
 		<PendingFiles files={composer.files} onremove={(f) => (composer.files = composer.files.filter((x) => x !== f))} />
 		<div class="flex items-end gap-2">
-			<button
-				type="button"
-				aria-label={t('composer.attach')}
-				title={t('composer.attach')}
-				disabled={!!draft.editing}
-				class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
-				onclick={() => picker?.click()}
-			>
-				<Icon icon={icons.plus} size={20} />
-			</button>
+			<Tooltip text={t('composer.attach')} describe={false} class="contents">
+				<button
+					type="button"
+					aria-label={t('composer.attach')}
+					disabled={!!draft.editing}
+					class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
+					onclick={() => picker?.click()}
+				>
+					<Icon icon={icons.plus} size={20} />
+				</button>
+			</Tooltip>
 			<ComposerField
 				bind:input
 				bind:value={composer.text}
@@ -129,16 +130,17 @@
 				aria-controls={open ? menuId : undefined}
 				aria-activedescendant={open ? `${menuId}-${composer.selected}` : undefined}
 			/>
-			<button
-				type="button"
-				aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
-				title={t('composer.send')}
-				disabled={!canSend}
-				class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
-				onclick={submit}
-			>
-				<Icon icon={glyphs.send} size={18} />
-			</button>
+			<Tooltip text={draft.editing ? t('composer.saveEdit') : t('composer.send')} describe={false} class="contents">
+				<button
+					type="button"
+					aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
+					disabled={!canSend}
+					class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
+					onclick={submit}
+				>
+					<Icon icon={glyphs.send} size={18} />
+				</button>
+			</Tooltip>
 		</div>
 	</div>
 	<input bind:this={picker} type="file" multiple hidden onchange={(e) => {

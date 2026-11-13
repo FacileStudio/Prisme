@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, icons } from '@facile/muse';
+	import { Icon, Tooltip, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 
@@ -26,14 +26,16 @@
 						<span class="line-clamp-2 break-all">{preview.file.name}</span>
 					</span>
 				{/if}
-				<button
-					type="button"
-					class="absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-fc-pill bg-fc-scrim text-white"
-					aria-label={t('files.remove', { name: preview.file.name })}
-					onclick={() => onremove(preview.file)}
-				>
-					<Icon icon={icons.close} size={14} />
-				</button>
+				<Tooltip text={t('files.remove', { name: preview.file.name })} describe={false} class="contents">
+					<button
+						type="button"
+						class="absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-fc-pill bg-fc-scrim text-white"
+						aria-label={t('files.remove', { name: preview.file.name })}
+						onclick={() => onremove(preview.file)}
+					>
+						<Icon icon={icons.close} size={14} />
+					</button>
+				</Tooltip>
 			</li>
 		{/each}
 	</ul>

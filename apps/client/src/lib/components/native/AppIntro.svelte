@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Alert, Button, Icon, Spinner, icons } from '@facile/muse';
+	import { Alert, Button, Icon, Spinner, Tooltip, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { startAppLogin } from '$lib/native/signin';
@@ -94,20 +94,22 @@
 	<footer class="relative z-10 flex flex-col items-center gap-4 px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 		<div class="flex items-center gap-1" role="tablist" aria-label={t('app.slides')}>
 			{#each slides as slide, i (slide.id)}
-				<button
-					type="button"
-					role="tab"
-					aria-selected={i === index}
-					aria-label={t('app.goToSlide', { n: i + 1 })}
-					class="flex size-11 items-center justify-center"
-					onclick={() => show(i)}
-				>
-					<span
-						class="h-1.5 rounded-fc-pill transition-all duration-300 motion-reduce:transition-none {i === index
-							? 'w-6 bg-fc-fg'
-							: 'w-1.5 bg-fc-fg/25'}"
-					></span>
-				</button>
+				<Tooltip text={t('app.goToSlide', { n: i + 1 })} describe={false} class="contents">
+					<button
+						type="button"
+						role="tab"
+						aria-selected={i === index}
+						aria-label={t('app.goToSlide', { n: i + 1 })}
+						class="flex size-11 items-center justify-center"
+						onclick={() => show(i)}
+					>
+						<span
+							class="h-1.5 rounded-fc-pill transition-all duration-300 motion-reduce:transition-none {i === index
+								? 'w-6 bg-fc-fg'
+								: 'w-1.5 bg-fc-fg/25'}"
+						></span>
+					</button>
+				</Tooltip>
 			{/each}
 		</div>
 		{#if last}
