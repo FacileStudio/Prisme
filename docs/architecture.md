@@ -32,3 +32,13 @@ api container (Go + SPA) ── appservice ──▶ synapse container (federati
 `porte_*` tables hold identity and sessions. Prisme adds `accounts`, `matrix_sessions`,
 `spaces`, `channels` and `agents` (`apps/api/schemas/models.go`). Everything else lives in
 Synapse.
+
+The schema of the `prisme` database is ordered goose SQL in `apps/api/migrations/`, embedded in
+the binary and applied at boot by `tronc/migrate` behind a Postgres advisory lock. GORM is the
+query layer only: `AutoMigrate` never runs, and `scripts/check.sh` fails on an `.AutoMigrate(`
+outside a test file. A schema change is a new numbered file with `-- +goose Up` and
+`-- +goose Down`, plus the matching struct field in `schemas/`;
+`TestGORMModelsMatchTheMigratedSchema` fails when a field has no column. porte's tables are in
+the migrations too, and `TestPorteSchemaIsInTheMigrations` fails when a porte bump changes
+`pg.Schema`. `docker run <image> migrate status` (also `up`, `version`, `baseline <n>`) answers
+without a shell. The `synapse` database belongs to Synapse and is not migrated by the API.

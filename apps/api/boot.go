@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -16,6 +17,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/internal/env"
 	"github.com/FacileStudio/Prisme/apps/api/internal/matrix"
 	"github.com/FacileStudio/Prisme/apps/api/internal/seal"
+	"github.com/FacileStudio/Prisme/apps/api/migrations"
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
@@ -27,6 +29,7 @@ import (
 	"github.com/FacileStudio/porte/kit"
 	"github.com/FacileStudio/tronc/health"
 	"github.com/FacileStudio/tronc/logger"
+	"github.com/FacileStudio/tronc/migrate"
 	"gorm.io/gorm"
 )
 
@@ -40,11 +43,8 @@ func run() int {
 	appLogger, flush := newLogger(cfg)
 	defer flush()
 	db, err := database.Open(cfg.DatabaseURL)
-	if err == nil {
-		err = schemas.Migrate(db)
-	}
 	if err != nil {
-		appLogger.Error("failed to prepare the database", slog.Any("error", err))
+		appLogger.Error("failed to open the database", slog.Any("error", err))
 		return 1
 	}
 	sqlDB, err := db.DB()
@@ -53,6 +53,17 @@ func run() int {
 		return 1
 	}
 	defer func() { _ = sqlDB.Close() }()
+	if handled, err := migrate.Command(context.Background(), os.Args, migrations.Config(sqlDB, appLogger)); handled {
+		if err != nil {
+			appLogger.Error("migrate", slog.Any("error", err))
+			return 1
+		}
+		return 0
+	}
+	if err := schemas.MigrateWithLogger(context.Background(), db, appLogger); err != nil {
+		appLogger.Error("failed to prepare the database", slog.Any("error", err))
+		return 1
+	}
 	services, err := buildApp(cfg, db, sqlDB, appLogger)
 	if err != nil {
 		appLogger.Error("failed to build the services", slog.Any("error", err))

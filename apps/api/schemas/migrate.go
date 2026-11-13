@@ -1,46 +1,37 @@
 package schemas
 
 import (
-	"github.com/FacileStudio/porte/pg"
+	"context"
+	"log/slog"
+
+	"github.com/FacileStudio/Prisme/apps/api/migrations"
 	"gorm.io/gorm"
 )
 
-// Migrate creates porte's identity tables, then Prisme's own. Both are
-// idempotent, and Prisme runs a single replica, so boot is the right place.
+// Migrate applies the ordered migrations under migrations/ under a lock of
+// the current schema's own. The tests build their schemas through it, so they
+// run exactly the SQL production runs.
 func Migrate(db *gorm.DB) error {
-	if err := db.Exec(pg.Schema).Error; err != nil {
+	sqlDB, err := db.DB()
+	if err != nil {
 		return err
 	}
-	if err := db.AutoMigrate(&Account{}, &MatrixSession{}, &Space{}, &Channel{}, &Agent{}, &Call{}, &ErasedSubject{}); err != nil {
+	ctx := context.Background()
+	cfg, err := migrations.SchemaConfig(ctx, sqlDB, nil)
+	if err != nil {
 		return err
 	}
-	if err := db.Exec(deletionState).Error; err != nil {
-		return err
-	}
-	if err := db.Exec(retiredReservations).Error; err != nil {
-		return err
-	}
-	return db.Exec(pushDevices).Error
+	return migrations.Up(ctx, cfg)
 }
 
-const deletionState = `CREATE TABLE IF NOT EXISTS directory_deletion_state (
-	id         integer PRIMARY KEY,
-	state      bytea NOT NULL,
-	updated_at timestamptz NOT NULL DEFAULT now()
-)`
-
-// retiredReservations drops the rows erasures before v0.13.0 kept to reserve
-// a deactivated Matrix id: an account under a negated user id and agents with
-// no owner. Synapse itself now answers whether an id is retired.
-const retiredReservations = `DELETE FROM accounts WHERE user_id < 0;
-DELETE FROM agents WHERE owner_id = 0`
-
-// pushDevices holds the Firebase token of each signed-in Android app. A row
-// belongs to a porte session, so signing out deletes it.
-const pushDevices = `CREATE TABLE IF NOT EXISTS push_devices (
-	token            text PRIMARY KEY,
-	user_id          bigint NOT NULL REFERENCES porte_users(id) ON DELETE CASCADE,
-	porte_session_id bigint NOT NULL REFERENCES porte_sessions(id) ON DELETE CASCADE,
-	created_at       timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS push_devices_user_idx ON push_devices (user_id)`
+// MigrateWithLogger is what the boot runs: the migrations under tronc's
+// default lock, logged through the app's logger. Prisme runs no data step
+// after them: the two the old boot ran had nothing left to change, see the
+// 0.18.0 entry of CHANGELOG.md.
+func MigrateWithLogger(ctx context.Context, db *gorm.DB, logger *slog.Logger) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+	return migrations.Up(ctx, migrations.Config(sqlDB, logger))
+}

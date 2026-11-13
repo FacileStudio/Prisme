@@ -44,6 +44,8 @@ cd apps/client && bunx cap sync android                          # needs Node 22
 - A Registre erasure goes through `internal/erasure`: Synapse's admin API first, then one
   transaction. Answer a deletion notice with success only when the person was erased or provably
   never here; `docs/erasure.md` lists what remains and why. Matrix ids are never reused.
+- The schema is goose SQL in `apps/api/migrations/`, applied at boot by `tronc/migrate`. Never
+  call `AutoMigrate` outside a test; add a numbered migration and update the struct by hand.
 - Every compose variable is forwarded explicitly in `docker-compose.yml`.
 - Deployment shape: one app container (Go API + SPA) behind Traefik, Synapse as a second
   service owning `/_matrix` and `/_synapse/client` with a higher router priority. Read the
