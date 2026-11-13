@@ -17,10 +17,17 @@ Every `/api` route spends from a token bucket. Past it, Prisme answers `429` wit
 
 | Bucket | Key | Budget |
 |---|---|---|
-| Every request | the visitor's address | 240 per minute, burst 120 |
-| Writes (anything but `GET`, `HEAD`, `OPTIONS`), on top | the visitor's address | 30 per minute, burst 30 |
+| Every request | the signed-in user, else the visitor's address | 240 per minute, burst 120 |
+| Writes (anything but `GET`, `HEAD`, `OPTIONS`), on top | the signed-in user, else the visitor's address | 30 per minute, burst 30 |
 | Sign-in (`/api/auth/*`), on top | the visitor's address | at most 30 in any minute (burst 15) |
 | Service key | which key in `PRISME_SERVICE_KEY` | 1200 per minute, burst 600, instead of the visitor buckets |
+
+Since v0.19.0 a request whose session cookie or bearer token resolves to a live session spends from
+that user's buckets, wherever it comes from, so people behind one office address no longer share
+a budget. A request with no session, or one that does not resolve, spends from its address's
+buckets. porte's own routes (`/api/auth/*`) always spend from the address's buckets and never
+look the session up. Each limiter remembers at most 50,000 keys and forgets the longest idle
+first.
 
 The visitor's address is what tronc's real-IP middleware resolved from `TRUSTED_PROXIES`, never a
 header read by hand. Production runs `TRUSTED_PROXIES=private,cloudflare`, so it is
