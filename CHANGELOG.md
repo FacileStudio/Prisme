@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.22.0] - 2026-11-14
+
+### Changed
+
+- The landing sells the hosted chat first: "Le chat de l'équipe, avec Bulle dans la conversation" in fr, en, es and de, with muse `LandingCta` ("Créer un compte gratuit" first, sign-in second). The hero demo shows a real message from its first frame and moves only with transform and opacity.
+- Three demo tiles replace the four feature cards: spaces that follow the Facile account, Bulle answering with Opus tasks and files (Pro plan), and a call run by Echo.
+- muse v0.24.0: a `WorksWith` row (Echo, Bulle), a per-app `PricingPlans` note (Prisme in every plan, Bulle needs Pro, one subscription covers every app) and `ForDevelopers` with Matrix, the source code and the Suite self-hosting page. "on Matrix" and "No subscription" leave the title, meta tags, manifest and link preview.
+- The API's content security policy allows the plan catalog (`https://api-ardoise.facile.studio`) in `connect-src`.
+
 ## [0.21.2] - 2026-11-14
 
 ### Changed
