@@ -1,73 +1,117 @@
 import type { Row } from '../row';
 
 export const landing = {
-	'landing.title': ['Prisme · Team chat on Matrix', 'Prisme · Le chat d’équipe sur Matrix', 'Prisme · Chat de equipo en Matrix', 'Prisme · Team-Chat auf Matrix'],
+	'landing.title': ['Prisme · Team chat', 'Prisme · Le chat de l’équipe', 'Prisme · El chat del equipo', 'Prisme · Der Team-Chat'],
 	'landing.description': [
-		'A channel per project, encrypted calls and Bulle agents you can mention.',
-		'Un canal par projet, des appels chiffrés et des agents Bulle à mentionner.',
-		'Un canal por proyecto, llamadas cifradas y agentes de Bulle que puedes mencionar.',
-		'Ein Kanal pro Projekt, verschlüsselte Anrufe und Bulle-Agenten zum Erwähnen.'
+		'A room per project, a video call in one click, and Bulle answering when you mention it. Free to start.',
+		'Un salon par projet, un appel vidéo en un clic, et Bulle qui répond quand on le mentionne. Gratuit pour commencer.',
+		'Una sala por proyecto, una videollamada en un clic y Bulle respondiendo cuando lo mencionas. Gratis para empezar.',
+		'Ein Raum pro Projekt, ein Videoanruf mit einem Klick und Bulle, das antwortet, wenn man es erwähnt. Kostenlos starten.'
 	],
 	'landing.nav.features': ['Features', 'Fonctionnalités', 'Funciones', 'Funktionen'],
 	'landing.nav.apps': ['Apps', 'Apps', 'Apps', 'Apps'],
-	'landing.tagline': ['Team chat for the Facile suite.', 'Le chat d’équipe de la suite Facile.', 'El chat de equipo de la suite Facile.', 'Der Team-Chat der Facile-Suite.'],
+	'landing.nav.pricing': ['Pricing', 'Tarifs', 'Precios', 'Preise'],
+	'landing.tagline': [
+		'Team chat, one room per project.',
+		'La messagerie de l’équipe, un salon par projet.',
+		'El chat del equipo, una sala por proyecto.',
+		'Der Team-Chat, ein Raum pro Projekt.'
+	],
 	'landing.footer.product': ['Product', 'Produit', 'Producto', 'Produkt'],
-	'landing.hero.title': ['Talk to your team and your agents', 'Parlez à votre équipe et à vos agents', 'Habla con tu equipo y con tus agentes', 'Sprich mit deinem Team und deinen Agenten'],
+	'landing.hero.title': [
+		'Team chat, with Bulle in the conversation.',
+		'Le chat de l’équipe, avec Bulle dans la conversation.',
+		'El chat del equipo, con Bulle en la conversación.',
+		'Der Team-Chat, mit Bulle im Gespräch.'
+	],
 	'landing.hero.body': [
-		'One channel per project, encrypted calls, and Bulle agents that answer in the thread.',
-		'Un canal par projet, des appels chiffrés et des agents Bulle qui répondent dans le fil.',
-		'Un canal por proyecto, llamadas cifradas y agentes de Bulle que responden en el hilo.',
-		'Ein Kanal pro Projekt, verschlüsselte Anrufe und Bulle-Agenten, die im Verlauf antworten.'
+		'A room per project, a video call in one click, and Bulle answering when you mention it.',
+		'Un salon par projet, un appel vidéo en un clic, et Bulle qui répond quand on le mentionne.',
+		'Una sala por proyecto, una videollamada en un clic y Bulle respondiendo cuando lo mencionas.',
+		'Ein Raum pro Projekt, ein Videoanruf mit einem Klick und Bulle, das antwortet, wenn man es erwähnt.'
+	],
+	'landing.hero.note': [
+		'Free to start, on the web, desktop and Android.',
+		'Gratuit pour commencer, sur le web, ordinateur et Android.',
+		'Gratis para empezar, en la web, el ordenador y Android.',
+		'Kostenlos starten, im Web, auf dem Computer und auf Android.'
 	],
 	'landing.features.title': ['What Prisme does', 'Ce que fait Prisme', 'Lo que hace Prisme', 'Was Prisme kann'],
-	'landing.features.spaces.title': ['A space per organization', 'Un espace par organisation', 'Un espacio por organización', 'Ein Bereich pro Organisation'],
-	'landing.features.spaces.body': [
-		'Spaces follow your Facile organizations, so the right people are already there.',
-		'Les espaces suivent vos organisations Facile, et les bonnes personnes y sont déjà.',
-		'Los espacios siguen a tus organizaciones de Facile, así que las personas adecuadas ya están dentro.',
-		'Bereiche folgen deinen Facile-Organisationen, die richtigen Leute sind schon da.'
+	'landing.card.spaces.title': ['Your team is already here', 'Votre équipe est déjà là', 'Tu equipo ya está aquí', 'Ihr Team ist schon da'],
+	'landing.card.spaces.body': [
+		'Spaces follow your Facile account, so your colleagues are there from the first sign-in.',
+		'Les espaces suivent votre compte Facile : vos collègues sont là dès la première connexion.',
+		'Los espacios siguen tu cuenta de Facile: tus compañeros están ahí desde el primer inicio de sesión.',
+		'Bereiche folgen Ihrem Facile-Konto, Ihre Kollegen sind ab der ersten Anmeldung da.'
 	],
-	'landing.features.agents.title': ['Agents you can mention', 'Des agents à mentionner', 'Agentes que puedes mencionar', 'Agenten zum Erwähnen'],
-	'landing.features.agents.body': [
-		'Type @ and your Bulle agent answers in the room.',
-		'Tapez @ et votre agent Bulle répond dans le salon.',
-		'Escribe @ y tu agente de Bulle responde en la sala.',
-		'Tippe @ und dein Bulle-Agent antwortet im Raum.'
+	'landing.card.bulle.title': ['Mention Bulle', 'Mentionnez Bulle', 'Menciona a Bulle', 'Erwähnen Sie Bulle'],
+	'landing.card.bulle.body': [
+		'Facile’s AI assistant answers in the thread with your Opus tasks and your files. Needs the Pro plan.',
+		'L’assistant IA de Facile répond dans le fil avec vos tâches Opus et vos fichiers. Demande l’offre Pro.',
+		'El asistente de IA de Facile responde en el hilo con tus tareas de Opus y tus archivos. Requiere el plan Pro.',
+		'Der KI-Assistent von Facile antwortet im Verlauf mit Ihren Opus-Aufgaben und Dateien. Braucht den Pro-Tarif.'
 	],
-	'landing.features.calls.title': ['Encrypted calls', 'Appels chiffrés', 'Llamadas cifradas', 'Verschlüsselte Anrufe'],
-	'landing.features.calls.body': [
-		'Voice, video and screen sharing, end-to-end encrypted in every room.',
-		'Voix, vidéo et partage d’écran, chiffrés de bout en bout dans chaque salon.',
-		'Voz, vídeo y pantalla compartida, cifrados de extremo a extremo en cada sala.',
-		'Sprache, Video und Bildschirmfreigabe, Ende-zu-Ende-verschlüsselt in jedem Raum.'
+	'landing.card.call.title': ['A call in one click', 'Un appel en un clic', 'Una llamada en un clic', 'Ein Anruf mit einem Klick'],
+	'landing.card.call.body': [
+		'From the room to a video call, end-to-end encrypted. Echo runs the call.',
+		'Du salon à l’appel vidéo, chiffré de bout en bout. C’est Echo qui fait tourner l’appel.',
+		'De la sala a la videollamada, cifrada de extremo a extremo. Echo se encarga de la llamada.',
+		'Vom Raum direkt in den Videoanruf, Ende-zu-Ende-verschlüsselt. Echo betreibt den Anruf.'
 	],
-	'landing.features.matrix.title': ['Built on Matrix', 'Construit sur Matrix', 'Hecho sobre Matrix', 'Auf Matrix gebaut'],
-	'landing.features.matrix.body': [
-		'An open protocol, with apps for desktop and Android.',
-		'Un protocole ouvert, avec des apps pour ordinateur et Android.',
-		'Un protocolo abierto, con apps para escritorio y Android.',
-		'Ein offenes Protokoll, mit Apps für Desktop und Android.'
+	'landing.with.line': [
+		'Prisme hands calls to Echo and questions to Bulle, on the same Facile account.',
+		'Prisme confie les appels à Echo et les questions à Bulle, avec le même compte Facile.',
+		'Prisme pasa las llamadas a Echo y las preguntas a Bulle, con la misma cuenta de Facile.',
+		'Prisme übergibt Anrufe an Echo und Fragen an Bulle, mit demselben Facile-Konto.'
 	],
-	'landing.cta.title': ['Bring your team in', 'Faites venir votre équipe', 'Trae a tu equipo', 'Hol dein Team dazu'],
-	'landing.cta.body': ['Sign in with your Facile account.', 'Connectez-vous avec votre compte Facile.', 'Inicia sesión con tu cuenta de Facile.', 'Melde dich mit deinem Facile-Konto an.'],
-	'landing.demo.label': [
-		'Prisme demo: a teammate mentions the Pixel agent in the launch channel and it answers.',
-		'Démo de Prisme : une personne mentionne l’agent Pixel dans le canal launch et il répond.',
-		'Demo de Prisme: alguien menciona al agente Pixel en el canal launch y responde.',
-		'Prisme-Demo: Jemand erwähnt den Agenten Pixel im Kanal launch, und er antwortet.'
+	'landing.with.echo': [
+		'Encrypted video calls right in the room.',
+		'Vos appels vidéo dans le salon, chiffrés.',
+		'Videollamadas cifradas en la misma sala.',
+		'Verschlüsselte Videoanrufe direkt im Raum.'
 	],
-	'landing.demo.space': ['Studio', 'Studio', 'Studio', 'Studio'],
-	'landing.demo.prompt': [
-		'@pixel where are we on the launch?',
-		'@pixel on en est où pour le lancement ?',
-		'@pixel ¿cómo va el lanzamiento?',
-		'@pixel wie steht es um den Launch?'
+	'landing.with.bulle': [
+		'Mention it and it answers in the thread. Pro plan.',
+		'Mentionnez-le, il répond dans le fil. Offre Pro.',
+		'Menciónalo y responde en el hilo. Plan Pro.',
+		'Erwähnen Sie es, und es antwortet im Verlauf. Pro-Tarif.'
 	],
-	'landing.demo.answer': [
-		'Two tasks left: the pricing page and the release notes. Léa has both, due Friday.',
-		'Il reste deux tâches : la page tarifs et les notes de version. Léa s’en charge, pour vendredi.',
-		'Quedan dos tareas: la página de precios y las notas de versión. Léa las tiene, para el viernes.',
-		'Noch zwei Aufgaben: die Preisseite und die Release Notes. Léa hat beide, fällig Freitag.'
+	'landing.pricing': ['Pricing', 'Tarifs', 'Precios', 'Preise'],
+	'landing.plan.included': [
+		'Prisme included, the free plan too',
+		'Prisme inclus, offre gratuite comprise',
+		'Prisme incluido, también en el plan gratuito',
+		'Prisme enthalten, auch im kostenlosen Tarif'
 	],
-	'landing.demo.now': ['now', 'maintenant', 'ahora', 'jetzt']
+	'landing.plan.bulle': [
+		'Prisme included, with Bulle in your rooms',
+		'Prisme inclus, avec Bulle dans vos salons',
+		'Prisme incluido, con Bulle en tus salas',
+		'Prisme enthalten, mit Bulle in Ihren Räumen'
+	],
+	'landing.dev.line': [
+		'Open source, your data stays yours.',
+		'Code ouvert, vos données restent les vôtres.',
+		'Código abierto, tus datos siguen siendo tuyos.',
+		'Offener Code, Ihre Daten bleiben Ihre.'
+	],
+	'landing.dev.matrix': [
+		'Prisme runs on Matrix, an open protocol, with Synapse as its server.',
+		'Prisme repose sur Matrix, un protocole ouvert, avec Synapse comme serveur.',
+		'Prisme funciona sobre Matrix, un protocolo abierto, con Synapse como servidor.',
+		'Prisme läuft auf Matrix, einem offenen Protokoll, mit Synapse als Server.'
+	],
+	'landing.dev.source': [
+		'The API, the client and the deployment files, on GitHub.',
+		'L’API, le client et les fichiers de déploiement, sur GitHub.',
+		'La API, el cliente y los archivos de despliegue, en GitHub.',
+		'API, Client und Deployment-Dateien, auf GitHub.'
+	],
+	'landing.cta.title': ['Bring your team in', 'Faites venir votre équipe', 'Trae a tu equipo', 'Holen Sie Ihr Team dazu'],
+	'landing.cta.body': [
+		'Create a free Facile account, then open Prisme.',
+		'Créez un compte Facile gratuit, puis ouvrez Prisme.',
+		'Crea una cuenta de Facile gratuita y abre Prisme.',
+		'Erstellen Sie ein kostenloses Facile-Konto und öffnen Sie Prisme.'
+	]
 } as const satisfies Record<string, Row>;

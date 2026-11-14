@@ -35,6 +35,10 @@ func routerConfig(a app, clientDir string) httpx.Config {
 // production host.
 const visionScript = "https://vision.facile.studio"
 
+// planCatalog is the origin of the public plan catalog the landing's pricing
+// block fetches.
+const planCatalog = "https://api-ardoise.facile.studio"
+
 var callFeatures = []string{"camera", "microphone", "display-capture", "speaker-selection"}
 
 // origins returns the http(s) origin of rawURL and its websocket twin, or
@@ -53,12 +57,12 @@ func origins(rawURL string) []string {
 }
 
 // securityConfig extends tronc's default security headers with what Prisme
-// loads: the homeserver and the LiveKit server in connect-src, blob and https
+// loads: the homeserver, the LiveKit server and the plan catalog in connect-src, blob and https
 // media, the call permissions, and the inline scripts adapter-static writes
 // into the client's pages. A client directory that cannot be hashed is logged
 // and leaves the default script policy, which only reports.
 func securityConfig(clientDir, homeserver, liveKit string, logger *slog.Logger) middleware.SecurityConfig {
-	connect := append(origins(homeserver), origins(liveKit)...)
+	connect := append(append(origins(homeserver), origins(liveKit)...), planCatalog)
 	sources := map[string][]string{
 		"connect-src": connect,
 		"media-src":   {"blob:", "https:"},

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
-	import { Bar, Cursor, Stage, Stream, Window, cursorAt, grow, type Act } from '@facile/mise-en-scene';
+	import { Bar, Cursor, Stage, Stream, Window, cursorAt, type Act } from '@facile/mise-en-scene';
 	import { Blob } from '@facile/blob';
 	import { Icon, Avatar as Picture, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
@@ -20,6 +19,10 @@
 	let shown = $state(0);
 	let cursor = $state(cursorAt());
 	let send = $state<HTMLElement>();
+	let askHeight = $state(0);
+	let replyHeight = $state(0);
+
+	const lift = $derived(shown > 0 || thinking ? 0 : sent ? replyHeight : askHeight + replyHeight);
 
 	function reset() {
 		draft = '';
@@ -96,12 +99,20 @@
 					<Icon icon={glyphs.users} size={18} class="text-fc-fg-muted" />
 				</div>
 				<div class="hd-thread">
-					{@render message('Tom', compact ? [76, 40] : [54, 30])}
-					{@render message('Léa', compact ? [64] : [44])}
-					{@render message('Léa', compact ? [88, 54] : [62, 40])}
-					{@render message('Tom', compact ? [70] : [48])}
-					{#if sent}
-						<div class="hd-pad" in:grow out:fade={{ duration: 200 }}>
+					<div class="hd-stack" style="transform:translateY({lift}px)">
+						{@render message('Tom', compact ? [76, 40] : [54, 30])}
+						{@render message('Léa', compact ? [64] : [44])}
+						{@render message('Tom', compact ? [70] : [48])}
+						<div class="hd-pad">
+							<div class="hd-msg">
+								<Picture name="Léa" class="size-9 shrink-0 text-fc-sm" />
+								<div class="hd-body">
+									<div class="hd-meta"><b>Léa</b><Bar w={36} h={8} /></div>
+									<p>{t('landing.demo.first')}</p>
+								</div>
+							</div>
+						</div>
+						<div class="hd-pad hd-slot" class:hd-on={sent} bind:offsetHeight={askHeight}>
 							<div class="hd-msg">
 								<Picture name="Sam" class="size-9 shrink-0 text-fc-sm" />
 								<div class="hd-body">
@@ -110,22 +121,19 @@
 								</div>
 							</div>
 						</div>
-					{/if}
-					{#if thinking || shown > 0}
-						<div class="hd-pad" in:grow out:fade={{ duration: 200 }}>
+						<div class="hd-pad hd-slot" class:hd-on={thinking || shown > 0} bind:offsetHeight={replyHeight}>
 							<div class="hd-msg">
 								<span class="hd-blob"><Blob name="Pixel" size={72} background="circle" alt="" class="size-full" /></span>
 								<div class="hd-body">
-									<div class="hd-meta"><b>Pixel</b><span>{t('landing.demo.now')}</span></div>
-									{#if thinking}
-										<span class="hd-typing" in:fade={{ duration: 150 }}><i></i><i></i><i></i></span>
-									{:else}
+									<div class="hd-meta"><b>Pixel</b><span class="hd-tag">Bulle</span><span>{t('landing.demo.now')}</span></div>
+									<div class="hd-reply">
 										<Stream text={answer} count={shown} class="hd-answer" />
-									{/if}
+										<span class="hd-typing" class:hd-on={thinking}><i></i><i></i><i></i></span>
+									</div>
 								</div>
 							</div>
 						</div>
-					{/if}
+					</div>
 				</div>
 				<div class="hd-composer">
 					<span class="hd-round hd-muted"><Icon icon={icons.plus} size={20} /></span>

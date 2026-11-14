@@ -9,7 +9,8 @@
 
 	const links = $derived([
 		{ href: '/#features', label: t('landing.nav.features') },
-		{ href: '/downloads', label: t('landing.nav.apps') }
+		{ href: '/downloads', label: t('landing.nav.apps') },
+		{ href: '/#pricing', label: t('landing.nav.pricing') }
 	]);
 
 	const columns = $derived([
@@ -17,7 +18,8 @@
 			title: t('landing.footer.product'),
 			links: [
 				{ href: '/#features', label: t('landing.nav.features') },
-				{ href: '/downloads', label: t('downloads.menu') }
+				{ href: '/downloads', label: t('downloads.menu') },
+				{ href: '/#pricing', label: t('landing.nav.pricing') }
 			]
 		}
 	]);
@@ -26,7 +28,7 @@
 <div class="h-dvh overflow-y-auto bg-fc-page text-fc-fg">
 	<LandingHeader appName="Prisme" icon={glyphs.logo} {links} skipHref="#main">
 		{#snippet actions()}
-			<SignInWithFacile href={LOGIN_PATH} size="sm" />
+			<SignInWithFacile href={LOGIN_PATH} size="sm" data-sveltekit-reload />
 		{/snippet}
 	</LandingHeader>
 

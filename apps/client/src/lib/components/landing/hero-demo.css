@@ -70,8 +70,29 @@
 	padding: 0 0 8px;
 	mask-image: linear-gradient(to bottom, transparent, black 40px);
 }
+.hd-stack {
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 .hd-pad {
 	padding-top: 8px;
+}
+.hd-slot {
+	opacity: 0;
+	transition: opacity 0.4s ease;
+}
+.hd-slot.hd-on {
+	opacity: 1;
+	transition-delay: 0.15s;
+}
+.hd-tag {
+	padding: 1px 6px;
+	border-radius: 999px;
+	background: var(--color-fc-surface);
+}
+.hd-reply {
+	position: relative;
 }
 .hd-msg {
 	display: flex;
@@ -114,9 +135,17 @@
 	margin: 0;
 }
 .hd-typing {
+	position: absolute;
+	top: 0;
+	left: 0;
 	display: inline-flex;
 	gap: 4px;
 	padding: 8px 0;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+.hd-typing.hd-on {
+	opacity: 1;
 }
 .hd-typing i {
 	width: 6px;

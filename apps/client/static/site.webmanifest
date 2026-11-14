@@ -1,7 +1,7 @@
 {
   "name": "Prisme",
   "short_name": "Prisme",
-  "description": "A channel per project, encrypted calls and Bulle AI teammates you can mention. No subscription.",
+  "description": "A room per project, a video call in one click, and Bulle answering when you mention it. Free to start.",
   "icons": [
     {
       "src": "/icon-192.png",
