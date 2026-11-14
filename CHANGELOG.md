@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.21.1] - 2026-11-14
+
+### Fixed
+
+- `vite dev` serves the landing again: `@facile/mise-en-scene` v0.2.2 needs no Vite config, so the kit left `optimizeDeps.exclude`, which made every kit component answer 500 with `ssr = false`. `@facile/muse` stays excluded.
+
 ## [0.21.0] - 2026-11-14
 
 ### Added

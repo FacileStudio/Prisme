@@ -1,7 +1,7 @@
 {
 	"name": "prisme-client",
 	"license": "AGPL-3.0-only",
-	"version": "0.21.0",
+	"version": "0.21.1",
 	"devDependencies": {
 		"@capacitor/android": "8.6.0",
 		"@capacitor/cli": "8.6.0",
