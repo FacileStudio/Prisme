@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.21.0] - 2026-11-14
+
+### Added
+
+- Signed-out visitors on the web get a landing page at `/`: muse `LandingHeader` and `LandingFooter`, a mise-en-scene demo of a mention answered by a Bulle agent, four feature blocks, the download for the visitor's device (muse `DownloadSection` in `device` mode, linking to `/downloads`) and a closing sign-in. Native apps still open the sign-in screen.
+
+### Changed
+
+- muse v0.23.0 (Magnetik for titles and body, left-aligned mobile footer) and `@facile/mise-en-scene` v0.2.1.
+- `/downloads` uses muse `DownloadSection` with every installer, the same release URLs and the desktop checksum file.
+
 ## [0.20.5] - 2026-11-13
 
 ### Added
