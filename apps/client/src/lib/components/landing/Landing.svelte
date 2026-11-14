@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, DownloadSection, Icon, SignInWithFacile, icons } from '@facile/muse';
 	import { LOGIN_PATH } from '$lib/api/prisme';
-	import { CHECKSUMS_URL, DOWNLOADS, RELEASES_URL } from '$lib/downloads';
+	import { DOWNLOADS } from '$lib/downloads';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import HeroDemo from './HeroDemo.svelte';
@@ -50,7 +50,7 @@
 
 	<section id="download" aria-labelledby="download-title" class="mx-auto max-w-fc-lg scroll-mt-20 px-4 py-16 sm:px-6">
 		<h2 id="download-title" class="mb-10 text-center font-fc-title text-fc-2xl font-bold tracking-tight">{t('downloads.heading')}</h2>
-		<DownloadSection downloads={DOWNLOADS} releasesHref={RELEASES_URL} checksumsHref={CHECKSUMS_URL} headingLevel={3} />
+		<DownloadSection downloads={DOWNLOADS} mode="device" allHref="/downloads" headingLevel={3} />
 	</section>
 
 	<section class="mx-auto flex max-w-fc-xl flex-col items-center px-4 py-20 text-center sm:px-6">
