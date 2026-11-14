@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.21.2] - 2026-11-14
+
+### Changed
+
+- tronc v0.23.1, tronc/testdb v0.1.2 and porte v0.20.0 in the API (chi v5.5.0, go-jose v4.1.9). No behaviour change: Prisme has no MCP confirm page. `mise.lock` pins go 1.26.11 like `mise.toml`.
+
 ## [0.21.1] - 2026-11-14
 
 ### Fixed
