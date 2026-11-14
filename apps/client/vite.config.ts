@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
-	optimizeDeps: { exclude: ['@facile/muse'] },
+	optimizeDeps: { exclude: ['@facile/muse', '@facile/mise-en-scene'] },
 	server: {
 		proxy: {
 			'/api': {

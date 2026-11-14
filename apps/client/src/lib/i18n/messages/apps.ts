@@ -162,28 +162,5 @@ export const apps = {
 		'La même messagerie sur votre téléphone et votre ordinateur, avec des notifications pour ce qui vous concerne.',
 		'El mismo chat en tu teléfono y tu ordenador, con avisos de lo que te necesita.',
 		'Derselbe Chat auf Handy und Computer, mit Benachrichtigungen für das, was dich betrifft.'
-	],
-	'downloads.back': ['Back to Prisme', 'Retour à Prisme', 'Volver a Prisme', 'Zurück zu Prisme'],
-	'downloads.recommended': ['For this device', 'Pour cet appareil', 'Para este dispositivo', 'Für dieses Gerät'],
-	'downloads.android': ['Android', 'Android', 'Android', 'Android'],
-	'downloads.androidDetail': [
-		'APK for Android 7 or later. Allow installs from your browser when Android asks.',
-		'APK pour Android 7 ou plus récent. Autorisez l’installation depuis votre navigateur quand Android le demande.',
-		'APK para Android 7 o posterior. Permite instalar desde tu navegador cuando Android lo pida.',
-		'APK für Android 7 oder neuer. Erlaube die Installation aus dem Browser, wenn Android fragt.'
-	],
-	'downloads.macos': ['macOS', 'macOS', 'macOS', 'macOS'],
-	'downloads.macosDetail': ['Apple silicon and Intel', 'Apple silicon et Intel', 'Apple silicon e Intel', 'Apple silicon und Intel'],
-	'downloads.windows': ['Windows', 'Windows', 'Windows', 'Windows'],
-	'downloads.windowsDetail': ['Windows 10 or later, 64-bit', 'Windows 10 ou plus récent, 64 bits', 'Windows 10 o posterior, 64 bits', 'Windows 10 oder neuer, 64 Bit'],
-	'downloads.linux': ['Linux', 'Linux', 'Linux', 'Linux'],
-	'downloads.linuxDetail': ['AppImage, x86-64', 'AppImage, x86-64', 'AppImage, x86-64', 'AppImage, x86-64'],
-	'downloads.deb': ['Debian and Ubuntu (.deb)', 'Debian et Ubuntu (.deb)', 'Debian y Ubuntu (.deb)', 'Debian und Ubuntu (.deb)'],
-	'downloads.download': ['Download', 'Télécharger', 'Descargar', 'Herunterladen'],
-	'downloads.allReleases': [
-		'Checksums and every release',
-		'Sommes de contrôle et toutes les versions',
-		'Sumas de verificación y todas las versiones',
-		'Prüfsummen und alle Versionen'
 	]
 } as const satisfies Record<string, Row>;
