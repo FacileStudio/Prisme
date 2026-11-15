@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.23.0] - 2026-11-15
+
+### Added
+
+- Sealed capsules: the capsule button in the composer seals the message in Capsule (AES-256-GCM in the browser, key in the link fragment) with an expiry of 1 hour, 1 day, 7 days or 30 days. The room shows a card; the first person who opens it reads it inline and burns it for everyone. Prisme's API relays ciphertext only, through `POST /api/capsules`, `GET /api/capsules/{id}` and `POST /api/capsules/{id}/open` (browser sessions).
+- `CAPSULE_URL` (default `https://capsule.facile.studio`) names the Capsule deployment.
+- The landing's `WorksWith` row lists Capsule.
+
+### Security
+
+- A capsule message's `body`, its push notification ("🔒 Capsule") and its conversation preview never carry the link or its key.
+
 ## [0.22.1] - 2026-11-14
 
 ### Fixed
