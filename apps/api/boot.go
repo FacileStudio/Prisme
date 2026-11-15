@@ -154,7 +154,7 @@ func buildApp(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, appLogger *slog.Logger
 		spaces: spaces.NewService(spaces.Deps{
 			DB: db, Matrix: client, Accounts: accountService, Followers: agentService, Logger: appLogger,
 		}),
-		agents: agentService, calls: newCalls(cfg, db, client, accountService, appLogger),
+		agents: agentService, suite: newSuiteApps(cfg, db, client, accountService, appLogger),
 		users: users.NewService(db, client), push: newPush(cfg, db, client, appLogger),
 	}
 	built.directory = newDirectory(cfg, built, deletions)

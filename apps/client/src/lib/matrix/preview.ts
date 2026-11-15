@@ -2,22 +2,27 @@ import type { Room } from 'matrix-js-sdk';
 import { stripReplyFallback } from '$lib/chat/markdown';
 import { formatDate, formatTime } from '$lib/i18n/format';
 import { t } from '$lib/i18n/index.svelte';
+import { capsuleOf } from '$lib/chat/capsule';
 import { isMessage, type CallInfo } from './timeline';
 
 export type Preview = { text: string; at: number };
 
-/** The one line a conversation list shows for a message's content. */
-export function previewText(content: Record<string, unknown>, mine: boolean): string {
+function contentText(content: Record<string, unknown>): string {
 	const call = content['studio.facile.call'] as CallInfo | undefined;
+	if (capsuleOf(content)) return t('preview.capsule');
+	if (call?.call_id) return call.ended_at ? t('preview.callEnded') : t('preview.callStarted');
 	const kinds: Record<string, string> = {
 		'm.image': t('preview.image'),
 		'm.file': t('preview.file'),
 		'm.video': t('preview.video'),
 		'm.audio': t('preview.audio')
 	};
-	const text = call?.call_id
-		? call.ended_at ? t('preview.callEnded') : t('preview.callStarted')
-		: (kinds[String(content.msgtype)] ?? stripReplyFallback(String(content.body ?? '')).replace(/\s+/g, ' ').trim());
+	return kinds[String(content.msgtype)] ?? stripReplyFallback(String(content.body ?? '')).replace(/\s+/g, ' ').trim();
+}
+
+/** The one line a conversation list shows for a message's content. */
+export function previewText(content: Record<string, unknown>, mine: boolean): string {
+	const text = contentText(content);
 	if (!text) return t('preview.deleted');
 	return mine ? t('preview.mine', { text }) : text;
 }

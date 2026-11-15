@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import type { Room } from 'matrix-js-sdk';
-	import { Icon, Tooltip, icons, toast } from '@facile/muse';
+	import { Icon, Select, Tooltip, icons, toast } from '@facile/muse';
+	import { EXPIRIES } from '$lib/chat/capsule';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { segments } from '$lib/chat/mentions';
@@ -29,9 +30,11 @@
 	});
 	const options = $derived(composer.completions(members));
 	const parts = $derived(segments(composer.text, composer.known(members)));
-	const hint = $derived(placeholder ?? t('composer.placeholder', { name: room.name }));
+	const hint = $derived(composer.sealed ? t('capsule.placeholder') : (placeholder ?? t('composer.placeholder', { name: room.name })));
+	const canSeal = $derived(!draft.editing && composer.files.length === 0);
+	const expiries = $derived(EXPIRIES.map((value) => ({ value, label: t(`capsule.${value}`) })));
 	const open = $derived(options.length > 0);
-	const canSend = $derived(!composer.sending && (!!composer.text.trim() || composer.files.length > 0));
+	const canSend = $derived(!composer.sending && (!!composer.text.trim() || (!composer.sealed && composer.files.length > 0)));
 	const ROUND =
 		'inline-flex size-11 shrink-0 items-center justify-center rounded-fc-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring disabled:cursor-not-allowed disabled:opacity-40';
 
@@ -101,16 +104,36 @@
 	<div class="flex flex-col gap-2 rounded-[31px] bg-fc-field p-2">
 		<DraftBanner {room} {draft} />
 		<PendingFiles files={composer.files} onremove={(f) => (composer.files = composer.files.filter((x) => x !== f))} />
+		{#if composer.sealed}
+			<div class="flex flex-wrap items-center gap-2 px-3 pt-1 text-fc-xs text-fc-fg-muted">
+				<Icon icon={glyphs.capsule} size={16} class="text-fc-accent" />
+				<span class="font-medium text-fc-fg">{t('capsule.on')}</span>
+				<span class="ml-auto">{t('capsule.expiry')}</span>
+				<Select bind:value={composer.expiry} options={expiries} aria-label={t('capsule.expiry')} class="h-8 text-fc-xs" />
+			</div>
+		{/if}
 		<div class="flex items-end gap-2">
 			<Tooltip text={t('composer.attach')} describe={false} class="contents">
 				<button
 					type="button"
 					aria-label={t('composer.attach')}
-					disabled={!!draft.editing}
+					disabled={!!draft.editing || composer.sealed}
 					class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
 					onclick={() => picker?.click()}
 				>
 					<Icon icon={icons.plus} size={20} />
+				</button>
+			</Tooltip>
+			<Tooltip text={t('capsule.toggle')} describe={false} class="contents">
+				<button
+					type="button"
+					aria-label={t('capsule.toggle')}
+					aria-pressed={composer.sealed}
+					disabled={!canSeal}
+					class="{ROUND} {composer.sealed ? 'bg-fc-accent/15 text-fc-accent' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
+					onclick={() => (composer.sealed = !composer.sealed)}
+				>
+					<Icon icon={glyphs.capsule} size={20} />
 				</button>
 			</Tooltip>
 			<ComposerField

@@ -23,6 +23,7 @@
 
 	const apps: WorksWithApp[] = $derived([
 		{ name: 'Echo', icon: glyphs.echo, line: t('landing.with.echo'), href: 'https://echo.facile.studio' },
+		{ name: 'Capsule', icon: glyphs.capsule, line: t('landing.with.capsule'), href: 'https://capsule.facile.studio' },
 		{ name: 'Bulle', icon: glyphs.bulle, line: t('landing.with.bulle'), href: 'https://bulle.facile.studio' }
 	]);
 	const developer: DeveloperRow[] = $derived([

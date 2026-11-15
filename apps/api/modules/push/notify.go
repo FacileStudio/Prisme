@@ -12,6 +12,7 @@ import (
 
 const (
 	maxBodyRunes   = 240
+	sealedPreview  = "🔒 Capsule"
 	maxEventAge    = 5 * time.Minute
 	deliverTimeout = 30 * time.Second
 )
@@ -101,7 +102,16 @@ func (s *Service) compose(ctx context.Context, e event, direct bool) message {
 			title += " · " + name
 		}
 	}
-	return message{Title: title, Body: truncate(e.Content.Body), RoomID: e.RoomID}
+	return message{Title: title, Body: previewBody(e.Content), RoomID: e.RoomID}
+}
+
+// previewBody is the notification text. A sealed capsule never shows its
+// body, so no Capsule link reaches the push provider.
+func previewBody(c content) string {
+	if c.Capsule != nil {
+		return sealedPreview
+	}
+	return truncate(c.Body)
 }
 
 func truncate(text string) string {

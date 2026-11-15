@@ -7,7 +7,7 @@
 	import type { DraftState } from '$lib/state/draft.svelte';
 	import { ui } from '$lib/state/ui.svelte';
 	import { deleteMessage, toggleReaction } from '$lib/matrix/messages';
-	import { callInfo, reactionsFor } from '$lib/matrix/timeline';
+	import { callInfo, capsuleInfo, reactionsFor } from '$lib/matrix/timeline';
 	import EmojiPicker from './EmojiPicker.svelte';
 
 	type Props = { room: Room; event: MatrixEvent; draft: DraftState; inThread: boolean };
@@ -16,7 +16,7 @@
 	let confirming = $state(false);
 
 	const mine = $derived(event.getSender() === app.client?.getUserId());
-	const editable = $derived(mine && !callInfo(event) && event.getContent().msgtype === 'm.text');
+	const editable = $derived(mine && !callInfo(event) && !capsuleInfo(event) && event.getContent().msgtype === 'm.text');
 
 	async function react(key: string) {
 		picking = false;

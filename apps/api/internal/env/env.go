@@ -49,6 +49,7 @@ type Config struct {
 	SecretKey   string
 	ServiceKeys string
 	FCMAccount  string
+	CapsuleURL  string
 }
 
 // Load reads and validates the environment.
@@ -68,6 +69,7 @@ func Load() (Config, error) {
 	cfg.PublicURL = strings.TrimRight(troncenv.String("PRISME_PUBLIC_URL", cfg.Matrix.PublicURL), "/")
 	cfg.Porte = loadPorte()
 	cfg.FCMAccount = troncenv.String("FCM_SERVICE_ACCOUNT", "")
+	cfg.CapsuleURL = strings.TrimRight(troncenv.String("CAPSULE_URL", "https://capsule.facile.studio"), "/")
 	if cfg.Porte.Issuer != "" {
 		cfg.Porte.MobileRedirect = cmp.Or(cfg.Porte.MobileRedirect, DefaultMobileRedirect)
 		cfg.CORSAllowedOrigins = withAppOrigins(cfg.CORSAllowedOrigins)

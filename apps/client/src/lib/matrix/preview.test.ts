@@ -9,6 +9,9 @@ describe('conversation preview', () => {
 		expect(previewText({ msgtype: 'm.text', body: 'x', 'studio.facile.call': { call_id: 'c', started_by: '@a:x' } }, false)).toBe('Started a call');
 		expect(previewText({ msgtype: 'm.text', body: 'x', 'studio.facile.call': { call_id: 'c', started_by: '@a:x', ended_at: 1 } }, true)).toBe('You: Call ended');
 		expect(previewText({}, false)).toBe('Deleted message');
+		const sealed = { msgtype: 'm.text', body: 'x', 'studio.facile.capsule': { id: 'cap_0123456789abcdef', url: 'https://c/x#key' } };
+		expect(previewText(sealed, false)).toBe('Sent a capsule');
+		expect(previewText(sealed, true)).not.toContain('key');
 	});
 });
 

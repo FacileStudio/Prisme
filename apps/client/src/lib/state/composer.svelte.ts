@@ -4,7 +4,10 @@ import { mentionFor, type Mention, type Mentionable } from '$lib/chat/mentions';
 import { isAgent, isBot } from '$lib/chat/users';
 import { TypingNotifier } from '$lib/matrix/typing';
 import { stripReplyFallback } from '$lib/chat/markdown';
-import { editText, sendText } from '$lib/matrix/messages';
+import { editText, sendCapsule, sendText } from '$lib/matrix/messages';
+import { sealText, type Expiry } from '$lib/chat/capsule';
+import { composeMessage } from '$lib/chat/compose';
+import { t } from '$lib/i18n/index.svelte';
 import { sendFile } from '$lib/matrix/upload';
 import type { DraftState } from './draft.svelte';
 
@@ -25,6 +28,8 @@ export class ComposerState {
 	sending = $state(false);
 	dismissed = $state(-1);
 	mentions = $state.raw<Mention[]>([]);
+	sealed = $state(false);
+	expiry = $state<Expiry>('24h');
 	readonly typing: TypingNotifier;
 
 	constructor(
@@ -80,6 +85,8 @@ export class ComposerState {
 		const message = { text: this.text, mentions: this.known(members) };
 		if (draft.editing) {
 			if (message.text.trim()) await editText(this.client, draft.editing, message);
+		} else if (this.sealed) {
+			await this.sendSealed(draft, message);
 		} else {
 			for (const file of this.files) await sendFile(this.client, this.room.roomId, file, this.threadId);
 			const last = this.threadId ? this.room.getThread(this.threadId)?.lastReply()?.getId() : undefined;
@@ -90,10 +97,20 @@ export class ComposerState {
 		draft.clear();
 	}
 
+	private async sendSealed(draft: DraftState, message: { text: string; mentions: Mention[] }) {
+		if (!message.text.trim()) return;
+		const capsule = await sealText(message.text, this.expiry);
+		const { userIds } = composeMessage(message.text, message.mentions);
+		const last = this.threadId ? this.room.getThread(this.threadId)?.lastReply()?.getId() : undefined;
+		const target = { roomId: this.room.roomId, threadId: this.threadId, replyTo: draft.replyTo };
+		await sendCapsule(this.client, target, capsule, t('capsule.body'), userIds, last);
+	}
+
 	private reset() {
 		this.text = '';
 		this.caret = 0;
 		this.files = [];
 		this.mentions = [];
+		this.sealed = false;
 	}
 }
