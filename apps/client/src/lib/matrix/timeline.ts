@@ -1,6 +1,7 @@
 import { EventType, RelationType, type MatrixEvent, type Room } from 'matrix-js-sdk';
 import { continues } from '$lib/chat/unread';
 import { formatDate } from '$lib/i18n/format';
+import { capsuleOf, type CapsuleInfo } from '$lib/chat/capsule';
 
 export type Item = { event: MatrixEvent; grouped: boolean; day: string | null };
 export type Reaction = { key: string; count: number; mine?: MatrixEvent; senders: string[] };
@@ -61,6 +62,11 @@ export function replyTarget(event: MatrixEvent): string | null {
 export function callInfo(event: MatrixEvent): CallInfo | null {
 	const call = event.getContent()['studio.facile.call'] as CallInfo | undefined;
 	return call?.call_id ? call : null;
+}
+
+/** The sealed capsule block of a message, if the message is one. */
+export function capsuleInfo(event: MatrixEvent): CapsuleInfo | null {
+	return capsuleOf(event.getContent());
 }
 
 /** Users other than the sender and the viewer whose read receipt sits on this event. */

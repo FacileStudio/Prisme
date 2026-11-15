@@ -59,16 +59,22 @@ export const landing = {
 		'Vom Raum direkt in den Videoanruf, Ende-zu-Ende-verschlüsselt. Echo betreibt den Anruf.'
 	],
 	'landing.with.line': [
-		'Prisme hands calls to Echo and questions to Bulle, on the same Facile account.',
-		'Prisme confie les appels à Echo et les questions à Bulle, avec le même compte Facile.',
-		'Prisme pasa las llamadas a Echo y las preguntas a Bulle, con la misma cuenta de Facile.',
-		'Prisme übergibt Anrufe an Echo und Fragen an Bulle, mit demselben Facile-Konto.'
+		'Prisme hands calls to Echo, secrets to Capsule and questions to Bulle, on the same Facile account.',
+		'Prisme confie les appels à Echo, les secrets à Capsule et les questions à Bulle, avec le même compte Facile.',
+		'Prisme pasa las llamadas a Echo, los secretos a Capsule y las preguntas a Bulle, con la misma cuenta de Facile.',
+		'Prisme übergibt Anrufe an Echo, Geheimnisse an Capsule und Fragen an Bulle, mit demselben Facile-Konto.'
 	],
 	'landing.with.echo': [
 		'Encrypted video calls right in the room.',
 		'Vos appels vidéo dans le salon, chiffrés.',
 		'Videollamadas cifradas en la misma sala.',
 		'Verschlüsselte Videoanrufe direkt im Raum.'
+	],
+	'landing.with.capsule': [
+		'Seal a message that burns once it is read.',
+		'Scellez un message qui s’efface une fois lu.',
+		'Sella un mensaje que se borra al leerlo.',
+		'Versiegeln Sie eine Nachricht, die sich nach dem Lesen löscht.'
 	],
 	'landing.with.bulle': [
 		'Mention it and it answers in the thread. Pro plan.',

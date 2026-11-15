@@ -150,6 +150,7 @@ export const room = {
 	'preview.audio': ['Sent audio', 'A envoyé un audio', 'Envió un audio', 'Hat eine Audiodatei gesendet'],
 	'preview.callStarted': ['Started a call', 'A lancé un appel', 'Inició una llamada', 'Hat einen Anruf gestartet'],
 	'preview.callEnded': ['Call ended', 'Appel terminé', 'Llamada finalizada', 'Anruf beendet'],
+	'preview.capsule': ['Sent a capsule', 'A envoyé une capsule', 'Envió una cápsula', 'Hat eine Kapsel gesendet'],
 	'preview.mine': ['You: {text}', 'Vous : {text}', 'Tú: {text}', 'Du: {text}'],
 	'draft.editing': [
 		'Editing your message',

@@ -25,6 +25,9 @@ export type AgentUser = { user_id: string; name: string; owner_user_id: string }
 export type Agent = { user_id: string; name: string; room_ids: string[] };
 export type CallGrant = { call_id: string; livekit_url: string; token: string; join_url: string; e2ee_key: string };
 
+export type SealedCapsule = { id: string; url: string; expires_at?: string };
+export type CapsuleMeta = { id: string; exists: boolean; expires_at?: string };
+
 export type PushConfig = { native: boolean };
 export type Invitations = { count: number; href?: string };
 
@@ -45,6 +48,10 @@ export const prisme = {
 	setAgentRooms: (userId: string, roomIds: string[]) =>
 		send<{ room_ids: string[] }>(`/agents/${encodeURIComponent(userId)}/rooms`, 'PUT', { room_ids: roomIds }),
 	call: (roomId: string, join = false) => send<CallGrant>('/calls', 'POST', { room_id: roomId, join }),
+	sealCapsule: (ciphertext: string, expiresIn: string) =>
+		send<SealedCapsule>('/capsules', 'POST', { ciphertext, expires_in: expiresIn }),
+	capsuleMeta: (id: string) => request<CapsuleMeta>(`/capsules/${encodeURIComponent(id)}`),
+	openCapsule: (id: string) => send<{ ciphertext: string }>(`/capsules/${encodeURIComponent(id)}/open`, 'POST'),
 	pushConfig: () => request<PushConfig>('/push'),
 	invitations: () => request<Invitations>('/me/invitations'),
 	registerPushDevice: (token: string) => send<void>('/push/devices', 'POST', { token })

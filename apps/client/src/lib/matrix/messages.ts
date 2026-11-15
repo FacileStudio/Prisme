@@ -1,6 +1,7 @@
 import { EventType, MsgType, RelationType, THREAD_RELATION_TYPE, type MatrixClient, type MatrixEvent } from 'matrix-js-sdk';
 import { composeMessage } from '$lib/chat/compose';
 import type { Mention } from '$lib/chat/mentions';
+import { CAPSULE_KEY, type CapsuleInfo } from '$lib/chat/capsule';
 
 export type Draft = { text: string; mentions: Mention[] };
 export type Target = { roomId: string; threadId?: string | null; replyTo?: MatrixEvent | null };
@@ -32,6 +33,17 @@ export function relation(target: Target, lastInThread?: string): Content | null 
 /** Sends a text message with markdown, mentions, and an optional reply or thread. */
 export async function sendText(client: MatrixClient, target: Target, draft: Draft, lastInThread?: string) {
 	const content = textContent(draft);
+	const rel = relation(target, lastInThread);
+	if (rel) content['m.relates_to'] = rel;
+	await client.sendMessage(target.roomId, target.threadId ?? null, content as never);
+}
+
+/**
+ * Sends a sealed capsule. The body names no link, so the key never reaches a push
+ * provider, a preview or a client that does not know capsules.
+ */
+export async function sendCapsule(client: MatrixClient, target: Target, capsule: CapsuleInfo, body: string, userIds: string[], lastInThread?: string) {
+	const content: Content = { msgtype: MsgType.Text, body, 'm.mentions': { user_ids: userIds }, [CAPSULE_KEY]: capsule };
 	const rel = relation(target, lastInThread);
 	if (rel) content['m.relates_to'] = rel;
 	await client.sendMessage(target.roomId, target.threadId ?? null, content as never);
