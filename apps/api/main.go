@@ -10,6 +10,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/agents"
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
+	"github.com/FacileStudio/Prisme/apps/api/modules/capsules"
 	"github.com/FacileStudio/Prisme/apps/api/modules/push"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
@@ -41,6 +42,7 @@ func registry() documentation.Response {
 			agents.Documentation(),
 			calls.Documentation(),
 			users.Documentation(),
+			capsules.Documentation(),
 			push.Documentation(),
 		},
 	}
@@ -60,11 +62,18 @@ type app struct {
 	session   *session.Service
 	spaces    *spaces.Service
 	agents    *agents.Service
-	calls     *calls.Service
+	suite     suiteApps
 	users     *users.Service
 	push      *push.Service
 	eraser    *erasure.Eraser
 	directory directorySync
+}
+
+// suiteApps are the Facile apps Prisme hands work to: Echo for calls and
+// Capsule for sealed messages.
+type suiteApps struct {
+	calls    *calls.Service
+	capsules *capsules.Service
 }
 
 // directorySync is the Registre half of the app: the space sync and the
@@ -109,7 +118,8 @@ func mountAPI(r chi.Router, a app) {
 	session.RegisterRoutes(r, a.session, a.auth)
 	spaces.RegisterRoutes(r, a.spaces, a.auth)
 	agents.RegisterRoutes(r, a.agents, a.auth)
-	calls.RegisterRoutes(r, a.calls, a.auth)
+	calls.RegisterRoutes(r, a.suite.calls, a.auth)
+	capsules.RegisterRoutes(r, a.suite.capsules, a.auth)
 	users.RegisterRoutes(r, a.users, a.auth)
 	push.RegisterRoutes(r, a.push, a.auth)
 	if sync := a.directory; sync.syncer != nil && sync.deletions != nil {

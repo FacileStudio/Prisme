@@ -34,6 +34,7 @@ type content struct {
 	Body      string    `json:"body"`
 	Mentions  *mentions `json:"m.mentions"`
 	RelatesTo *relation `json:"m.relates_to"`
+	Capsule   *struct{} `json:"studio.facile.capsule"`
 }
 
 type mentions struct {

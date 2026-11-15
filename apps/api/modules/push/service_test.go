@@ -67,3 +67,13 @@ func TestFCMReportsAnUnregisteredDeviceAsGone(t *testing.T) {
 		t.Fatalf("send = %v, want errGone", err)
 	}
 }
+
+func TestASealedCapsuleNeverReachesThePushBody(t *testing.T) {
+	sealed := content{Body: "https://capsule.facile.studio/cap_0123456789abcdef", Capsule: &struct{}{}}
+	if got := previewBody(sealed); got != sealedPreview {
+		t.Fatalf("capsule preview = %q", got)
+	}
+	if got := previewBody(content{Body: " hi "}); got != "hi" {
+		t.Fatalf("text preview = %q", got)
+	}
+}

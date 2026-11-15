@@ -6,13 +6,11 @@ import (
 	"log/slog"
 
 	"github.com/FacileStudio/Prisme/apps/api/internal/accounts"
-	"github.com/FacileStudio/Prisme/apps/api/internal/echo"
 	"github.com/FacileStudio/Prisme/apps/api/internal/env"
 	"github.com/FacileStudio/Prisme/apps/api/internal/erasure"
 	"github.com/FacileStudio/Prisme/apps/api/internal/matrix"
 	"github.com/FacileStudio/Prisme/apps/api/internal/seal"
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
-	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
 	"github.com/FacileStudio/Prisme/apps/api/modules/push"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
@@ -33,20 +31,6 @@ func newPush(cfg env.Config, db *gorm.DB, client *matrix.Client, appLogger *slog
 	return push.NewService(push.Deps{
 		DB: db, Matrix: client, FCM: fcm, HSToken: cfg.Matrix.HSToken, Logger: appLogger,
 	})
-}
-
-func newCalls(cfg env.Config, db *gorm.DB, client *matrix.Client, accountService *accounts.Service, appLogger *slog.Logger) *calls.Service {
-	return calls.NewService(calls.Deps{
-		DB: db, Echo: newEcho(cfg), Matrix: client, Accounts: accountService,
-		Secret: cfg.SecretKey, PublicURL: cfg.PublicURL, Logger: appLogger,
-	})
-}
-
-func newEcho(cfg env.Config) *echo.Client {
-	if !cfg.CallsEnabled() {
-		return nil
-	}
-	return echo.New(cfg.Echo.URL, cfg.Echo.Key)
 }
 
 // newEraser builds the GDPR eraser the deletion receiver and the erase-user
