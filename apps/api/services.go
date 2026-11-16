@@ -77,6 +77,6 @@ func newAuth(cfg env.Config, db *gorm.DB, sqlDB *sql.DB, eraser *erasure.Eraser,
 func newSession(cfg env.Config, db *gorm.DB, client *matrix.Client, accountService *accounts.Service, box *seal.Box) *session.Service {
 	return session.NewService(session.Deps{
 		DB: db, Matrix: client, Accounts: accountService, Box: box,
-		Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(),
+		Homeserver: cfg.Matrix.PublicURL, CallsEnabled: cfg.CallsEnabled(), GifsEnabled: cfg.GiphyKey != "",
 	})
 }

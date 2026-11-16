@@ -24,6 +24,7 @@ type Deps struct {
 	Box          *seal.Box
 	Homeserver   string
 	CallsEnabled bool
+	GifsEnabled  bool
 }
 
 // Service mints and revokes browser Matrix logins.
@@ -55,6 +56,7 @@ func (s *Service) Get(ctx context.Context, userID, porteSessionID int64) (Respon
 		},
 		Matrix:       MatrixLogin{Homeserver: s.deps.Homeserver, UserID: login.UserID, AccessToken: login.AccessToken, DeviceID: login.DeviceID},
 		CallsEnabled: s.deps.CallsEnabled,
+		GifsEnabled:  s.deps.GifsEnabled,
 	}, nil
 }
 
