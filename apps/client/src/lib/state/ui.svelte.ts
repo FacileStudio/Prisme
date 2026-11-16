@@ -6,6 +6,7 @@ export type Dialog =
 	| 'add-agent'
 	| 'rename-room'
 	| 'rename-space'
+	| 'leave-room'
 	| null;
 
 export const HOME = 'home';
@@ -18,6 +19,13 @@ class UiState {
 	drawer = $state(false);
 	railCollapsed = $state(false);
 	dialog = $state<Dialog>(null);
+	dialogRoom = $state<string | null>(null);
+
+	/** Opens a dialog about one room, which may not be the room on screen. */
+	showFor(dialog: Exclude<Dialog, null>, roomId: string) {
+		this.dialogRoom = roomId;
+		this.dialog = dialog;
+	}
 
 	/** Opens a thread in the side panel. */
 	openThread(rootId: string) {

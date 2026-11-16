@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Button, Icon, IconButton, Section, icons, toast } from '@facile/muse';
+	import { Button, ContextMenu, EmptyState, Icon, IconButton, Section, Spinner, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import type { SpaceNav } from '$lib/state/nav';
@@ -8,6 +8,7 @@
 	import { canRename } from '$lib/matrix/power';
 	import { ui } from '$lib/state/ui.svelte';
 	import { t } from '$lib/i18n/index.svelte';
+	import { channelMenuAt } from '$lib/state/channel-menu';
 	import RoomRow from './RoomRow.svelte';
 
 	let { nav }: { nav: SpaceNav } = $props();
@@ -63,28 +64,52 @@
 
 <Section title={t('space.yours')} card gap="tight" bodyClass="gap-0 p-2">
 	{#if nav.joined.length > 0}
-		<ul class="flex flex-col">
-			{#each nav.joined as row (row.roomId)}
-				<li><RoomRow href={roomHref(row.roomId)} name={row.name} badge={row.badge} muted={row.muted} icon={glyphs.hashtag} roomId={row.roomId} /></li>
-			{/each}
-		</ul>
+		<ContextMenu label={t('channel.menu')} items={channelMenuAt}>
+			<ul class="flex flex-col">
+				{#each nav.joined as row (row.roomId)}
+					<li><RoomRow href={roomHref(row.roomId)} name={row.name} badge={row.badge} muted={row.muted} icon={glyphs.hashtag} roomId={row.roomId} trail /></li>
+				{/each}
+			</ul>
+		</ContextMenu>
 	{:else}
-		<p class="px-3 py-3 text-fc-sm text-fc-fg-muted">{t('space.noneJoined', { name: nav.name })}</p>
+		<EmptyState
+			bare
+			icon={glyphs.hashtag}
+			title={t('channel.noneJoinedTitle')}
+			description={t('space.noneJoined', { name: nav.name })}
+		>
+			<Button icon={icons.plus} onclick={() => (ui.dialog = 'create-channel')}>{t('space.newChannel')}</Button>
+		</EmptyState>
 	{/if}
 </Section>
 
 {#if nav.joinable.length > 0}
 	<Section title={t('space.browse')} description={t('space.browseBody', { name: nav.name })} card gap="tight" bodyClass="gap-0 p-2">
-		<ul class="flex flex-col">
-			{#each nav.joinable as row (row.roomId)}
-				<li class="flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm text-fc-fg-muted hover:bg-fc-surface">
-					<Icon icon={glyphs.hashtag} size={16} class="shrink-0" />
-					<span class="min-w-0 flex-1 truncate">{row.name}</span>
-					<Button size="sm" variant="ghost" icon={glyphs.login} disabled={joining === row.roomId} onclick={() => join(row.roomId)}>
-						{joining === row.roomId ? t('common.joining') : t('common.join')}
-					</Button>
-				</li>
-			{/each}
-		</ul>
+		<ContextMenu label={t('channel.menu')} items={channelMenuAt}>
+			<ul class="flex flex-col">
+				{#each nav.joinable as row (row.roomId)}
+					<li>
+						<button
+							type="button"
+							data-room-id={row.roomId}
+							disabled={joining === row.roomId}
+							onclick={() => join(row.roomId)}
+							class="group flex min-h-11 w-full items-center gap-2 rounded-fc-md px-2 text-left text-fc-sm text-fc-fg-muted transition-colors hover:bg-fc-surface hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-fc-ring disabled:opacity-60"
+						>
+							<Icon icon={glyphs.hashtag} size={16} class="shrink-0" />
+							<span class="min-w-0 flex-1 truncate">{row.name}</span>
+							{#if joining === row.roomId}
+								<Spinner size="sm" label={t('common.joining')} />
+							{:else}
+								<span class="flex shrink-0 items-center gap-1 text-fc-xs font-medium">
+									{t('common.join')}
+									<Icon icon={icons.arrow} size={18} class="opacity-60 transition-transform group-hover:translate-x-0.5" />
+								</span>
+							{/if}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</ContextMenu>
 	</Section>
 {/if}

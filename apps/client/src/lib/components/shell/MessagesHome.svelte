@@ -128,8 +128,8 @@
 			<EmptyState
 				bare
 				icon={glyphs.chat}
-				title={needle ? t('messages.noMatch') : t('messages.none')}
-				description={needle ? t('messages.tryOther') : t('messages.pickSomeone')}
+				title={needle ? t('messages.noMatch') : t('messages.emptyTitle')}
+				description={needle ? t('messages.tryOther') : t('messages.emptyBody')}
 			/>
 		{/if}
 	</Section>

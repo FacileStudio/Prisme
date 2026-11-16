@@ -60,7 +60,9 @@
 				icon={icons.space}
 				title={t('overview.none')}
 				description={t('overview.noneBody')}
-			/>
+			>
+				<Button size="lg" icon={icons.plus} onclick={() => (ui.dialog = 'create-space')}>{t('overview.createSpace')}</Button>
+			</EmptyState>
 		{/if}
 
 		<div class="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center">

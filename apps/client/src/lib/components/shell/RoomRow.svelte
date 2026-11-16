@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
-	import { Icon } from '@facile/muse';
+	import { Icon, icons } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import type { Badge } from '$lib/chat/unread';
 	import { ui } from '$lib/state/ui.svelte';
@@ -17,17 +17,19 @@
 		icon?: string;
 		lead?: Snippet;
 		label?: Snippet;
+		trail?: boolean;
 	};
-	let { href, roomId, name, badge, muted = false, icon, lead, label }: Props = $props();
+	let { href, roomId, name, badge, muted = false, icon, lead, label, trail = false }: Props = $props();
 
 	const active = $derived(page.params.id ? decodeURIComponent(page.params.id) === roomId : false);
 </script>
 
 <a
 	{href}
+	data-room-id={roomId}
 	onclick={() => (ui.drawer = false)}
 	aria-current={active ? 'page' : undefined}
-	class="flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm transition-colors focus-visible:outline-2 focus-visible:outline-fc-ring {active
+	class="group flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm transition-colors focus-visible:outline-2 focus-visible:outline-fc-ring {active
 		? 'bg-fc-accent text-fc-accent-fg'
 		: badge.bold
 			? 'font-semibold text-fc-fg hover:bg-fc-surface'
@@ -45,4 +47,7 @@
 		<Icon icon={glyphs.bellOff} size={14} class="shrink-0 opacity-70" aria-label={t('row.muted')} />
 	{/if}
 	<CountBadge {badge} />
+	{#if trail}
+		<Icon icon={icons.arrow} size={18} class="shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5" />
+	{/if}
 </a>

@@ -85,7 +85,9 @@
 	]);
 
 	function selectSpace(id: string | null) {
-		if (id) ui.spaceId = id;
+		if (!id) return;
+		ui.spaceId = id;
+		if (path !== BROWSE_PATH) void goto(BROWSE_PATH);
 	}
 
 	$effect(() => {
