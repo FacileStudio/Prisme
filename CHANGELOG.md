@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.23.1] - 2026-11-16
+
+### Security
+
+- The client serves the Vision tracker from its own origin (`/vision-tracker.js`) instead of loading `https://vision.facile.studio/s.js`, and the API's content security policy no longer allows `https://vision.facile.studio` in `script-src`. A script served by another app no longer runs inside Prisme.
+
 ## [0.23.0] - 2026-11-15
 
 ### Added
