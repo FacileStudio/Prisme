@@ -2,11 +2,28 @@
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-11-16
+
 ### Added
 
-- The composer's "+" opens a pill-shaped menu right above the field: File and Capsule (the seal toggle moved here). Entries come from one list, `lib/state/composer-menu.ts`, so a feature adds its row and its panel there.
-- A built-in emoji picker next to "+": search in en, fr, es and de (emojibase-data 18), categories, recent emojis and skin tone, inserted at the caret. The reaction picker gets a "More emoji" row that opens it.
-- Menus and panels scale and fade from the button that opened them, and all of it is instant under reduced motion.
+- The composer's "+" opens a pill-shaped menu right above the field, with File, Capsule and Poll. Entries come from one list, `lib/state/composer-menu.ts`.
+- A built-in emoji picker sits next to "+". It has search in en, fr, es and de (emojibase-data 18), categories, recent emojis and skin tones, and inserts at the caret. The reaction picker gets a "More emoji" row that opens it.
+- Polls use Matrix stable polls (`m.poll.start`, `m.poll.response`, `m.poll.end`). They support single or multiple choice and disclosed or hidden results, with live percentages and an End poll button for the creator. The previews and push notifications read "Poll: <question>".
+- Voice messages: while the field is empty, a mic button replaces Send. It records with a live waveform, a timer and cancel. The message is sent as `m.audio` with the MSC3245 voice and MSC1767 waveform fields, and played in a pill player with a waveform scrubber.
+- Link cards for Feuilles, Docs, Echo, Clap, Diapo and Nuage links show the app icon, the title, a thumbnail and Open. Echo links get "Join the call". Cards come from `GET /api/unfurl`, which only fetches suite hosts, with no cookies, oEmbed first, then Open Graph tags. Capsule links are never fetched, because fetching one would burn it.
+- Choosing a space opens its overview, with a cross-fade.
+- Channel rows in the overview end in a chevron and stay clickable as a whole. A joinable channel joins in one click.
+- A channel menu on overview rows and sidebar channels opens by right-click, long-press or Shift+F10. It offers Open, Mark as read, Mute or Unmute, Copy link and Rename, plus Leave in red behind a confirmation.
+- A "+" next to the space heading in the sidebar creates a channel.
+- Empty states:
+  - A new channel or DM shows "This is the start of #…" with Say hello, Invite and Start call.
+  - Messages, the overview and a space with no joined channels each get an empty state with an action.
+  - The overview shows skeletons while spaces load.
+
+### Changed
+
+- Capsule mode shows a banner in the composer with an X that turns it off and keeps the text. Escape also leaves it. The expiry is four pill chips (1 h, 24 h, 7 d, 30 d) instead of a select, and the send button reads "Seal and send" while sealing.
+- muse v0.29.0: menus and context menus animate open and closed. Menus, panels and cards scale and fade from their origin, link cards keep their height while loading, and all of it is instant under reduced motion.
 
 ## [0.23.1] - 2026-11-16
 
