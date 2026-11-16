@@ -5,12 +5,16 @@
 	import { escapeHtml, stripReplyFallback } from '$lib/chat/markdown';
 	import { callInfo, capsuleInfo } from '$lib/matrix/timeline';
 	import { suiteLinks } from '$lib/chat/links';
+	import { pollInfo } from '$lib/chat/poll';
+	import { voiceInfo } from '$lib/matrix/voice';
 	import { t } from '$lib/i18n/index.svelte';
 	import CallCard from './CallCard.svelte';
 	import CapsuleCard from './CapsuleCard.svelte';
 	import ImageMessage from './ImageMessage.svelte';
 	import FileMessage from './FileMessage.svelte';
 	import LinkCard from './LinkCard.svelte';
+	import PollCard from './PollCard.svelte';
+	import VoiceMessage from './VoiceMessage.svelte';
 
 	let { event }: { event: MatrixEvent } = $props();
 
@@ -21,6 +25,11 @@
 	const call = $derived(callInfo(event));
 	const capsule = $derived(capsuleInfo(event));
 	const cards = $derived(suiteLinks(stripReplyFallback(String(content.body ?? ''))));
+	const poll = $derived.by(() => {
+		void app.version;
+		return pollInfo(event);
+	});
+	const voice = $derived(voiceInfo(event));
 	const mine = $derived(event.getSender() === app.client?.getUserId());
 	const html = $derived.by(() => {
 		const me = app.client?.getUserId() ?? '';
@@ -36,6 +45,10 @@
 	<p class="text-fc-sm italic text-fc-fg-muted">{t('message.deleted')}</p>
 {:else if capsule}
 	<CapsuleCard {capsule} {mine} />
+{:else if poll}
+	<PollCard {event} {poll} />
+{:else if voice}
+	<VoiceMessage {voice} {mine} />
 {:else if call}
 	<CallCard {call} roomId={event.getRoomId() ?? ''} />
 {:else if content.msgtype === MsgType.Image}

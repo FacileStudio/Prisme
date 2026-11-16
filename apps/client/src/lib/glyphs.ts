@@ -55,6 +55,12 @@ export const glyphs = {
 	hashtag: 'solar:hashtag-linear',
 	chat: 'solar:chat-round-line-linear',
 	thread: 'solar:chat-line-linear',
+	'solar:chart-square-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"><path d=\"M12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22Z\"/><path d=\"M7 18V9\"/><path d=\"M12 18V6\"/><path d=\"M17 18V13\"/></g>" },
+	'solar:play-bold': { width: 24, height: 24, body: "<path fill=\"currentColor\" d=\"M21.4086 9.35258C23.5305 10.5065 23.5305 13.4935 21.4086 14.6474L8.59662 21.6145C6.53435 22.736 4 21.2763 4 18.9671L4 5.0329C4 2.72368 6.53435 1.26402 8.59661 2.38548L21.4086 9.35258Z\"/>" },
+	'solar:pause-bold': { width: 24, height: 24, body: "<path fill=\"currentColor\" d=\"M2 6C2 4.11438 2 3.17157 2.58579 2.58579C3.17157 2 4.11438 2 6 2C7.88562 2 8.82843 2 9.41421 2.58579C10 3.17157 10 4.11438 10 6V18C10 19.8856 10 20.8284 9.41421 21.4142C8.82843 22 7.88562 22 6 22C4.11438 22 3.17157 22 2.58579 21.4142C2 20.8284 2 19.8856 2 18V6Z\"/><path fill=\"currentColor\" d=\"M14 6C14 4.11438 14 3.17157 14.5858 2.58579C15.1716 2 16.1144 2 18 2C19.8856 2 20.8284 2 21.4142 2.58579C22 3.17157 22 4.11438 22 6V18C22 19.8856 22 20.8284 21.4142 21.4142C20.8284 22 19.8856 22 18 22C16.1144 22 15.1716 22 14.5858 21.4142C14 20.8284 14 19.8856 14 18V6Z\"/>" },
+	'solar:stop-bold': { width: 24, height: 24, body: "<path fill=\"currentColor\" d=\"M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z\"/>" },
+	'solar:trash-bin-minimalistic-linear': { width: 24, height: 24, body: "<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"1.5\"><path d=\"M9.1709 4C9.58273 2.83481 10.694 2 12.0002 2C13.3064 2 14.4177 2.83481 14.8295 4\"/><path d=\"M20.5001 6H3.5\"/><path d=\"M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5\"/><path d=\"M9.5 11L10 16\"/><path d=\"M14.5 11L14 16\"/></g>" },
+	'solar:check-circle-bold': { width: 24, height: 24, body: "<path fill=\"currentColor\" fill-rule=\"evenodd\" d=\"M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z\" clip-rule=\"evenodd\"/>" },
 	phone: 'solar:phone-calling-linear',
 	endCall: 'solar:end-call-linear',
 	mic: 'solar:microphone-3-linear',
@@ -99,6 +105,13 @@ export const glyphs = {
 	diapo: 'solar:presentation-graph-bold-duotone',
 	play: 'solar:play-bold',
 	tasks: 'solar:checklist-minimalistic-linear'
+	tasks: 'solar:checklist-minimalistic-linear',
+	poll: 'solar:chart-square-linear',
+	play: 'solar:play-bold',
+	pause: 'solar:pause-bold',
+	stop: 'solar:stop-bold',
+	trash: 'solar:trash-bin-minimalistic-linear',
+	voted: 'solar:check-circle-bold'
 } as const;
 
 /** Registers the Prisme glyphs with muse so `Icon` inlines them. */

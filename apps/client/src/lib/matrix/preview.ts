@@ -4,12 +4,17 @@ import { formatDate, formatTime } from '$lib/i18n/format';
 import { t } from '$lib/i18n/index.svelte';
 import { capsuleOf } from '$lib/chat/capsule';
 import { isMessage, type CallInfo } from './timeline';
+import { pollOf } from '$lib/chat/poll';
+import { voiceOf } from '$lib/chat/voice';
 
 export type Preview = { text: string; at: number };
 
 function contentText(content: Record<string, unknown>): string {
 	const call = content['studio.facile.call'] as CallInfo | undefined;
 	if (capsuleOf(content)) return t('preview.capsule');
+	const poll = pollOf(content);
+	if (poll) return t('poll.preview', { question: poll.question });
+	if (voiceOf(content)) return t('voice.preview');
 	if (call?.call_id) return call.ended_at ? t('preview.callEnded') : t('preview.callStarted');
 	const kinds: Record<string, string> = {
 		'm.image': t('preview.image'),
