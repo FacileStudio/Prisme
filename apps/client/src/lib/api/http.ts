@@ -45,17 +45,6 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
 	return (text ? JSON.parse(text) : undefined) as T;
 }
 
-/** Fetches a binary body, such as a GIF, with the same credentials as `request`. */
-export async function requestBlob(path: string, signal?: AbortSignal): Promise<Blob> {
-	const headers = new Headers();
-	const token = await getToken();
-	if (token) headers.set('Authorization', `Bearer ${token}`);
-	const response = await fetch(`${apiBase()}/api${path}`, { headers, credentials: token ? 'omit' : 'same-origin', signal });
-	if (response.status === 401 && token) await clearToken();
-	if (!response.ok) throw await readError(response);
-	return response.blob();
-}
-
 /** Sends a JSON body with the given method. */
 export function send<T>(path: string, method: string, body?: unknown): Promise<T> {
 	return request<T>(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });

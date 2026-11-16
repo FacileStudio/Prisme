@@ -4,10 +4,9 @@
 
 ### Added
 
-- The composer's "+" opens a pill-shaped menu right above the field: File, Capsule (the seal toggle moved here) and GIF. Entries come from one list, `lib/state/composer-menu.ts`, so a feature adds its row and its panel there.
+- The composer's "+" opens a pill-shaped menu right above the field: File and Capsule (the seal toggle moved here). Entries come from one list, `lib/state/composer-menu.ts`, so a feature adds its row and its panel there.
 - A built-in emoji picker next to "+": search in en, fr, es and de (emojibase-data 18), categories, recent emojis and skin tone, inserted at the caret. The reaction picker gets a "More emoji" row that opens it.
-- GIFs from GIPHY: a search panel with trending GIFs, a masonry grid and "Powered by GIPHY". Prisme's API searches and fetches (`GET /api/gifs`, `GET /api/gifs/media`, browser sessions, GIPHY media hosts only), and the chosen GIF is uploaded to Matrix, so no client ever talks to GIPHY. Off until `GIPHY_API_KEY` is set; the session reports `gifs_enabled`.
-- Menus and panels scale and fade from the button that opened them, GIF tiles settle in one after another over fixed-size placeholders, and all of it is instant under reduced motion.
+- Menus and panels scale and fade from the button that opened them, and all of it is instant under reduced motion.
 
 ## [0.23.1] - 2026-11-16
 

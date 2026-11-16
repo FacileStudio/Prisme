@@ -24,5 +24,4 @@ type Response struct {
 	User         User        `json:"user"`
 	Matrix       MatrixLogin `json:"matrix"`
 	CallsEnabled bool        `json:"calls_enabled"`
-	GifsEnabled  bool        `json:"gifs_enabled"`
 }
