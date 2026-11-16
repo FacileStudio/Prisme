@@ -11,7 +11,6 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/auth"
 	"github.com/FacileStudio/Prisme/apps/api/modules/calls"
 	"github.com/FacileStudio/Prisme/apps/api/modules/capsules"
-	"github.com/FacileStudio/Prisme/apps/api/modules/gifs"
 	"github.com/FacileStudio/Prisme/apps/api/modules/push"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
@@ -46,7 +45,6 @@ func registry() documentation.Response {
 			users.Documentation(),
 			capsules.Documentation(),
 			unfurl.Documentation(),
-			gifs.Documentation(),
 			push.Documentation(),
 		},
 	}
@@ -74,12 +72,11 @@ type app struct {
 }
 
 // suiteApps are the Facile apps Prisme hands work to: Echo for calls and
-// Capsule for sealed messages, and GIPHY for the GIF picker.
+// Capsule for sealed messages, and the suite link previews.
 type suiteApps struct {
 	calls    *calls.Service
 	capsules *capsules.Service
 	unfurl   *unfurl.Service
-	gifs     *gifs.Service
 }
 
 // directorySync is the Registre half of the app: the space sync and the
@@ -127,7 +124,6 @@ func mountAPI(r chi.Router, a app) {
 	calls.RegisterRoutes(r, a.suite.calls, a.auth)
 	capsules.RegisterRoutes(r, a.suite.capsules, a.auth)
 	unfurl.RegisterRoutes(r, a.suite.unfurl, a.auth)
-	gifs.RegisterRoutes(r, a.suite.gifs, a.auth)
 	users.RegisterRoutes(r, a.users, a.auth)
 	push.RegisterRoutes(r, a.push, a.auth)
 	if sync := a.directory; sync.syncer != nil && sync.deletions != nil {

@@ -1,13 +1,12 @@
 import type { Row } from '../row';
 
-/** The composer's "+" menu, the emoji picker and the GIF picker. */
+/** The composer's "+" menu and the emoji picker. */
 export const composer = {
 	'composerMenu.open': ['Add to the message', 'Ajouter au message', 'Añadir al mensaje', 'Zur Nachricht hinzufügen'],
 	'composerMenu.label': ['Add', 'Ajouter', 'Añadir', 'Hinzufügen'],
 	'composerMenu.file': ['File', 'Fichier', 'Archivo', 'Datei'],
 	'composerMenu.capsule': ['Capsule', 'Capsule', 'Cápsula', 'Kapsel'],
 	'composerMenu.capsuleOff': ['Stop sealing', 'Ne plus sceller', 'Dejar de sellar', 'Nicht mehr versiegeln'],
-	'composerMenu.gif': ['GIF', 'GIF', 'GIF', 'GIF'],
 	'emoji.open': ['Emoji', 'Emoji', 'Emoji', 'Emoji'],
 	'emoji.search': ['Search emoji', 'Chercher un emoji', 'Buscar emoji', 'Emoji suchen'],
 	'emoji.none': ['No emoji found', 'Aucun emoji trouvé', 'No se encontró ningún emoji', 'Kein Emoji gefunden'],
@@ -24,15 +23,5 @@ export const composer = {
 	'emoji.group.7': ['Objects', 'Objets', 'Objetos', 'Objekte'],
 	'emoji.group.8': ['Symbols', 'Symboles', 'Símbolos', 'Symbole'],
 	'emoji.group.9': ['Flags', 'Drapeaux', 'Banderas', 'Flaggen'],
-	'gif.title': ['GIFs', 'GIF', 'GIF', 'GIFs'],
-	'gif.search': ['Search GIPHY', 'Chercher sur GIPHY', 'Buscar en GIPHY', 'Auf GIPHY suchen'],
-	'gif.trending': ['Trending', 'Tendances', 'Tendencias', 'Im Trend'],
-	'gif.none': ['No GIF found', 'Aucun GIF trouvé', 'No se encontró ningún GIF', 'Kein GIF gefunden'],
-	'gif.failed': ['GIFs did not load', 'Les GIF n’ont pas chargé', 'Los GIF no cargaron', 'GIFs wurden nicht geladen'],
-	'gif.sendFailed': ['The GIF was not sent', 'Le GIF n’a pas été envoyé', 'No se envió el GIF', 'Das GIF wurde nicht gesendet'],
-	'gif.more': ['More GIFs', 'Plus de GIF', 'Más GIF', 'Mehr GIFs'],
-	'gif.powered': ['Powered by GIPHY', 'Powered by GIPHY', 'Powered by GIPHY', 'Powered by GIPHY'],
-	'gif.send': ['Send {title}', 'Envoyer {title}', 'Enviar {title}', '{title} senden'],
-	'gif.untitled': ['GIF', 'GIF', 'GIF', 'GIF'],
 	'panel.close': ['Close', 'Fermer', 'Cerrar', 'Schließen']
 } as const satisfies Record<string, Row>;

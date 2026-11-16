@@ -4,7 +4,6 @@ import { glyphs } from '$lib/glyphs';
 import { t } from '$lib/i18n/index.svelte';
 import { app } from '$lib/state/app.svelte';
 import type { ComposerState } from './composer.svelte';
-import GifPanel from '$lib/components/room/GifPanel.svelte';
 import PollPanel from '$lib/components/room/PollPanel.svelte';
 
 /** What the "+" menu hands an entry and the panel it opens. */
@@ -61,13 +60,6 @@ export const composerEntries: ComposerEntry[] = [
 		label: () => t('poll.menu'),
 		available: idle,
 		panel: PollPanel
-	},
-	{
-		id: 'gif',
-		icon: glyphs.gif,
-		label: () => t('composerMenu.gif'),
-		available: (context) => idle(context) && !!app.session?.gifs_enabled,
-		panel: GifPanel
 	}
 ];
 
