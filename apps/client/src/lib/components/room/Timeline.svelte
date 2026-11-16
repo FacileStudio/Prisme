@@ -8,6 +8,7 @@
 	import { timelineItems } from '$lib/matrix/timeline';
 	import MessageRow from './MessageRow.svelte';
 	import SeenBy from './SeenBy.svelte';
+	import RoomStart from './RoomStart.svelte';
 
 	let { room, draft }: { room: Room; draft: DraftState } = $props();
 	let scroller: HTMLElement | undefined = $state();
@@ -56,7 +57,7 @@
 	});
 </script>
 
-<div bind:this={scroller} onscroll={onScroll} class="relative flex-1 overflow-y-auto overscroll-contain py-2" role="log" aria-label={t('timeline.label')} aria-live="polite">
+<div bind:this={scroller} onscroll={onScroll} class="relative flex flex-1 flex-col overflow-y-auto overscroll-contain py-2" role="log" aria-label={t('timeline.label')} aria-live="polite">
 	{#if loading}
 		<div class="flex justify-center py-2"><Spinner size="sm" label={t('timeline.loadingOlder')} /></div>
 	{:else if stalled}
@@ -64,7 +65,7 @@
 			<Button size="sm" variant="ghost" onclick={() => ((stalled = false), loadOlder())}>{t('timeline.loadOlder')}</Button>
 		</div>
 	{:else if !canLoadMore}
-		<p class="px-4 py-6 text-center text-fc-xs text-fc-fg-muted">{t('timeline.start', { name: room.name })}</p>
+		<RoomStart {room} empty={items.length === 0} />
 	{/if}
 	{#each items as item, index (item.event.getId() ?? item.event.getTxnId())}
 		{#if item.day}

@@ -86,12 +86,6 @@ export const room = {
 		'Cargar mensajes anteriores',
 		'Ältere Nachrichten laden'
 	],
-	'timeline.start': [
-		'This is the start of {name}.',
-		'Voici le début de {name}.',
-		'Este es el principio de {name}.',
-		'Das ist der Anfang von {name}.'
-	],
 	'message.edited': ['(edited)', '(modifié)', '(editado)', '(bearbeitet)'],
 	'message.deleted': [
 		'This message was deleted.',

@@ -172,23 +172,11 @@ export const shell = {
 		'Ninguna conversación coincide',
 		'Keine Unterhaltung passt'
 	],
-	'messages.none': [
-		'No conversations yet',
-		'Aucune conversation pour le moment',
-		'Aún no hay conversaciones',
-		'Noch keine Unterhaltungen'
-	],
 	'messages.tryOther': [
 		'Try another name, or start one below.',
 		'Essayez un autre nom, ou démarrez-en une ci-dessous.',
 		'Prueba con otro nombre o inicia una abajo.',
 		'Versuche einen anderen Namen oder starte unten eine neue.'
-	],
-	'messages.pickSomeone': [
-		'Pick someone below to send your first message.',
-		'Choisissez quelqu’un ci-dessous pour envoyer votre premier message.',
-		'Elige a alguien abajo para enviar tu primer mensaje.',
-		'Wähle unten jemanden aus, um deine erste Nachricht zu senden.'
 	],
 	'messages.start': [
 		'Start a conversation',

@@ -29,6 +29,7 @@ class AppState {
 	error = $state('');
 	session = $state<Session | null>(null);
 	spaces = $state<Space[]>([]);
+	spacesReady = $state(false);
 	client = $state.raw<MatrixClient | null>(null);
 	agents = $state.raw<Map<string, AgentUser>>(new Map());
 	version = $state(0);
@@ -87,6 +88,7 @@ class AppState {
 	/** Reloads the spaces the user belongs to from the Prisme API. */
 	async refreshSpaces() {
 		this.spaces = await prisme.spaces().catch(() => this.spaces);
+		this.spacesReady = true;
 	}
 
 	/** Reloads the agent accounts; keeps the last list when the route is missing or fails. */

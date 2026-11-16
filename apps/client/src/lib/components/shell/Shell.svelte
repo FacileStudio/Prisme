@@ -8,6 +8,7 @@
 	import { notify } from '$lib/state/notify.svelte';
 	import { isApp } from '$lib/native/platform';
 	import { roomHref } from '$lib/state/actions';
+	import { channelMenu } from '$lib/state/channel-menu';
 	import { BROWSE_PATH, MESSAGES_PATH, buildNav, railPages, type NavKind } from '$lib/state/nav';
 	import { HOME, MANAGE_SPACES_HREF, ui } from '$lib/state/ui.svelte';
 	import { t, rememberLocale } from '$lib/i18n/index.svelte';
@@ -50,6 +51,12 @@
 		nav ? railPages(nav, current, path, roomId).map(({ kind, ...entry }) => ({ ...entry, icon: kindIcons[kind] })) : []
 	);
 
+	const ROOM_PREFIX = '/room/';
+	const groupAction = (group: string) =>
+		current && group === current.name ? { label: t('channel.new'), icon: icons.plus, onclick: () => (ui.dialog = 'create-channel') } : null;
+	const pageMenu = (entry: { href: string }) =>
+		entry.href.startsWith(ROOM_PREFIX) ? channelMenu(decodeURIComponent(entry.href.slice(ROOM_PREFIX.length))) : [];
+
 	const spaces = $derived((nav?.spaces ?? []).map((s) => ({ id: s.space.room_id, name: s.name })));
 
 	const user = $derived.by(() => {
@@ -85,7 +92,9 @@
 	]);
 
 	function selectSpace(id: string | null) {
-		if (id) ui.spaceId = id;
+		if (!id) return;
+		ui.spaceId = id;
+		if (path !== BROWSE_PATH) void goto(BROWSE_PATH);
 	}
 
 	$effect(() => {
@@ -121,6 +130,9 @@
 			title="Prisme"
 			bind:collapsed={ui.railCollapsed}
 			{pages}
+			{groupAction}
+			{pageMenu}
+			pageMenuLabel={t('channel.menu')}
 			{user}
 			userHref="/settings"
 			userActive={onSettings}
