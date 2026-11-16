@@ -4,11 +4,13 @@
 	import { sanitizeMessage } from '$lib/chat/sanitize';
 	import { escapeHtml, stripReplyFallback } from '$lib/chat/markdown';
 	import { callInfo, capsuleInfo } from '$lib/matrix/timeline';
+	import { suiteLinks } from '$lib/chat/links';
 	import { t } from '$lib/i18n/index.svelte';
 	import CallCard from './CallCard.svelte';
 	import CapsuleCard from './CapsuleCard.svelte';
 	import ImageMessage from './ImageMessage.svelte';
 	import FileMessage from './FileMessage.svelte';
+	import LinkCard from './LinkCard.svelte';
 
 	let { event }: { event: MatrixEvent } = $props();
 
@@ -18,6 +20,7 @@
 	});
 	const call = $derived(callInfo(event));
 	const capsule = $derived(capsuleInfo(event));
+	const cards = $derived(suiteLinks(stripReplyFallback(String(content.body ?? ''))));
 	const mine = $derived(event.getSender() === app.client?.getUserId());
 	const html = $derived.by(() => {
 		const me = app.client?.getUserId() ?? '';
@@ -43,6 +46,9 @@
 	<div class="prose-msg text-fc-sm leading-relaxed {content.msgtype === MsgType.Emote ? 'italic' : ''} {content.msgtype === MsgType.Notice ? 'text-fc-fg-muted' : ''}">
 		{@html html}
 	</div>
+	{#each cards as link (link.url)}
+		<LinkCard {link} />
+	{/each}
 {/if}
 
 <style>

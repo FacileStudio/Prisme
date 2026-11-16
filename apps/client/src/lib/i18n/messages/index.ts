@@ -3,6 +3,7 @@ import type { Row } from '../row';
 import { apps } from './apps';
 import { landing } from './landing';
 import { landingDemo } from './landingDemo';
+import { links } from './links';
 import { calls } from './calls';
 import { capsule } from './capsule';
 import { common } from './common';
@@ -12,7 +13,7 @@ import { room } from './room';
 import { settings } from './settings';
 import { shell } from './shell';
 
-const rows = { ...common, ...shell, ...dialogs, ...room, ...panels, ...calls, ...capsule, ...settings, ...apps, ...landing, ...landingDemo };
+const rows = { ...common, ...shell, ...dialogs, ...room, ...panels, ...calls, ...capsule, ...links, ...settings, ...apps, ...landing, ...landingDemo };
 
 export type AppKey = keyof typeof rows;
 type AppCatalog = Record<AppKey, Message>;
