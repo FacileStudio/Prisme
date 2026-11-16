@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.25.1] - 2026-11-16
+
+### Changed
+
+- muse v0.32.0: tabs and segmented option cards match the default button height, 36px on pointer devices and 44px on touch. The avatar menu keeps Account, Invitations, Settings, Help and Sign out. The plan link and Get the apps moved to Settings, Preferences.
+
 ## [0.25.0] - 2026-11-16
 
 ### Added

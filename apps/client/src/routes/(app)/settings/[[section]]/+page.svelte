@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
+		Button,
 		NotificationsSection,
 		PreferencesSection,
 		ProfileSection,
@@ -20,6 +21,7 @@
 	import { t, rememberLocale } from '$lib/i18n/index.svelte';
 	import { app } from '$lib/state/app.svelte';
 	import { handle } from '$lib/chat/users';
+	import { isApp } from '$lib/native/platform';
 	import { notify } from '$lib/state/notify.svelte';
 	import { theme, type ThemePreference } from '$lib/state/theme.svelte';
 	import Avatar from '$lib/components/common/Avatar.svelte';
@@ -91,10 +93,17 @@
 				</ProfileSection>
 			{:else if id === 'preferences'}
 				<PreferencesSection
+					subscription={{ href: 'https://sso.facile.studio/spaces' }}
 					theme={theme.preference}
 					onThemeChange={(next) => theme.set(next as ThemePreference)}
 					onLocaleChange={rememberLocale}
-				/>
+				>
+					{#if !isApp()}
+						<SettingsRow label={t('downloads.menu')}>
+							<Button variant="secondary" href="/downloads">{t('downloads.heading')}</Button>
+						</SettingsRow>
+					{/if}
+				</PreferencesSection>
 			{:else if id === 'notifications'}
 				<NotificationsSection>
 					<SettingsRow label={notifyLabel} description={notifyHint}>
