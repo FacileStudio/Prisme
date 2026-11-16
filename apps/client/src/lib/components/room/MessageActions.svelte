@@ -9,10 +9,12 @@
 	import { deleteMessage, toggleReaction } from '$lib/matrix/messages';
 	import { callInfo, capsuleInfo, reactionsFor } from '$lib/matrix/timeline';
 	import EmojiPicker from './EmojiPicker.svelte';
+	import EmojiPanel from './EmojiPanel.svelte';
 
 	type Props = { room: Room; event: MatrixEvent; draft: DraftState; inThread: boolean };
 	let { room, event, draft, inThread }: Props = $props();
 	let picking = $state(false);
+	let full = $state(false);
 	let confirming = $state(false);
 
 	const mine = $derived(event.getSender() === app.client?.getUserId());
@@ -20,6 +22,7 @@
 
 	async function react(key: string) {
 		picking = false;
+		full = false;
 		if (!app.client) return;
 		const me = app.client.getUserId() ?? '';
 		const existing = reactionsFor(room, event, me).find((r) => r.key === key)?.mine;
@@ -33,12 +36,15 @@
 </script>
 
 <div
-	class="absolute -top-4 right-3 z-10 hidden items-center rounded-fc-md bg-fc-component shadow-sm group-hover:flex group-focus-within:flex {picking ? 'flex' : ''}"
+	class="absolute -top-4 right-3 z-10 hidden items-center rounded-fc-md bg-fc-component shadow-sm group-hover:flex group-focus-within:flex {picking || full ? 'flex' : ''}"
 	role="toolbar"
 	aria-label={t('actions.toolbar')}
 >
 	<Tooltip text={t('actions.react')} describe={false} class="contents">
-		<button type="button" class="action" aria-label={t('actions.reactAria')} onclick={() => (picking = !picking)}>
+		<button type="button" class="action" aria-label={t('actions.reactAria')} onclick={() => {
+			full = false;
+			picking = !picking;
+		}}>
 			<Icon icon={glyphs.smile} size={16} />
 		</button>
 	</Tooltip>
@@ -70,7 +76,15 @@
 	{/if}
 	{#if picking}
 		<div class="absolute right-0 top-11">
-			<EmojiPicker onpick={react} />
+			<EmojiPicker onpick={react} onmore={() => {
+				picking = false;
+				full = true;
+			}} />
+		</div>
+	{/if}
+	{#if full}
+		<div class="absolute right-0 top-11 z-20">
+			<EmojiPanel onpick={react} onclose={() => (full = false)} />
 		</div>
 	{/if}
 </div>

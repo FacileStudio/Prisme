@@ -64,6 +64,14 @@ export class ComposerState {
 		return next.caret;
 	}
 
+	/** Replaces the selection with text, such as an emoji, and returns the caret after it. */
+	insert(text: string, start: number, end = start): number {
+		this.text = this.text.slice(0, start) + text + this.text.slice(end);
+		this.caret = start + text.length;
+		this.typed();
+		return this.caret;
+	}
+
 	/** Reports a keystroke to the typing notifier. */
 	typed() {
 		this.typing.keystroke(this.text.trim().length > 0);

@@ -1,4 +1,4 @@
-import { request, send } from './http';
+import { request, requestBlob, send } from './http';
 
 export type SessionUser = {
 	id: number;
@@ -16,7 +16,10 @@ export type MatrixLogin = {
 	device_id: string;
 };
 
-export type Session = { user: SessionUser; matrix: MatrixLogin; calls_enabled: boolean };
+export type Session = { user: SessionUser; matrix: MatrixLogin; calls_enabled: boolean; gifs_enabled?: boolean };
+export type GifImage = { url: string; width: number; height: number };
+export type Gif = { id: string; title: string; preview: GifImage; full: GifImage };
+export type GifPage = { gifs: Gif[]; next: number };
 export type AuthConfig = { sso_only: boolean; oidc_enabled: boolean };
 export type Channel = { room_id: string; name: string; alias: string };
 export type Space = { id: number; room_id: string; name: string; slug: string; channels: Channel[] };
@@ -63,6 +66,9 @@ export const prisme = {
 	capsuleMeta: (id: string) => request<CapsuleMeta>(`/capsules/${encodeURIComponent(id)}`),
 	openCapsule: (id: string) => send<{ ciphertext: string }>(`/capsules/${encodeURIComponent(id)}/open`, 'POST'),
 	unfurl: (url: string) => request<LinkPreview>(`/unfurl?url=${encodeURIComponent(url)}`),
+	gifs: (q: string, lang: string, offset = 0) =>
+		request<GifPage>(`/gifs?q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}&offset=${offset}`),
+	gifMedia: (path: string, signal?: AbortSignal) => requestBlob(path, signal),
 	pushConfig: () => request<PushConfig>('/push'),
 	invitations: () => request<Invitations>('/me/invitations'),
 	registerPushDevice: (token: string) => send<void>('/push/devices', 'POST', { token })

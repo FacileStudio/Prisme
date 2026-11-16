@@ -14,6 +14,10 @@
 	import PendingFiles from './PendingFiles.svelte';
 	import DraftBanner from './DraftBanner.svelte';
 	import ComposerField from './ComposerField.svelte';
+	import ComposerMenu from './ComposerMenu.svelte';
+	import EmojiPanel from './EmojiPanel.svelte';
+	import { visibleEntries, type ComposerContext } from '$lib/state/composer-menu';
+	import { ComposerPopups } from '$lib/state/composer-popups.svelte';
 
 	type Props = { room: Room; draft: DraftState; threadId: string | null; placeholder?: string };
 	let { room, draft, threadId, placeholder }: Props = $props();
@@ -23,6 +27,10 @@
 	const menuId = `mentions-${Math.random().toString(36).slice(2)}`;
 	let input: HTMLTextAreaElement | undefined = $state();
 	let picker: HTMLInputElement | undefined = $state();
+	let plus: HTMLButtonElement | undefined = $state();
+	let smiley: HTMLButtonElement | undefined = $state();
+	const popups = new ComposerPopups({ plus: () => plus, smiley: () => smiley, input: () => input });
+	const addMenuId = `composer-menu-${Math.random().toString(36).slice(2)}`;
 
 	const members = $derived.by(() => {
 		void app.version;
@@ -31,7 +39,20 @@
 	const options = $derived(composer.completions(members));
 	const parts = $derived(segments(composer.text, composer.known(members)));
 	const hint = $derived(composer.sealed ? t('capsule.placeholder') : (placeholder ?? t('composer.placeholder', { name: room.name })));
-	const canSeal = $derived(!draft.editing && composer.files.length === 0);
+	const context: ComposerContext = {
+		get room() {
+			return room;
+		},
+		get threadId() {
+			return threadId;
+		},
+		get editing() {
+			return !!draft.editing;
+		},
+		composer,
+		pickFiles: () => picker?.click()
+	};
+	const entries = $derived(visibleEntries(context));
 	const expiries = $derived(EXPIRIES.map((value) => ({ value, label: t(`capsule.${value}`) })));
 	const open = $derived(options.length > 0);
 	const canSend = $derived(!composer.sending && (!!composer.text.trim() || (!composer.sealed && composer.files.length > 0)));
@@ -53,6 +74,13 @@
 		await tick();
 		input?.setSelectionRange(caret, caret);
 		input?.focus();
+	}
+
+	async function insertEmoji(emoji: string) {
+		const start = input?.selectionStart ?? composer.text.length;
+		const caret = composer.insert(emoji, start, input?.selectionEnd ?? start);
+		await tick();
+		input?.setSelectionRange(caret, caret);
 	}
 
 	async function submit() {
@@ -98,6 +126,18 @@
 </script>
 
 <div class="relative px-3 pb-3 md:px-4">
+	{#if popups.menu}
+		<ComposerMenu id={addMenuId} {entries} {context} onpick={(entry) => popups.choose(entry, context)} onclose={(r) => popups.closeMenu(r)} />
+	{/if}
+	{#if popups.panel?.panel}
+		{@const Panel = popups.panel.panel}
+		<Panel {context} onclose={() => popups.closePanel()} />
+	{/if}
+	{#if popups.emoji}
+		<div class="absolute bottom-full left-3 z-30 mb-2 origin-bottom-left md:left-4">
+			<EmojiPanel onpick={insertEmoji} onclose={(r) => popups.closeEmoji(r)} anchor={smiley} />
+		</div>
+	{/if}
 	{#if open}
 		<MentionMenu id={menuId} {options} selected={composer.selected} onpick={pick} onhover={(i) => (composer.selected = i)} />
 	{/if}
@@ -113,27 +153,32 @@
 			</div>
 		{/if}
 		<div class="flex items-end gap-2">
-			<Tooltip text={t('composer.attach')} describe={false} class="contents">
+			<Tooltip text={t('composerMenu.open')} describe={false} class="contents">
 				<button
+					bind:this={plus}
 					type="button"
-					aria-label={t('composer.attach')}
-					disabled={!!draft.editing || composer.sealed}
-					class="{ROUND} text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg"
-					onclick={() => picker?.click()}
+					aria-label={t('composerMenu.open')}
+					aria-haspopup="menu"
+					aria-expanded={popups.menu}
+					aria-controls={addMenuId}
+					disabled={!!draft.editing || entries.length === 0}
+					class="{ROUND} {popups.menu || popups.panel ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
+					onclick={() => popups.toggleMenu()}
 				>
-					<Icon icon={icons.plus} size={20} />
+					<Icon icon={icons.plus} size={20} class="transition-transform duration-150 motion-reduce:transition-none {popups.menu ? 'rotate-45' : ''}" />
 				</button>
 			</Tooltip>
-			<Tooltip text={t('capsule.toggle')} describe={false} class="contents">
+			<Tooltip text={t('emoji.open')} describe={false} class="contents">
 				<button
+					bind:this={smiley}
 					type="button"
-					aria-label={t('capsule.toggle')}
-					aria-pressed={composer.sealed}
-					disabled={!canSeal}
-					class="{ROUND} {composer.sealed ? 'bg-fc-accent/15 text-fc-accent' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
-					onclick={() => (composer.sealed = !composer.sealed)}
+					aria-label={t('emoji.open')}
+					aria-haspopup="dialog"
+					aria-expanded={popups.emoji}
+					class="{ROUND} -ml-1.5 {popups.emoji ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
+					onclick={() => popups.toggleEmoji()}
 				>
-					<Icon icon={glyphs.capsule} size={20} />
+					<Icon icon={glyphs.smile} size={20} />
 				</button>
 			</Tooltip>
 			<ComposerField
