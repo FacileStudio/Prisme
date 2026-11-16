@@ -31,10 +31,6 @@ func routerConfig(a app, clientDir string) httpx.Config {
 	}
 }
 
-// visionScript is the origin of Vision's tracker, which app.html loads on the
-// production host.
-const visionScript = "https://vision.facile.studio"
-
 // planCatalog is the origin of the public plan catalog the landing's pricing
 // block fetches.
 const planCatalog = "https://api-ardoise.facile.studio"
@@ -68,7 +64,6 @@ func securityConfig(clientDir, homeserver, liveKit string, logger *slog.Logger) 
 		"media-src":   {"blob:", "https:"},
 		"worker-src":  {"blob:"},
 		"frame-src":   {"blob:", "https://clap.facile.studio", "https://diapo.facile.studio"},
-		"script-src":  {visionScript},
 	}
 	if spa.Available(clientDir) {
 		hashes, err := spa.InlineScriptHashes(clientDir)
