@@ -4,16 +4,22 @@ import type { Row } from '../row';
 export const capsule = {
 	'capsule.toggle': ['Seal as a capsule', 'Sceller en capsule', 'Sellar como cápsula', 'Als Kapsel versiegeln'],
 	'capsule.on': [
-		'Sealed: burns once read',
-		'Scellé : s’efface une fois lu',
-		'Sellado: se borra al leerlo',
-		'Versiegelt: löscht sich nach dem Lesen'
+		'Sealed message, burns after reading',
+		'Message scellé, détruit après lecture',
+		'Mensaje sellado, se destruye al leerlo',
+		'Versiegelte Nachricht, nach dem Lesen gelöscht'
 	],
+	'capsule.cancel': ['Send as a normal message', 'Envoyer en message normal', 'Enviar como mensaje normal', 'Als normale Nachricht senden'],
+	'capsule.send': ['Seal and send', 'Sceller et envoyer', 'Sellar y enviar', 'Versiegeln und senden'],
 	'capsule.expiry': ['Expires after', 'Expire après', 'Caduca tras', 'Läuft ab nach'],
 	'capsule.1h': ['1 hour', '1 heure', '1 hora', '1 Stunde'],
 	'capsule.24h': ['1 day', '1 jour', '1 día', '1 Tag'],
 	'capsule.7d': ['7 days', '7 jours', '7 días', '7 Tage'],
 	'capsule.30d': ['30 days', '30 jours', '30 días', '30 Tage'],
+	'capsule.short.1h': ['1 h', '1 h', '1 h', '1 Std.'],
+	'capsule.short.24h': ['24 h', '24 h', '24 h', '24 Std.'],
+	'capsule.short.7d': ['7 d', '7 j', '7 d', '7 T.'],
+	'capsule.short.30d': ['30 d', '30 j', '30 d', '30 T.'],
 	'capsule.placeholder': ['Write the secret', 'Écrivez le secret', 'Escribe el secreto', 'Schreiben Sie das Geheimnis'],
 	'capsule.sealed': ['Sealed capsule', 'Capsule scellée', 'Cápsula sellada', 'Versiegelte Kapsel'],
 	'capsule.mine': [
