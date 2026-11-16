@@ -3,6 +3,7 @@ import { stripReplyFallback } from '$lib/chat/markdown';
 import { formatDate, formatTime } from '$lib/i18n/format';
 import { t } from '$lib/i18n/index.svelte';
 import { capsuleOf } from '$lib/chat/capsule';
+import { nuageOf } from '$lib/chat/nuage';
 import { isMessage, type CallInfo } from './timeline';
 import { pollOf } from '$lib/chat/poll';
 import { voiceOf } from '$lib/chat/voice';
@@ -12,6 +13,8 @@ export type Preview = { text: string; at: number };
 function contentText(content: Record<string, unknown>): string {
 	const call = content['studio.facile.call'] as CallInfo | undefined;
 	if (capsuleOf(content)) return t('preview.capsule');
+	const shared = nuageOf(content);
+	if (shared) return t('nuage.preview', { name: shared.name });
 	const poll = pollOf(content);
 	if (poll) return t('poll.preview', { question: poll.question });
 	if (voiceOf(content)) return t('voice.preview');

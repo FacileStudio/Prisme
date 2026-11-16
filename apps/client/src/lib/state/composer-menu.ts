@@ -5,6 +5,7 @@ import { t } from '$lib/i18n/index.svelte';
 import { app } from '$lib/state/app.svelte';
 import type { ComposerState } from './composer.svelte';
 import PollPanel from '$lib/components/room/PollPanel.svelte';
+import NuagePanel from '$lib/components/room/NuagePanel.svelte';
 
 /** What the "+" menu hands an entry and the panel it opens. */
 export type ComposerContext = {
@@ -60,6 +61,13 @@ export const composerEntries: ComposerEntry[] = [
 		label: () => t('poll.menu'),
 		available: idle,
 		panel: PollPanel
+	},
+	{
+		id: 'nuage',
+		icon: glyphs.cloud,
+		label: () => t('nuage.menu'),
+		available: idle,
+		panel: NuagePanel
 	}
 ];
 
