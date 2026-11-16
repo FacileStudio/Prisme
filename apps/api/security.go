@@ -67,6 +67,7 @@ func securityConfig(clientDir, homeserver, liveKit string, logger *slog.Logger) 
 		"connect-src": connect,
 		"media-src":   {"blob:", "https:"},
 		"worker-src":  {"blob:"},
+		"frame-src":   {"blob:", "https://clap.facile.studio", "https://diapo.facile.studio"},
 		"script-src":  {visionScript},
 	}
 	if spa.Available(clientDir) {

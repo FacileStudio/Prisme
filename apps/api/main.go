@@ -14,6 +14,7 @@ import (
 	"github.com/FacileStudio/Prisme/apps/api/modules/push"
 	"github.com/FacileStudio/Prisme/apps/api/modules/session"
 	"github.com/FacileStudio/Prisme/apps/api/modules/spaces"
+	"github.com/FacileStudio/Prisme/apps/api/modules/unfurl"
 	"github.com/FacileStudio/Prisme/apps/api/modules/users"
 
 	"github.com/FacileStudio/porte/directory"
@@ -43,6 +44,7 @@ func registry() documentation.Response {
 			calls.Documentation(),
 			users.Documentation(),
 			capsules.Documentation(),
+			unfurl.Documentation(),
 			push.Documentation(),
 		},
 	}
@@ -74,6 +76,7 @@ type app struct {
 type suiteApps struct {
 	calls    *calls.Service
 	capsules *capsules.Service
+	unfurl   *unfurl.Service
 }
 
 // directorySync is the Registre half of the app: the space sync and the
@@ -120,6 +123,7 @@ func mountAPI(r chi.Router, a app) {
 	agents.RegisterRoutes(r, a.agents, a.auth)
 	calls.RegisterRoutes(r, a.suite.calls, a.auth)
 	capsules.RegisterRoutes(r, a.suite.capsules, a.auth)
+	unfurl.RegisterRoutes(r, a.suite.unfurl, a.auth)
 	users.RegisterRoutes(r, a.users, a.auth)
 	push.RegisterRoutes(r, a.push, a.auth)
 	if sync := a.directory; sync.syncer != nil && sync.deletions != nil {
