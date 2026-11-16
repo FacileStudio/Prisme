@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import type { Room } from 'matrix-js-sdk';
-	import { Icon, Select, Tooltip, icons, toast } from '@facile/muse';
-	import { EXPIRIES } from '$lib/chat/capsule';
+	import { Icon, Tooltip, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { t } from '$lib/i18n/index.svelte';
 	import { segments } from '$lib/chat/mentions';
@@ -17,8 +16,9 @@
 	import ComposerMenu from './ComposerMenu.svelte';
 	import EmojiPanel from './EmojiPanel.svelte';
 	import VoiceRecorder from './VoiceRecorder.svelte';
+	import CapsuleBanner from './CapsuleBanner.svelte';
 	import { Recorder } from '$lib/state/recorder.svelte';
-	import { pop } from '$lib/motion';
+	import { pop, rise } from '$lib/motion';
 	import { visibleEntries, type ComposerContext } from '$lib/state/composer-menu';
 	import { ComposerPopups } from '$lib/state/composer-popups.svelte';
 
@@ -56,7 +56,7 @@
 		pickFiles: () => picker?.click()
 	};
 	const entries = $derived(visibleEntries(context));
-	const expiries = $derived(EXPIRIES.map((value) => ({ value, label: t(`capsule.${value}`) })));
+	const sendLabel = $derived(draft.editing ? t('composer.saveEdit') : composer.sealed ? t('capsule.send') : t('composer.send'));
 	const open = $derived(options.length > 0);
 	let recording = $state(false);
 	const micReady = Recorder.supported();
@@ -116,7 +116,8 @@
 		else if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
 			void submit();
-		} else if (event.key === 'Escape') draft.clear();
+		} else if (event.key === 'Escape' && composer.sealed) composer.sealed = false;
+		else if (event.key === 'Escape') draft.clear();
 	}
 
 	function onCaret() {
@@ -151,11 +152,8 @@
 		<DraftBanner {room} {draft} />
 		<PendingFiles files={composer.files} onremove={(f) => (composer.files = composer.files.filter((x) => x !== f))} />
 		{#if composer.sealed}
-			<div class="flex flex-wrap items-center gap-2 px-3 pt-1 text-fc-xs text-fc-fg-muted">
-				<Icon icon={glyphs.capsule} size={16} class="text-fc-accent" />
-				<span class="font-medium text-fc-fg">{t('capsule.on')}</span>
-				<span class="ml-auto">{t('capsule.expiry')}</span>
-				<Select bind:value={composer.expiry} options={expiries} aria-label={t('capsule.expiry')} class="h-8 text-fc-xs" />
+			<div transition:rise>
+				<CapsuleBanner bind:expiry={composer.expiry} onclose={() => (composer.sealed = false)} />
 			</div>
 		{/if}
 		<div class="flex items-end gap-2">
@@ -209,16 +207,16 @@
 			{#if voiceReady || recording}
 				<VoiceRecorder {room} {threadId} bind:active={recording} />
 			{:else}
-				<Tooltip text={draft.editing ? t('composer.saveEdit') : t('composer.send')} describe={false} class="contents">
+				<Tooltip text={sendLabel} describe={false} class="contents">
 					<button
 						type="button"
-						aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
+						aria-label={sendLabel}
 						disabled={!canSend}
 						class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
 						onclick={submit}
 						in:pop
 					>
-						<Icon icon={glyphs.send} size={18} />
+						<Icon icon={composer.sealed ? glyphs.capsule : glyphs.send} size={18} />
 					</button>
 				</Tooltip>
 			{/if}
