@@ -13,6 +13,7 @@ import (
 const (
 	maxBodyRunes   = 240
 	sealedPreview  = "🔒 Capsule"
+	pollPrefix     = "📊 "
 	maxEventAge    = 5 * time.Minute
 	deliverTimeout = 30 * time.Second
 )
@@ -37,8 +38,10 @@ func (s *Service) Receive(txn transaction) {
 	}()
 }
 
+var notifiableTypes = []string{"m.room.message", "m.poll.start", "org.matrix.msc3381.poll.start"}
+
 func notifiable(e event, now time.Time) bool {
-	if e.Type != "m.room.message" || e.StateKey != nil {
+	if !slices.Contains(notifiableTypes, e.Type) || e.StateKey != nil {
 		return false
 	}
 	if e.Content.RelatesTo != nil && e.Content.RelatesTo.RelType == "m.replace" {
@@ -106,10 +109,14 @@ func (s *Service) compose(ctx context.Context, e event, direct bool) message {
 }
 
 // previewBody is the notification text. A sealed capsule never shows its
-// body, so no Capsule link reaches the push provider.
+// body, so no Capsule link reaches the push provider, and a poll shows its
+// question rather than the numbered fallback.
 func previewBody(c content) string {
 	if c.Capsule != nil {
 		return sealedPreview
+	}
+	if q := c.pollQuestion(); q != "" {
+		return truncate(pollPrefix + q)
 	}
 	return truncate(c.Body)
 }
