@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-11-16
+
+### Added
+
+- "File from Nuage" in the composer's "+" menu opens a picker over your Nuage drive, its folders and your shared spaces, with a name search. Picking a file posts a card with its name, size and an Open in Nuage button; the file stays on Nuage.
+- Prisme acts as you in Nuage through a Registre token exchange (`nuage.read`, `nuage.write`, Registre v0.21.1), so Nuage's own access rules decide what you see. A file shared twice keeps one view link.
+- Push notifications for a shared file read "📎 <name>" and never carry its link.
+- `NUAGE_URL` (default `https://nuage.facile.studio`) sets the Nuage deployment.
+
 ## [0.24.0] - 2026-11-16
 
 ### Added
