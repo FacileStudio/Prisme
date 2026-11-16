@@ -28,6 +28,16 @@ export type CallGrant = { call_id: string; livekit_url: string; token: string; j
 export type SealedCapsule = { id: string; url: string; expires_at?: string };
 export type CapsuleMeta = { id: string; exists: boolean; expires_at?: string };
 
+export type LinkPreview = {
+	url: string;
+	app: string;
+	title?: string;
+	description?: string;
+	image?: string;
+	embed_url?: string;
+	duration_ms?: number;
+};
+
 export type PushConfig = { native: boolean };
 export type Invitations = { count: number; href?: string };
 
@@ -52,6 +62,7 @@ export const prisme = {
 		send<SealedCapsule>('/capsules', 'POST', { ciphertext, expires_in: expiresIn }),
 	capsuleMeta: (id: string) => request<CapsuleMeta>(`/capsules/${encodeURIComponent(id)}`),
 	openCapsule: (id: string) => send<{ ciphertext: string }>(`/capsules/${encodeURIComponent(id)}/open`, 'POST'),
+	unfurl: (url: string) => request<LinkPreview>(`/unfurl?url=${encodeURIComponent(url)}`),
 	pushConfig: () => request<PushConfig>('/push'),
 	invitations: () => request<Invitations>('/me/invitations'),
 	registerPushDevice: (token: string) => send<void>('/push/devices', 'POST', { token })
