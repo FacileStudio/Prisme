@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 	import { Icon, Spinner, prefersReducedMotion } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
@@ -33,7 +34,7 @@
 		loading = true;
 		try {
 			src = await loadMedia(voice.url);
-			await new Promise((resolve) => requestAnimationFrame(resolve));
+			await tick();
 			return true;
 		} catch {
 			failed = true;
