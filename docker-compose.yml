@@ -154,6 +154,7 @@ services:
       ECHO_URL: ${ECHO_URL:-}
       ECHO_INTEGRATION_KEY: ${ECHO_INTEGRATION_KEY:-}
       CAPSULE_URL: ${CAPSULE_URL:-https://capsule.facile.studio}
+      NUAGE_URL: ${NUAGE_URL:-https://nuage.facile.studio}
       LIVEKIT_URL: ${LIVEKIT_URL:-}
       PRISME_PUBLIC_URL: ${PRISME_PUBLIC_URL:-}
       FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}

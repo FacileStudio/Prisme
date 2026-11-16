@@ -2,6 +2,7 @@ import { EventType, MsgType, RelationType, THREAD_RELATION_TYPE, type MatrixClie
 import { composeMessage } from '$lib/chat/compose';
 import type { Mention } from '$lib/chat/mentions';
 import { CAPSULE_KEY, type CapsuleInfo } from '$lib/chat/capsule';
+import { NUAGE_KEY, nuageBody, type NuageInfo } from '$lib/chat/nuage';
 
 export type Draft = { text: string; mentions: Mention[] };
 export type Target = { roomId: string; threadId?: string | null; replyTo?: MatrixEvent | null };
@@ -44,6 +45,14 @@ export async function sendText(client: MatrixClient, target: Target, draft: Draf
  */
 export async function sendCapsule(client: MatrixClient, target: Target, capsule: CapsuleInfo, body: string, userIds: string[], lastInThread?: string) {
 	const content: Content = { msgtype: MsgType.Text, body, 'm.mentions': { user_ids: userIds }, [CAPSULE_KEY]: capsule };
+	const rel = relation(target, lastInThread);
+	if (rel) content['m.relates_to'] = rel;
+	await client.sendMessage(target.roomId, target.threadId ?? null, content as never);
+}
+
+/** Shares a Nuage file into a room: the file stays on Nuage, the message carries its view link. */
+export async function sendNuage(client: MatrixClient, target: Target, info: NuageInfo, lastInThread?: string) {
+	const content: Content = { msgtype: MsgType.Text, body: nuageBody(info), [NUAGE_KEY]: info };
 	const rel = relation(target, lastInThread);
 	if (rel) content['m.relates_to'] = rel;
 	await client.sendMessage(target.roomId, target.threadId ?? null, content as never);

@@ -4,6 +4,7 @@ import { apps } from './apps';
 import { landing } from './landing';
 import { landingDemo } from './landingDemo';
 import { links } from './links';
+import { nuage } from './nuage';
 import { calls } from './calls';
 import { capsule } from './capsule';
 import { channels } from './channels';
@@ -16,7 +17,7 @@ import { room } from './room';
 import { settings } from './settings';
 import { shell } from './shell';
 
-const rows = { ...common, ...shell, ...dialogs, ...room, ...panels, ...calls, ...capsule, ...links, ...composer, ...channels, ...polls, ...settings, ...apps, ...landing, ...landingDemo };
+const rows = { ...common, ...shell, ...dialogs, ...room, ...panels, ...calls, ...capsule, ...links, ...nuage, ...composer, ...channels, ...polls, ...settings, ...apps, ...landing, ...landingDemo };
 
 export type AppKey = keyof typeof rows;
 type AppCatalog = Record<AppKey, Message>;

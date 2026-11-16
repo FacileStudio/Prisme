@@ -4,6 +4,7 @@
 	import { sanitizeMessage } from '$lib/chat/sanitize';
 	import { escapeHtml, stripReplyFallback } from '$lib/chat/markdown';
 	import { callInfo, capsuleInfo } from '$lib/matrix/timeline';
+	import { nuageOf } from '$lib/chat/nuage';
 	import { suiteLinks } from '$lib/chat/links';
 	import { pollInfo } from '$lib/chat/poll';
 	import { voiceInfo } from '$lib/matrix/voice';
@@ -13,6 +14,7 @@
 	import ImageMessage from './ImageMessage.svelte';
 	import FileMessage from './FileMessage.svelte';
 	import LinkCard from './LinkCard.svelte';
+	import NuageCard from './NuageCard.svelte';
 	import PollCard from './PollCard.svelte';
 	import VoiceMessage from './VoiceMessage.svelte';
 
@@ -24,6 +26,7 @@
 	});
 	const call = $derived(callInfo(event));
 	const capsule = $derived(capsuleInfo(event));
+	const shared = $derived(nuageOf(content));
 	const cards = $derived(suiteLinks(stripReplyFallback(String(content.body ?? ''))));
 	const poll = $derived.by(() => {
 		void app.version;
@@ -45,6 +48,8 @@
 	<p class="text-fc-sm italic text-fc-fg-muted">{t('message.deleted')}</p>
 {:else if capsule}
 	<CapsuleCard {capsule} {mine} />
+{:else if shared}
+	<NuageCard file={shared} />
 {:else if poll}
 	<PollCard {event} {poll} />
 {:else if voice}

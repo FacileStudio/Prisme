@@ -50,6 +50,7 @@ type Config struct {
 	ServiceKeys string
 	FCMAccount  string
 	CapsuleURL  string
+	NuageURL    string
 }
 
 // Load reads and validates the environment.
@@ -70,6 +71,7 @@ func Load() (Config, error) {
 	cfg.Porte = loadPorte()
 	cfg.FCMAccount = troncenv.String("FCM_SERVICE_ACCOUNT", "")
 	cfg.CapsuleURL = strings.TrimRight(troncenv.String("CAPSULE_URL", "https://capsule.facile.studio"), "/")
+	cfg.NuageURL = strings.TrimRight(troncenv.String("NUAGE_URL", "https://nuage.facile.studio"), "/")
 	if cfg.Porte.Issuer != "" {
 		cfg.Porte.MobileRedirect = cmp.Or(cfg.Porte.MobileRedirect, DefaultMobileRedirect)
 		cfg.CORSAllowedOrigins = withAppOrigins(cfg.CORSAllowedOrigins)
