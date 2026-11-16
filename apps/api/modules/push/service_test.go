@@ -77,3 +77,23 @@ func TestASealedCapsuleNeverReachesThePushBody(t *testing.T) {
 		t.Fatalf("text preview = %q", got)
 	}
 }
+
+func TestAPollIsNotifiableAndShowsItsQuestion(t *testing.T) {
+	now := time.Now()
+	for _, kind := range []string{"m.poll.start", "org.matrix.msc3381.poll.start"} {
+		if !notifiable(event{Type: kind, Timestamp: now.UnixMilli()}, now) {
+			t.Errorf("%s is not notifiable", kind)
+		}
+	}
+	if notifiable(event{Type: "m.poll.response", Timestamp: now.UnixMilli()}, now) {
+		t.Error("a poll response is notifiable")
+	}
+	stable := content{Body: "Lunch?\n1. Pizza", Poll: &pollStart{Question: pollText{Text: " Lunch? "}}}
+	if got := previewBody(stable); got != pollPrefix+"Lunch?" {
+		t.Fatalf("stable poll preview = %q", got)
+	}
+	unstable := content{PollMSC: &pollStart{Question: pollText{TextMSC: "Où ?"}}}
+	if got := previewBody(unstable); got != pollPrefix+"Où ?" {
+		t.Fatalf("unstable poll preview = %q", got)
+	}
+}

@@ -5,6 +5,7 @@ import { t } from '$lib/i18n/index.svelte';
 import { app } from '$lib/state/app.svelte';
 import type { ComposerState } from './composer.svelte';
 import GifPanel from '$lib/components/room/GifPanel.svelte';
+import PollPanel from '$lib/components/room/PollPanel.svelte';
 
 /** What the "+" menu hands an entry and the panel it opens. */
 export type ComposerContext = {
@@ -53,6 +54,13 @@ export const composerEntries: ComposerEntry[] = [
 		available: (context) => !context.editing && context.composer.files.length === 0,
 		active: (context) => context.composer.sealed,
 		run: (context) => (context.composer.sealed = !context.composer.sealed)
+	},
+	{
+		id: 'poll',
+		icon: glyphs.poll,
+		label: () => t('poll.menu'),
+		available: idle,
+		panel: PollPanel
 	},
 	{
 		id: 'gif',

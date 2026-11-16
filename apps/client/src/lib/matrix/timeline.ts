@@ -2,6 +2,7 @@ import { EventType, RelationType, type MatrixEvent, type Room } from 'matrix-js-
 import { continues } from '$lib/chat/unread';
 import { formatDate } from '$lib/i18n/format';
 import { capsuleOf, type CapsuleInfo } from '$lib/chat/capsule';
+import { isPollStartType } from '$lib/chat/poll';
 
 export type Item = { event: MatrixEvent; grouped: boolean; day: string | null };
 export type Reaction = { key: string; count: number; mine?: MatrixEvent; senders: string[] };
@@ -9,7 +10,7 @@ export type CallInfo = { call_id: string; join_url?: string; started_by: string;
 
 /** Reports whether an event is a message the timeline shows, deleted ones included. */
 export function isMessage(event: MatrixEvent): boolean {
-	if (event.getType() !== EventType.RoomMessage) return false;
+	if (event.getType() !== EventType.RoomMessage && !isPollStartType(event.getType())) return false;
 	return event.getRelation()?.rel_type !== RelationType.Replace;
 }
 

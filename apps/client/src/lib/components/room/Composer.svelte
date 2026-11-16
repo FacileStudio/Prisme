@@ -16,6 +16,9 @@
 	import ComposerField from './ComposerField.svelte';
 	import ComposerMenu from './ComposerMenu.svelte';
 	import EmojiPanel from './EmojiPanel.svelte';
+	import VoiceRecorder from './VoiceRecorder.svelte';
+	import { Recorder } from '$lib/state/recorder.svelte';
+	import { pop } from '$lib/motion';
 	import { visibleEntries, type ComposerContext } from '$lib/state/composer-menu';
 	import { ComposerPopups } from '$lib/state/composer-popups.svelte';
 
@@ -55,6 +58,9 @@
 	const entries = $derived(visibleEntries(context));
 	const expiries = $derived(EXPIRIES.map((value) => ({ value, label: t(`capsule.${value}`) })));
 	const open = $derived(options.length > 0);
+	let recording = $state(false);
+	const micReady = Recorder.supported();
+	const voiceReady = $derived(micReady && !draft.editing && !composer.sealed && !composer.text.trim() && composer.files.length === 0);
 	const canSend = $derived(!composer.sending && (!!composer.text.trim() || (!composer.sealed && composer.files.length > 0)));
 	const ROUND =
 		'inline-flex size-11 shrink-0 items-center justify-center rounded-fc-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring disabled:cursor-not-allowed disabled:opacity-40';
@@ -153,62 +159,69 @@
 			</div>
 		{/if}
 		<div class="flex items-end gap-2">
-			<Tooltip text={t('composerMenu.open')} describe={false} class="contents">
-				<button
-					bind:this={plus}
-					type="button"
-					aria-label={t('composerMenu.open')}
-					aria-haspopup="menu"
-					aria-expanded={popups.menu}
-					aria-controls={addMenuId}
-					disabled={!!draft.editing || entries.length === 0}
-					class="{ROUND} {popups.menu || popups.panel ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
-					onclick={() => popups.toggleMenu()}
-				>
-					<Icon icon={icons.plus} size={20} class="transition-transform duration-150 motion-reduce:transition-none {popups.menu ? 'rotate-45' : ''}" />
-				</button>
-			</Tooltip>
-			<Tooltip text={t('emoji.open')} describe={false} class="contents">
-				<button
-					bind:this={smiley}
-					type="button"
-					aria-label={t('emoji.open')}
-					aria-haspopup="dialog"
-					aria-expanded={popups.emoji}
-					class="{ROUND} -ml-1.5 {popups.emoji ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
-					onclick={() => popups.toggleEmoji()}
-				>
-					<Icon icon={glyphs.smile} size={20} />
-				</button>
-			</Tooltip>
-			<ComposerField
-				bind:input
-				bind:value={composer.text}
-				{parts}
-				oninput={onInput}
-				onkeydown={onKeydown}
-				onkeyup={onCaret}
-				onclick={onCaret}
-				onblur={() => composer.typing.stop()}
-				placeholder={hint}
-				aria-label={hint}
-				role="combobox"
-				aria-autocomplete="list"
-				aria-expanded={open}
-				aria-controls={open ? menuId : undefined}
-				aria-activedescendant={open ? `${menuId}-${composer.selected}` : undefined}
-			/>
-			<Tooltip text={draft.editing ? t('composer.saveEdit') : t('composer.send')} describe={false} class="contents">
-				<button
-					type="button"
-					aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
-					disabled={!canSend}
-					class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
-					onclick={submit}
-				>
-					<Icon icon={glyphs.send} size={18} />
-				</button>
-			</Tooltip>
+			{#if !recording}
+				<Tooltip text={t('composerMenu.open')} describe={false} class="contents">
+					<button
+						bind:this={plus}
+						type="button"
+						aria-label={t('composerMenu.open')}
+						aria-haspopup="menu"
+						aria-expanded={popups.menu}
+						aria-controls={addMenuId}
+						disabled={!!draft.editing || entries.length === 0}
+						class="{ROUND} {popups.menu || popups.panel ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
+						onclick={() => popups.toggleMenu()}
+					>
+						<Icon icon={icons.plus} size={20} class="transition-transform duration-150 motion-reduce:transition-none {popups.menu ? 'rotate-45' : ''}" />
+					</button>
+				</Tooltip>
+				<Tooltip text={t('emoji.open')} describe={false} class="contents">
+					<button
+						bind:this={smiley}
+						type="button"
+						aria-label={t('emoji.open')}
+						aria-haspopup="dialog"
+						aria-expanded={popups.emoji}
+						class="{ROUND} -ml-1.5 {popups.emoji ? 'bg-fc-surface text-fc-fg' : 'text-fc-fg-muted hover:bg-fc-surface hover:text-fc-fg'}"
+						onclick={() => popups.toggleEmoji()}
+					>
+						<Icon icon={glyphs.smile} size={20} />
+					</button>
+				</Tooltip>
+				<ComposerField
+					bind:input
+					bind:value={composer.text}
+					{parts}
+					oninput={onInput}
+					onkeydown={onKeydown}
+					onkeyup={onCaret}
+					onclick={onCaret}
+					onblur={() => composer.typing.stop()}
+					placeholder={hint}
+					aria-label={hint}
+					role="combobox"
+					aria-autocomplete="list"
+					aria-expanded={open}
+					aria-controls={open ? menuId : undefined}
+					aria-activedescendant={open ? `${menuId}-${composer.selected}` : undefined}
+				/>
+			{/if}
+			{#if voiceReady || recording}
+				<VoiceRecorder {room} {threadId} bind:active={recording} />
+			{:else}
+				<Tooltip text={draft.editing ? t('composer.saveEdit') : t('composer.send')} describe={false} class="contents">
+					<button
+						type="button"
+						aria-label={draft.editing ? t('composer.saveEdit') : t('composer.send')}
+						disabled={!canSend}
+						class="{ROUND} bg-fc-accent text-fc-accent-fg hover:opacity-90"
+						onclick={submit}
+						in:pop
+					>
+						<Icon icon={glyphs.send} size={18} />
+					</button>
+				</Tooltip>
+			{/if}
 		</div>
 	</div>
 	<input bind:this={picker} type="file" multiple hidden onchange={(e) => {
