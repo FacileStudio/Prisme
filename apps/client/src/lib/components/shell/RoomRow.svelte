@@ -29,7 +29,7 @@
 	data-room-id={roomId}
 	onclick={() => (ui.drawer = false)}
 	aria-current={active ? 'page' : undefined}
-	class="group flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm transition-colors focus-visible:outline-2 focus-visible:outline-fc-ring {active
+	class="group flex min-h-11 items-center gap-2 rounded-fc-md px-2 text-fc-sm transition-[background-color,color,transform] duration-200 ease-fc active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-fc-ring {active
 		? 'bg-fc-accent text-fc-accent-fg'
 		: badge.bold
 			? 'font-semibold text-fc-fg hover:bg-fc-surface'
@@ -48,6 +48,6 @@
 	{/if}
 	<CountBadge {badge} />
 	{#if trail}
-		<Icon icon={icons.arrow} size={18} class="shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5" />
+		<Icon icon={icons.arrow} size={18} class="shrink-0 opacity-60 transition-[transform,opacity] duration-200 ease-fc group-hover:translate-x-0.5 group-hover:opacity-100" />
 	{/if}
 </a>

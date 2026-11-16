@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Room } from 'matrix-js-sdk';
-	import { Button, Icon, toast } from '@facile/muse';
+	import { Button, Icon, PageTransition, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import { ui } from '$lib/state/ui.svelte';
@@ -36,8 +36,9 @@
 	const startCall = () => run(() => call.start(room.roomId));
 </script>
 
+<PageTransition key={room.roomId + (empty ? ':empty' : '')} class={empty ? 'my-auto' : ''}>
 <section
-	class="mx-4 flex flex-col gap-4 rounded-fc-lg bg-fc-component p-5 sm:p-6 {empty ? 'my-auto items-center py-10 text-center sm:py-14' : 'mt-4 mb-2'}"
+	class="mx-4 flex flex-col gap-4 rounded-fc-lg bg-fc-component p-5 sm:p-6 {empty ? 'items-center py-10 text-center sm:py-14' : 'mt-4 mb-2'}"
 	aria-label={title}
 >
 	<span class="flex size-14 shrink-0 items-center justify-center rounded-fc-lg bg-fc-accent/10 text-fc-accent">
@@ -59,3 +60,4 @@
 		</div>
 	{/if}
 </section>
+</PageTransition>

@@ -94,7 +94,7 @@
 							data-room-id={row.roomId}
 							disabled={joining === row.roomId}
 							onclick={() => join(row.roomId)}
-							class="group flex min-h-11 w-full items-center gap-2 rounded-fc-md px-2 text-left text-fc-sm text-fc-fg-muted transition-colors hover:bg-fc-surface hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-fc-ring disabled:opacity-60"
+							class="group flex min-h-11 w-full items-center gap-2 rounded-fc-md px-2 text-left text-fc-sm text-fc-fg-muted transition-[background-color,color,transform] duration-200 ease-fc active:scale-[0.99] hover:bg-fc-surface hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-fc-ring disabled:opacity-60"
 						>
 							<Icon icon={glyphs.hashtag} size={16} class="shrink-0" />
 							<span class="min-w-0 flex-1 truncate">{row.name}</span>
@@ -103,7 +103,7 @@
 							{:else}
 								<span class="flex shrink-0 items-center gap-1 text-fc-xs font-medium">
 									{t('common.join')}
-									<Icon icon={icons.arrow} size={18} class="opacity-60 transition-transform group-hover:translate-x-0.5" />
+									<Icon icon={icons.arrow} size={18} class="opacity-60 transition-[transform,opacity] duration-200 ease-fc group-hover:translate-x-0.5 group-hover:opacity-100" />
 								</span>
 							{/if}
 						</button>

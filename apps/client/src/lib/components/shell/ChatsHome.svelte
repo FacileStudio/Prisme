@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { Room } from 'matrix-js-sdk';
-	import { Button, Card, EmptyState, Icon, icons, toast } from '@facile/muse';
+	import { Button, Card, EmptyState, Icon, PageTransition, Skeleton, icons, toast } from '@facile/muse';
 	import { glyphs } from '$lib/glyphs';
 	import { app } from '$lib/state/app.svelte';
 	import { acceptSpace, roomHref } from '$lib/state/actions';
@@ -54,7 +54,14 @@
 		{/each}
 
 		{#if current}
-			<SpaceChannels nav={current} />
+			<PageTransition key={current.space.room_id} class="flex flex-col gap-8">
+				<SpaceChannels nav={current} />
+			</PageTransition>
+		{:else if !app.spacesReady}
+			<div class="flex flex-col gap-4" aria-busy="true">
+				<Skeleton class="h-14 w-2/3 rounded-fc-md" />
+				<Skeleton class="h-40 rounded-fc-lg" />
+			</div>
 		{:else if nav.spaces.length === 0}
 			<EmptyState
 				icon={icons.space}
