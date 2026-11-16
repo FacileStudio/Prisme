@@ -37,8 +37,13 @@ type content struct {
 	Mentions  *mentions  `json:"m.mentions"`
 	RelatesTo *relation  `json:"m.relates_to"`
 	Capsule   *struct{}  `json:"studio.facile.capsule"`
+	Nuage     *nuageFile `json:"studio.facile.nuage"`
 	Poll      *pollStart `json:"m.poll.start"`
 	PollMSC   *pollStart `json:"org.matrix.msc3381.poll.start"`
+}
+
+type nuageFile struct {
+	Name string `json:"name"`
 }
 
 type pollStart struct {

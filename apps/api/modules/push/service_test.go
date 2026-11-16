@@ -97,3 +97,10 @@ func TestAPollIsNotifiableAndShowsItsQuestion(t *testing.T) {
 		t.Fatalf("unstable poll preview = %q", got)
 	}
 }
+
+func TestASharedNuageFileShowsItsNameAndNotItsLink(t *testing.T) {
+	shared := content{Body: "plan.pdf https://nuage.facile.studio/s/token", Nuage: &nuageFile{Name: "plan.pdf"}}
+	if got := previewBody(shared); got != "📎 plan.pdf" {
+		t.Fatalf("nuage preview = %q", got)
+	}
+}
