@@ -206,6 +206,20 @@ Answers `{"call_id", "livekit_url", "token", "join_url"}`. `503 unavailable` whe
 `ECHO_INTEGRATION_KEY` is unset, or when Echo does not answer. Prisme calls Echo with
 `Authorization: Bearer <ECHO_INTEGRATION_KEY>`.
 
+### `GET /gifs?q=&lang=&offset=`
+
+`{"gifs": [{"id", "title", "preview": {"url", "width", "height"}, "full": {...}}], "next"}`,
+24 GIFs rated G from GIPHY. An empty `q` lists trending GIFs; `lang` is `en`, `fr`, `es` or `de`.
+Both URLs are `/gifs/media?u=<GIPHY media URL>` paths on Prisme, never GIPHY links, so the
+browser stays on its own origin. `503 unavailable` while `GIPHY_API_KEY` is unset or GIPHY does
+not answer. The session's `gifs_enabled` says whether to show the picker.
+
+### `GET /gifs/media?u=`
+
+The bytes of one GIPHY media file. Only `https` links on `i.giphy.com`, `media.giphy.com` and
+`media0-9.giphy.com` are fetched, redirects included, at most 8 MiB. The client uploads the chosen
+GIF to the Matrix media repository and sends it as `m.image`.
+
 ### `GET /users?q=`
 
 `[{"user_id", "name", "avatar_url", "agent"}]`, at most 200 people and active agents, matching

@@ -57,6 +57,8 @@ throwaway secrets. Run the API with `MATRIX_INTERNAL_URL=http://127.0.0.1:18008`
 | `MATRIX_SERVER_NAME`, `MATRIX_PUBLIC_URL` | synapse, api | `prisme.facile.studio` and its https URL |
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URL`, `OIDC_SUCCESS_URL` | api | porte SSO against Registre, client id `prisme` |
 | `ECHO_URL`, `ECHO_INTEGRATION_KEY` | api | Echo's integration API. Either empty turns calls off with a clear message |
+| `CAPSULE_URL` | api | The Capsule deployment sealed messages go to. Defaults to `https://capsule.facile.studio` |
+| `GIPHY_API_KEY` | api | GIPHY key for the GIF picker. Empty hides GIFs and `/api/gifs` answers 503 |
 | `LIVEKIT_URL` | api | The LiveKit server Echo hands out, so the security headers can allow its `wss://` and `https://` origins in `connect-src`. Calls still work without it, but the CSP reports a violation |
 | `PRISME_PUBLIC_URL` | api | Where Echo posts call events (`/api/echo/events`). Defaults to `MATRIX_PUBLIC_URL` |
 | `TRUSTED_PROXIES`, `JOURNAL_URL`, `JOURNAL_TOKEN` | api | Suite defaults |
